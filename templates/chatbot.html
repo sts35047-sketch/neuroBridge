@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroBot - AI Transplant Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+        }
+        
+        .chat-message {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .user-msg {
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+            border-radius: 18px 18px 4px 18px;
+        }
+        
+        .bot-msg {
+            background: rgba(71, 85, 105, 0.5);
+            border-radius: 18px 18px 18px 4px;
+        }
+        
+        .pulse-indicator {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .voice-button {
+            transition: all 0.3s ease;
+        }
+        
+        .voice-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+        }
+        
+        .voice-button.active {
+            animation: pulse 1s infinite;
+            background-color: #ef4444;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #10b981;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 0.5;
+                transform: translateY(0);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 text-slate-100 min-h-screen">
+    <div class="flex flex-col h-screen">
+        <!-- Header -->
+        <header class="glass-panel m-4 p-6 rounded-lg">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-cyan-400 to-green-400 rounded-full flex items-center justify-center text-xl font-bold text-slate-900">
+                        🤖
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-cyan-300">NeuroBot</h1>
+                        <p class="text-sm text-slate-400">AI Transplant Coordination Assistant</p>
+                    </div>
+                </div>
+                <a href="/" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition">
+                    ← Back
+                </a>
+            </div>
+        </header>
+
+        <!-- Chat Container -->
+        <div class="flex-1 overflow-y-auto px-4 pb-4">
+            <div id="chatMessages" class="space-y-4 max-w-4xl mx-auto">
+                <!-- Initial message -->
+                <div class="chat-message bot-msg p-4 max-w-md">
+                    <p class="text-slate-100">👋 Hello! I'm NeuroBot, your AI assistant for organ transplant coordination.</p>
+                    <p class="text-sm text-slate-300 mt-2">I can help you with:</p>
+                    <ul class="text-sm text-slate-300 mt-2 space-y-1">
+                        <li>✓ Donor-recipient compatibility analysis</li>
+                        <li>✓ Organ matching logistics</li>
+                        <li>✓ Transplant protocols & timelines</li>
+                        <li>✓ Patient prioritization guidance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="glass-panel m-4 p-6 rounded-lg">
+            <div class="flex gap-3 max-w-4xl mx-auto items-end">
+                <!-- Microphone Button (Voice Input) -->
+                <button id="micButton" class="voice-button flex-shrink-0 w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 rounded-full flex items-center justify-center text-white font-bold transition" title="Start/Stop Recording">
+                    🎤
+                </button>
+
+                <!-- Text Input -->
+                <div class="flex-1 flex gap-2">
+                    <input 
+                        type="text" 
+                        id="messageInput" 
+                        placeholder="Ask me anything about organ transplants..." 
+                        class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-100 placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+                        onkeypress="if(event.key==='Enter') sendMessage()"
+                    >
+                </div>
+
+                <!-- Send Button -->
+                <button id="sendBtn" class="flex-shrink-0 px-6 py-2 bg-gradient-to-r from-cyan-500 to-green-500 hover:from-cyan-400 hover:to-green-400 rounded-lg font-semibold text-slate-900 transition" onclick="sendMessage()">
+                    Send
+                </button>
+
+                <!-- Voice Output Button (Text-to-Speech) -->
+                <button id="speakerButton" class="voice-button flex-shrink-0 w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 rounded-full flex items-center justify-center text-white font-bold transition" title="Play last message as voice" style="display: none;">
+                    🔊
+                </button>
+            </div>
+            <p class="text-xs text-slate-400 mt-3">💡 Tip: Click the 🎤 button to speak your question or 🔊 to hear the AI's response</p>
+        </div>
+    </div>
+
+    <script>
+        let recognition;
+        let isListening = false;
+        let lastBotMessage = '';
+        let isSpeaking = false;
+
+        // Initialize Web Speech API
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isListening = true;
+                document.getElementById('micButton').classList.add('active');
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                document.getElementById('micButton').classList.remove('active');
+            };
+
+            recognition.onresult = (event) => {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                document.getElementById('messageInput').value = transcript;
+                if (event.results[event.results.length - 1].isFinal) {
+                    sendMessage();
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                alert('Microphone error: ' + event.error);
+            };
+        }
+
+        // Microphone Button
+        document.getElementById('micButton').addEventListener('click', () => {
+            if (!SpeechRecognition) {
+                alert('Speech recognition not supported in this browser');
+                return;
+            }
+            
+            if (isListening) {
+                recognition.stop();
+            } else {
+                document.getElementById('messageInput').value = '';
+                recognition.start();
+            }
+        });
+
+        // Speaker Button (Text-to-Speech)
+        document.getElementById('speakerButton').addEventListener('click', () => {
+            if (!lastBotMessage) return;
+            
+            const utterance = new SpeechSynthesisUtterance(lastBotMessage);
+            utterance.rate = 1;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+
+            utterance.onstart = () => {
+                isSpeaking = true;
+                document.getElementById('speakerButton').classList.add('active');
+            };
+
+            utterance.onend = () => {
+                isSpeaking = false;
+                document.getElementById('speakerButton').classList.remove('active');
+            };
+
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+        });
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Clear input
+            input.value = '';
+
+            // Add user message to chat
+            addMessage(message, 'user');
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+                
+                // Remove typing indicator
+                removeTypingIndicator();
+
+                if (response.ok) {
+                    lastBotMessage = data.response;
+                    addMessage(data.response, 'bot');
+                    
+                    // Show speaker button if response has voice capability
+                    if (data.has_voice) {
+                        document.getElementById('speakerButton').style.display = 'flex';
+                    }
+                } else {
+                    addMessage('Error: ' + data.response, 'error');
+                }
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage('Connection error. Please try again.', 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        function addMessage(text, sender) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message p-4 max-w-md`;
+            
+            if (sender === 'user') {
+                messageDiv.className += ' user-msg ml-auto';
+                messageDiv.innerHTML = `<p class="text-slate-900">${escapeHtml(text)}</p>`;
+            } else if (sender === 'bot') {
+                messageDiv.className += ' bot-msg';
+                messageDiv.innerHTML = `<p class="text-slate-100 whitespace-pre-wrap">${escapeHtml(text)}</p>`;
+            } else {
+                messageDiv.className += ' bot-msg bg-red-900/30';
+                messageDiv.innerHTML = `<p class="text-red-300">${escapeHtml(text)}</p>`;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.parentElement.scrollTop = chatMessages.parentElement.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const chatMessages = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typingIndicator';
+            typingDiv.className = 'chat-message bot-msg p-4 max-w-md';
+            typingDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.parentElement.scrollTop = chatMessages.parentElement.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Focus input on load
+        window.addEventListener('load', () => {
+            document.getElementById('messageInput').focus();
+        });
+    </script>
+</body>
+</html>
