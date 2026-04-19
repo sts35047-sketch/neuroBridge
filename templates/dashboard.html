@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>NeuroBridge Dashboard | Bionic OS</title>
+    
+    <!-- Tailwind & Fonts -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-container": "#00e5ff",
+                        "on-primary-container": "#00626e",
+                        "tertiary": "#ececec",
+                        "surface-container-high": "#2f263b",
+                    },
+                    fontFamily: {
+                        headline: ["Space Grotesk"],
+                        body: ["Inter"],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #180f23;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(0, 229, 255, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(195, 245, 255, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(26, 11, 46, 1) 0px, transparent 80%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #ecddf9;
+        }
+        
+        /* Bionic / Holographic Effects */
+        .bionic-glass {
+            background: rgba(24, 15, 35, 0.4);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+        }
+        .holographic-border {
+            border: 1px solid transparent;
+            background: linear-gradient(rgba(24, 15, 35, 0.4), rgba(24, 15, 35, 0.4)) padding-box,
+                        linear-gradient(45deg, #00E5FF, #c3f5ff, #3f354b) border-box;
+        }
+        .action-orb {
+            background: radial-gradient(circle at 30% 30%, rgba(0, 229, 255, 0.3), transparent);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .action-orb:hover {
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 0 50px rgba(0, 229, 255, 0.3);
+        }
+        .floating { animation: float 6s ease-in-out infinite; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .neural-node-pulse { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.4); }
+            50% { box-shadow: 0 0 20px 10px rgba(0, 229, 255, 0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(24, 15, 35, 0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 229, 255, 0.3); border-radius: 10px; }
+    </style>
+</head>
+<body class="font-body text-slate-200">
+
+<!-- Top Nav Shell -->
+<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-6 mx-auto w-[92%] max-w-7xl border border-cyan-500/20 shadow-[0_0_40px_rgba(0,229,255,0.15)]">
+    <div class="flex items-center gap-3">
+        <span class="text-2xl font-black text-[#00E5FF] tracking-[-0.05em] font-headline">NeuroBridge</span>
+    </div>
+    
+    <nav class="hidden md:flex items-center gap-8 font-headline text-slate-100 font-medium tracking-tight">
+        <a class="text-[#00E5FF] font-bold border-b-2 border-[#00E5FF] pb-1" href="/dashboard">Neural Map</a>
+        <a class="text-slate-400 hover:text-white transition-colors" href="/analytics">Analytics</a>
+        <a class="text-slate-400 hover:text-white transition-colors" href="/network">Network</a>
+        <a class="text-slate-400 hover:text-white transition-colors" href="/logistics">Logistics</a>
+    </nav>
+
+    <div class="flex items-center gap-4">
+        <div class="flex gap-2">
+            <!-- Notifications Toggle -->
+            <button onclick="toggleModal('notificationModal')" class="relative p-2 hover:bg-cyan-500/10 hover:scale-[1.02] transition-all rounded-full">
+                <span class="material-symbols-outlined text-[#00E5FF]">notifications</span>
+                {% if notifications %}
+                <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border border-[#180f23] animate-pulse"></span>
+                {% endif %}
+            </button>
+            <a href="/messages" class="p-2 hover:bg-cyan-500/10 hover:scale-[1.02] transition-all rounded-full">
+                <span class="material-symbols-outlined text-[#00E5FF]">mail</span>
+            </a>
+            <a href="/settings" class="p-2 hover:bg-cyan-500/10 hover:scale-[1.02] transition-all rounded-full">
+                <span class="material-symbols-outlined text-[#00E5FF]">settings</span>
+            </a>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="text-right hidden sm:block">
+                <p class="text-[10px] uppercase tracking-widest text-slate-400">Welcome</p>
+                <p class="font-bold text-sm text-white">{{ hospital_name }}</p>
+            </div>
+            <div class="w-10 h-10 rounded-full border border-cyan-500/30 overflow-hidden bg-cyan-900 flex items-center justify-center">
+                <span class="font-bold text-cyan-200">{{ hospital_name[0] }}</span>
+            </div>
+        </div>
+        <a href="/logout" class="ml-2 px-4 py-2 text-xs font-bold uppercase rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all border border-red-500/30">Logout</a>
+    </div>
+</header>
+
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 bottom-0 w-72 flex-col p-6 z-30 bg-[#180f23]/40 backdrop-blur-[32px] border-r border-white/5 rounded-[3rem] m-4 h-[calc(100vh-2rem)] shadow-2xl hidden lg:flex mt-28">
+    <nav class="flex flex-col gap-2">
+        <a class="bg-cyan-500/20 text-[#00E5FF] rounded-full px-4 py-3 flex items-center gap-3 shadow-[inset_0_0_10px_rgba(0,229,255,0.2)] font-headline uppercase tracking-widest text-[10px]" href="/dashboard">
+            <span class="material-symbols-outlined">psychology</span> Neural Core
+        </a>
+        <a class="text-slate-400 px-4 py-3 flex items-center gap-3 hover:bg-white/5 rounded-full transition-all duration-300 font-headline uppercase tracking-widest text-[10px] hover:translate-x-1" href="/forecast">
+            <span class="material-symbols-outlined">analytics</span> AI Forecast
+        </a>
+        <a class="text-slate-400 px-4 py-3 flex items-center gap-3 hover:bg-white/5 rounded-full transition-all duration-300 font-headline uppercase tracking-widest text-[10px] hover:translate-x-1" href="/waitlist">
+            <span class="material-symbols-outlined">list_alt</span> Waitlist Priority
+        </a>
+        <a class="text-slate-400 px-4 py-3 flex items-center gap-3 hover:bg-white/5 rounded-full transition-all duration-300 font-headline uppercase tracking-widest text-[10px] hover:translate-x-1" href="/viability">
+            <span class="material-symbols-outlined">timer</span> Organ Viability
+        </a>
+        <a class="text-slate-400 px-4 py-3 flex items-center gap-3 hover:bg-white/5 rounded-full transition-all duration-300 font-headline uppercase tracking-widest text-[10px] hover:translate-x-1" href="/live_map">
+            <span class="material-symbols-outlined">map</span> Live Map
+        </a>
+        <a class="text-slate-400 px-4 py-3 flex items-center gap-3 hover:bg-white/5 rounded-full transition-all duration-300 font-headline uppercase tracking-widest text-[10px] hover:translate-x-1" href="/support">
+            <span class="material-symbols-outlined">support_agent</span> Node Support
+        </a>
+    </nav>
+    <div class="mt-auto">
+        <a href="/matches" class="w-full py-4 block text-center rounded-full bg-[#00e5ff] text-[#00626e] font-headline font-bold uppercase tracking-widest text-[10px] shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:scale-[1.02] transition-all">
+            RUN AI MATCH ENGINE
+        </a>
+    </div>
+</aside>
+
+<!-- Main Canvas -->
+<main class="lg:ml-80 pt-32 px-4 md:px-8 pb-12 max-w-7xl mx-auto">
+    
+    <!-- Hero Title Section -->
+    <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+        <div>
+            <h1 class="font-headline text-4xl md:text-6xl font-black text-white tracking-tighter leading-none mb-3">
+                Neural <span class="text-[#00e5ff]">Ecosystem</span>
+            </h1>
+            <p class="text-slate-400 text-sm md:text-base max-w-xl">
+                Real-time monitoring of bionic synapse bridges and cross-hemisphere neural donor matching status.
+            </p>
+        </div>
+        <div class="flex gap-4">
+            <div class="p-4 md:p-6 bionic-glass rounded-xl text-center border-l-4 border-[#00e5ff]">
+                <p class="text-[10px] uppercase tracking-widest text-slate-400 mb-1">Active Donors</p>
+                <p class="text-2xl md:text-3xl font-headline font-bold text-[#00e5ff]">{{ donors|length }}</p>
+            </div>
+            <div class="p-4 md:p-6 bionic-glass rounded-xl text-center">
+                <p class="text-[10px] uppercase tracking-widest text-slate-400 mb-1">Waitlist Nodes</p>
+                <p class="text-2xl md:text-3xl font-headline font-bold text-white">{{ recipients|length }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Hub: Asymmetrical Orbs -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16 items-center justify-items-center">
+        <div onclick="toggleModal('addDonorModal')" class="action-orb floating h-40 w-40 md:h-48 md:w-48 rounded-full bionic-glass holographic-border flex flex-col items-center justify-center p-6 text-center cursor-pointer">
+            <span class="material-symbols-outlined text-4xl text-[#00e5ff] mb-2">person_add</span>
+            <span class="font-headline font-bold text-xs md:text-sm tracking-wide text-white">Add Donor</span>
+        </div>
+        <div onclick="toggleModal('addRecipientModal')" class="action-orb floating h-48 w-48 md:h-56 md:w-56 rounded-[3rem] md:rounded-[4rem] bionic-glass holographic-border flex flex-col items-center justify-center p-6 text-center cursor-pointer mt-6 md:mt-0">
+            <span class="material-symbols-outlined text-4xl text-[#00e5ff] mb-2">clinical_notes</span>
+            <span class="font-headline font-bold text-xs md:text-sm tracking-wide text-white">Add Recipient</span>
+        </div>
+        <a href="/matches" class="action-orb floating h-36 w-36 md:h-44 md:w-44 rounded-[2.5rem] bionic-glass holographic-border flex flex-col items-center justify-center p-6 text-center cursor-pointer">
+            <span class="material-symbols-outlined text-4xl text-[#00e5ff] mb-2">join_inner</span>
+            <span class="font-headline font-bold text-xs md:text-sm tracking-wide text-white">Neural Match</span>
+        </a>
+        <a href="/logistics" class="action-orb floating h-44 w-44 md:h-52 md:w-52 rounded-full bionic-glass holographic-border flex flex-col items-center justify-center p-6 text-center cursor-pointer mt-6 md:mt-0">
+            <span class="material-symbols-outlined text-4xl text-[#00e5ff] mb-2">lan</span>
+            <span class="font-headline font-bold text-xs md:text-sm tracking-wide text-white">Logistics Hub</span>
+        </a>
+    </div>
+
+    <!-- Analytics Section with Real Chart.js -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+        <div class="bionic-glass rounded-xl p-6 holographic-border h-[350px] flex flex-col">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="font-headline text-xl md:text-2xl font-bold uppercase tracking-tighter text-white">Donor Blood Groups</h3>
+            </div>
+            <div class="flex-1 relative w-full h-full">
+                <canvas id="donorChart"></canvas>
+            </div>
+        </div>
+        <div class="bionic-glass rounded-xl p-6 holographic-border h-[350px] flex flex-col">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="font-headline text-xl md:text-2xl font-bold uppercase tracking-tighter text-white">Urgency Matrix</h3>
+            </div>
+            <div class="flex-1 relative w-full h-full">
+                <canvas id="recipientChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biometric Data Tables -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-10 mb-16">
+        <!-- Donors List -->
+        <div>
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-headline text-2xl font-black uppercase tracking-tighter text-white">Active Donors</h3>
+                <a href="/export/donors" class="text-xs uppercase tracking-widest text-[#00e5ff] hover:text-white border border-[#00e5ff]/30 px-3 py-1 rounded-full transition-colors">Export CSV</a>
+            </div>
+            <div class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                {% for donor in donors %}
+                <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-cyan-500/10 transition-all border border-white/5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full border border-[#00e5ff] bg-cyan-900/30 flex items-center justify-center font-bold text-[#00e5ff]">
+                            {{ donor.blood_group }}
+                        </div>
+                        <div>
+                            <p class="font-headline font-bold text-md text-white">{{ donor.name }}</p>
+                            <p class="text-[10px] uppercase tracking-widest text-slate-400">{{ donor.age }}y • {{ donor.organ }} • {{ donor.city }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="/generate_card/donor/{{ donor.id }}" target="_blank" class="p-2 rounded-full hover:bg-white/10 text-[#00e5ff]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
+                        <a href="/delete/donor/{{ donor.id }}" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center p-8 border border-white/5 rounded-[2rem] bionic-glass text-slate-500 text-sm">No active donors detected.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Recipients List -->
+        <div>
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-headline text-2xl font-black uppercase tracking-tighter text-white">Waitlist Nodes</h3>
+                <a href="/export/recipients" class="text-xs uppercase tracking-widest text-[#00e5ff] hover:text-white border border-[#00e5ff]/30 px-3 py-1 rounded-full transition-colors">Export CSV</a>
+            </div>
+            <div class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                {% for recipient in recipients %}
+                <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-cyan-500/10 transition-all border border-white/5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full border {% if recipient.urgency == 'High' %}border-red-500 text-red-400{% else %}border-yellow-500 text-yellow-400{% endif %} bg-[#180f23] flex items-center justify-center font-bold">
+                            {{ recipient.blood_group }}
+                        </div>
+                        <div>
+                            <p class="font-headline font-bold text-md text-white">{{ recipient.name }}</p>
+                            <p class="text-[10px] uppercase tracking-widest text-slate-400">Needs {{ recipient.organ }} • {{ recipient.urgency }} Urgency</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="/generate_card/recipient/{{ recipient.id }}" target="_blank" class="p-2 rounded-full hover:bg-white/10 text-[#00e5ff]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
+                        <a href="/delete/recipient/{{ recipient.id }}" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center p-8 border border-white/5 rounded-[2rem] bionic-glass text-slate-500 text-sm">No recipients on waitlist.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- AI Neural Node Chat Button -->
+<div class="fixed bottom-8 right-8 z-50">
+    <button onclick="toggleChatWindow()" class="neural-node-pulse group relative w-16 h-16 bg-[#00e5ff] rounded-full flex items-center justify-center text-[#00626e] shadow-[0_0_40px_rgba(0,229,255,0.4)] hover:scale-110 transition-all cursor-pointer">
+        <span class="material-symbols-outlined text-3xl">auto_awesome</span>
+    </button>
+</div>
+
+<!-- Chat Window (Tailwind conversion) -->
+<div id="chatWindow" class="fixed bottom-28 right-8 w-80 h-[400px] bionic-glass holographic-border rounded-3xl z-50 flex-col overflow-hidden hidden shadow-2xl transition-all">
+    <div class="bg-gradient-to-r from-[#00626e] to-[#180f23] text-white p-4 flex justify-between items-center border-b border-white/10">
+        <span class="font-headline font-bold text-sm tracking-widest uppercase">NeuroBot Core</span>
+        <button onclick="toggleChatWindow()" class="text-white/70 hover:text-white"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div id="chatBody" class="flex-1 p-4 overflow-y-auto flex flex-col gap-3 scroll-smooth">
+        <div class="bg-[#00e5ff]/10 border border-[#00e5ff]/30 text-cyan-100 p-3 rounded-2xl rounded-tl-sm text-sm self-start max-w-[85%] shadow-sm">
+            Neural interface active. How can I assist with your logistics today?
+        </div>
+    </div>
+    <div class="p-3 bg-[#180f23]/80 border-t border-white/10 flex gap-2">
+        <input type="text" id="chatInput" class="flex-1 bg-white/5 border border-white/10 text-white rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#00e5ff] transition-colors" placeholder="Transmit query..." onkeypress="if(event.key==='Enter') sendChat()">
+        <button onclick="sendChat()" class="w-10 h-10 bg-[#00e5ff] text-[#00626e] rounded-full flex items-center justify-center hover:bg-white transition-colors">
+            <span class="material-symbols-outlined text-sm">send</span>
+        </button>
+    </div>
+</div>
+
+<!-- ================= MODALS (TAILWIND STYLED) ================= -->
+<div id="modalBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden transition-opacity"></div>
+
+<!-- Add Donor Modal -->
+<div id="addDonorModal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg z-[70] hidden">
+    <div class="bionic-glass holographic-border rounded-[2rem] p-6 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="font-headline text-xl font-bold text-white uppercase tracking-widest">Init: Donor Profile</h3>
+            <button onclick="closeModals()" class="text-slate-400 hover:text-white"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <form action="/add_donor" method="POST" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="col-span-2">
+                    <label class="block text-[10px] uppercase tracking-widest text-[#00e5ff] mb-1">Subject Name</label>
+                    <input type="text" name="name" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#00e5ff] focus:ring-0" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-[#00e5ff] mb-1">Age</label>
+                    <input type="number" name="age" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#00e5ff] focus:ring-0" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-[#00e5ff] mb-1">Blood Group</label>
+                    <select name="blood_group" class="w-full bg-[#2f263b] border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#00e5ff] focus:ring-0">
+                        <option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-[#00e5ff] mb-1">Organ</label>
+                    <input type="text" name="organ" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#00e5ff] focus:ring-0" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-[#00e5ff] mb-1">Comms (Phone)</label>
+                    <input type="text" name="phone" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#00e5ff] focus:ring-0" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-[#00e5ff] mb-1">PIN Code</label>
+                    <input type="text" id="donorPin" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#00e5ff] focus:ring-0" onkeyup="fetchCity(this.value, 'donorCity', 'donorCityFeedback')">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-[#00e5ff] mb-1">City Locator</label>
+                    <input type="text" id="donorCity" name="city" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#00e5ff] focus:ring-0" required list="citySuggestions">
+                    <div id="donorCityFeedback" class="text-xs mt-1 hidden"></div>
+                </div>
+            </div>
+            <button type="submit" class="w-full mt-4 py-3 rounded-full bg-[#00e5ff] text-[#00626e] font-headline font-bold uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:bg-white transition-all">
+                Commit Profile to Node
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Add Recipient Modal -->
+<div id="addRecipientModal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg z-[70] hidden">
+    <div class="bionic-glass holographic-border rounded-[2rem] p-6 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="font-headline text-xl font-bold text-white uppercase tracking-widest">Init: Recipient Need</h3>
+            <button onclick="closeModals()" class="text-slate-400 hover:text-white"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <form action="/add_recipient" method="POST" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="col-span-2">
+                    <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">Subject Name</label>
+                    <input type="text" name="name" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">Age</label>
+                    <input type="number" name="age" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">Blood Group</label>
+                    <select name="blood_group" class="w-full bg-[#2f263b] border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0">
+                        <option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">Organ Required</label>
+                    <input type="text" name="organ" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">Urgency Matrix</label>
+                    <select name="urgency" class="w-full bg-[#2f263b] border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0">
+                        <option value="High">Critical (High)</option><option value="Medium">Medium</option><option value="Low">Low</option>
+                    </select>
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">Comms (Phone)</label>
+                    <input type="text" name="phone" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">PIN Code</label>
+                    <input type="text" id="recipientPin" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" onkeyup="fetchCity(this.value, 'recipientCity', 'recipientCityFeedback')">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">City Locator</label>
+                    <input type="text" id="recipientCity" name="city" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" required list="citySuggestions">
+                    <div id="recipientCityFeedback" class="text-xs mt-1 hidden"></div>
+                </div>
+            </div>
+            <button type="submit" class="w-full mt-4 py-3 rounded-full bg-blue-500 text-white font-headline font-bold uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:bg-blue-400 transition-all">
+                Queue Recipient Waitlist
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Notification Modal -->
+<div id="notificationModal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-[70] hidden">
+    <div class="bionic-glass holographic-border rounded-[2rem] overflow-hidden shadow-2xl">
+        <div class="bg-white/5 p-4 border-b border-white/10 flex justify-between items-center">
+            <h3 class="font-headline font-bold text-white uppercase tracking-widest"><span class="material-symbols-outlined align-middle mr-2 text-[#00e5ff]">notifications</span> System Alerts</h3>
+            <button onclick="closeModals()" class="text-slate-400 hover:text-white"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div class="p-0 max-h-[60vh] overflow-y-auto">
+            {% if notifications %}
+                <div class="flex flex-col">
+                {% for notif in notifications %}
+                    <div class="p-4 border-b border-white/5 hover:bg-white/5 transition-colors">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-xs font-bold text-[#00e5ff] uppercase tracking-widest">Admin Node</span>
+                            <span class="text-[10px] text-slate-400">{{ notif.date }}</span>
+                        </div>
+                        <p class="text-sm text-slate-200">{{ notif.message }}</p>
+                    </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <div class="p-10 text-center text-slate-500">
+                    <span class="material-symbols-outlined text-4xl mb-2 opacity-50">notifications_off</span>
+                    <p class="text-sm">No active alerts detected.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<datalist id="citySuggestions">
+    <option value="New Delhi"><option value="Mumbai"><option value="Bangalore"><option value="Chennai"><option value="Kolkata"><option value="Hyderabad"><option value="Pune"><option value="Ahmedabad">
+</datalist>
+
+<!-- JavaScript Integration -->
+<script>
+    // Data Parse safely
+    const dLabels = JSON.parse('{{ d_labels | default([]) | tojson | safe }}');
+    const dValues = JSON.parse('{{ d_values | default([]) | tojson | safe }}');
+    const rLabels = JSON.parse('{{ r_labels | default([]) | tojson | safe }}');
+    const rValues = JSON.parse('{{ r_values | default([]) | tojson | safe }}');
+
+    // Setup Chart.js with Bionic Theme
+    Chart.defaults.color = '#bac9cc';
+    Chart.defaults.font.family = "'Space Grotesk', sans-serif";
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        const donorCtx = document.getElementById('donorChart').getContext('2d');
+        new Chart(donorCtx, { 
+            type: 'doughnut', 
+            data: { 
+                labels: dLabels, 
+                datasets: [{ 
+                    data: dValues, 
+                    backgroundColor: ['#00e5ff', '#009688', '#4DB6AC', '#80CBC4', '#B2DFDB'], 
+                    borderWidth: 1,
+                    borderColor: '#180f23',
+                    hoverOffset: 15 
+                }] 
+            }, 
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { position: 'right', labels: { color: '#ecddf9' } } }, 
+                cutout: '75%' 
+            } 
+        });
+
+        const recipientCtx = document.getElementById('recipientChart').getContext('2d');
+        new Chart(recipientCtx, { 
+            type: 'bar', 
+            data: { 
+                labels: rLabels, 
+                datasets: [{ 
+                    label: 'Waitlist', 
+                    data: rValues, 
+                    backgroundColor: ['rgba(255, 60, 60, 0.8)', 'rgba(255, 193, 7, 0.8)', 'rgba(0, 229, 255, 0.8)'], 
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.2)'
+                }] 
+            }, 
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                scales: { 
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { stepSize: 1, color: '#bac9cc' } }, 
+                    x: { grid: { display: false }, ticks: { color: '#bac9cc' } } 
+                }, 
+                plugins: { legend: { display: false } } 
+            } 
+        });
+    });
+
+    // Custom Modal System
+    function toggleModal(id) {
+        document.getElementById('modalBackdrop').classList.remove('hidden');
+        document.getElementById(id).classList.remove('hidden');
+        document.getElementById(id).classList.add('animate-enter');
+    }
+    
+    function closeModals() {
+        document.getElementById('modalBackdrop').classList.add('hidden');
+        ['addDonorModal', 'addRecipientModal', 'notificationModal'].forEach(id => {
+            document.getElementById(id).classList.add('hidden');
+        });
+    }
+
+    // Chatbot Logic
+    function toggleChatWindow() {
+        const chat = document.getElementById('chatWindow');
+        if (chat.classList.contains('hidden')) {
+            chat.classList.remove('hidden');
+            chat.classList.add('flex');
+        } else {
+            chat.classList.add('hidden');
+            chat.classList.remove('flex');
+        }
+    }
+
+    function sendChat() {
+        const input = document.getElementById('chatInput');
+        const msg = input.value;
+        if (!msg) return;
+
+        const body = document.getElementById('chatBody');
+        body.innerHTML += `<div class="bg-[#00e5ff] text-[#00626e] p-3 rounded-2xl rounded-tr-sm text-sm self-end max-w-[85%] shadow-[0_0_15px_rgba(0,229,255,0.3)]">${msg}</div>`;
+        input.value = "";
+        body.scrollTop = body.scrollHeight;
+
+        fetch('/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message: msg})
+        })
+        .then(r => r.json())
+        .then(d => {
+            setTimeout(() => {
+                body.innerHTML += `<div class="bg-[#00e5ff]/10 border border-[#00e5ff]/30 text-cyan-100 p-3 rounded-2xl rounded-tl-sm text-sm self-start max-w-[85%] shadow-sm">${d.response}</div>`;
+                body.scrollTop = body.scrollHeight;
+            }, 600);
+        });
+    }
+
+    // Fetch City Location
+    function fetchCity(pin, targetId, feedbackId) {
+        const cityInput = document.getElementById(targetId);
+        const feedbackDiv = document.getElementById(feedbackId);
+        
+        feedbackDiv.classList.add('hidden');
+        
+        if (pin.length === 6) {
+            cityInput.placeholder = "Scanning GPS satellite...";
+            fetch('/get_location/' + pin)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.status === 'success') {
+                        cityInput.value = d.city + ", " + d.state;
+                        cityInput.classList.add('border-[#00e5ff]');
+                        feedbackDiv.innerText = "✅ Satellite Link: Location Found";
+                        feedbackDiv.classList.remove('hidden', 'text-red-400');
+                        feedbackDiv.classList.add('text-[#00e5ff]');
+                    } else {
+                        cityInput.value = "";
+                        cityInput.placeholder = "Manual entry required";
+                        cityInput.classList.add('border-red-400');
+                        feedbackDiv.innerText = "❌ Mapping failed. Type manually.";
+                        feedbackDiv.classList.remove('hidden', 'text-[#00e5ff]');
+                        feedbackDiv.classList.add('text-red-400');
+                    }
+                })
+                .catch(e => {
+                    cityInput.placeholder = "Network error";
+                });
+        }
+    }
+</script>
+
+</body>
+</html>

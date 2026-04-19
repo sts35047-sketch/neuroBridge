@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroBridge Admin</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+body {
+    background-color: #180f23;
+    background-image:
+        radial-gradient(at 0% 0%, rgba(0,229,255,0.15), transparent 50%),
+        radial-gradient(at 100% 100%, rgba(195,245,255,0.1), transparent 50%);
+    color: #ecddf9;
+}
+
+/* Glass UI */
+.glass {
+    background: rgba(24,15,35,0.4);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(0,229,255,0.2);
+}
+
+/* Neon Button */
+.glow-btn {
+    background: #00e5ff;
+    color: #00626e;
+    box-shadow: 0 0 20px rgba(0,229,255,0.4);
+    transition: all 0.3s;
+}
+.glow-btn:hover {
+    transform: scale(1.05);
+}
+
+/* Border Glow */
+.holo-border {
+    border: 1px solid transparent;
+    background: linear-gradient(#180f23,#180f23) padding-box,
+                linear-gradient(45deg,#00e5ff,#c3f5ff) border-box;
+}
+</style>
+</head>
+
+<body class="font-[Inter] flex items-center justify-center min-h-screen">
+
+<!-- LOGIN CARD -->
+<div class="glass holo-border rounded-3xl p-8 w-full max-w-md shadow-2xl">
+
+    <!-- TITLE -->
+    <div class="text-center mb-6">
+        <h1 class="text-3xl font-black font-[Space_Grotesk] text-[#00e5ff]">
+            ADMIN NODE
+        </h1>
+        <p class="text-slate-400 text-sm mt-2">
+            Secure access to NeuroBridge control system
+        </p>
+    </div>
+
+    <!-- FORM -->
+    <form action="/admin/login" method="POST" class="space-y-4">
+
+        <div>
+            <label class="text-xs uppercase text-[#00e5ff] tracking-widest">Username</label>
+            <input type="text" name="username"
+                class="w-full mt-1 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#00e5ff]"
+                placeholder="Enter admin ID" required>
+        </div>
+
+        <div>
+            <label class="text-xs uppercase text-[#00e5ff] tracking-widest">Password</label>
+            <input type="password" name="password"
+                class="w-full mt-1 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#00e5ff]"
+                placeholder="Enter secure key" required>
+        </div>
+
+        <button type="submit"
+            class="w-full py-3 rounded-full glow-btn font-bold uppercase tracking-widest">
+            Access System
+        </button>
+    </form>
+
+    <!-- BACK LINK -->
+    <div class="text-center mt-6">
+        <a href="/" class="text-slate-400 text-sm hover:text-[#00e5ff] transition">
+            ← Return to Network
+        </a>
+    </div>
+
+</div>
+
+</body>
+</html>

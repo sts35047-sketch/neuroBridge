@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroBridge</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+body {
+    background-color: #180f23;
+    background-image:
+        radial-gradient(at 0% 0%, rgba(0,229,255,0.15), transparent 50%),
+        radial-gradient(at 100% 100%, rgba(195,245,255,0.1), transparent 50%);
+    color: #ecddf9;
+}
+
+.glass {
+    background: rgba(24,15,35,0.4);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(0,229,255,0.2);
+}
+
+.glow-btn {
+    background: #00e5ff;
+    color: #00626e;
+    box-shadow: 0 0 20px rgba(0,229,255,0.4);
+    transition: all 0.3s;
+}
+.glow-btn:hover {
+    transform: scale(1.05);
+}
+
+.holo-border {
+    border: 1px solid transparent;
+    background: linear-gradient(#180f23,#180f23) padding-box,
+                linear-gradient(45deg,#00e5ff,#c3f5ff) border-box;
+}
+</style>
+</head>
+
+<body class="font-[Inter]">
+
+<!-- NAVBAR -->
+<header class="flex justify-between items-center px-8 py-4 glass m-6 rounded-full">
+    <h1 class="text-2xl font-black text-[#00e5ff] font-[Space_Grotesk]">NeuroBridge</h1>
+    <div class="flex gap-4">
+        <a href="/login" class="px-6 py-2 rounded-full bg-white/10 hover:bg-white/20 transition">Login</a>
+        <a href="/register" class="px-6 py-2 rounded-full glow-btn font-bold">Register</a>
+    </div>
+</header>
+
+<!-- HERO SECTION -->
+<section class="text-center mt-24 px-6">
+    <h1 class="text-5xl md:text-7xl font-black font-[Space_Grotesk] mb-6">
+        The Future of <span class="text-[#00e5ff]">Organ Networks</span>
+    </h1>
+    <p class="text-slate-400 max-w-xl mx-auto mb-10">
+        AI-powered organ allocation, real-time tracking, and seamless hospital connectivity.
+    </p>
+
+    <div class="flex justify-center gap-4">
+        <a href="/login" class="px-8 py-4 rounded-full glow-btn font-bold">Hospital Login</a>
+        <a href="/register" class="px-8 py-4 rounded-full border border-white/20 hover:bg-white/10">Get Started</a>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="grid md:grid-cols-3 gap-8 px-10 mt-24">
+
+    <div class="glass holo-border p-8 rounded-3xl hover:scale-105 transition">
+        <h3 class="text-xl font-bold mb-3 text-[#00e5ff]">Secure Registry</h3>
+        <p class="text-slate-400">
+            Encrypted donor-recipient database with real-time updates.
+        </p>
+    </div>
+
+    <div class="glass holo-border p-8 rounded-3xl hover:scale-105 transition">
+        <h3 class="text-xl font-bold mb-3 text-[#00e5ff]">AI Matching</h3>
+        <p class="text-slate-400">
+            Smart neural algorithms for instant compatibility detection.
+        </p>
+    </div>
+
+    <div class="glass holo-border p-8 rounded-3xl hover:scale-105 transition">
+        <h3 class="text-xl font-bold mb-3 text-[#00e5ff]">Live Tracking</h3>
+        <p class="text-slate-400">
+            Real-time organ transport & viability monitoring system.
+        </p>
+    </div>
+
+</section>
+
+<!-- CTA -->
+<section class="text-center mt-24">
+    <h2 class="text-3xl font-bold mb-4 font-[Space_Grotesk]">
+        Ready to Save Lives?
+    </h2>
+    <a href="/register" class="px-10 py-4 rounded-full glow-btn font-bold">
+        Join NeuroBridge
+    </a>
+</section>
+
+<!-- FOOTER WITH ADMIN -->
+<footer class="text-center mt-20 pb-10 text-slate-500">
+    © 2026 NeuroBridge • Built with Tech & Empathy <br>
+
+    <a href="/admin/login" 
+       class="text-[#00e5ff] text-sm mt-2 inline-block hover:underline">
+       Admin Access
+    </a>
+</footer>
+
+</body>
+</html>

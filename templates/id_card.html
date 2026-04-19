@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NeuroBridge Digital ID</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #333; display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; }
+        .id-card {
+            width: 400px;
+            height: 250px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        .id-header { padding: 15px; color: white; display: flex; justify-content: space-between; align-items: center; }
+        .avatar {
+            width: 80px; height: 80px;
+            background: #f0f0f0;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px; border: 3px solid white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .qr-box {
+            width: 80px; height: 80px;
+            background: white;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .watermark {
+            position: absolute; bottom: -20px; right: -20px;
+            font-size: 100px; opacity: 0.05; font-weight: bold; pointer-events: none;
+        }
+        .btn-print { margin-top: 20px; }
+        @media print {
+            body { background: white; }
+            .btn-print { display: none; }
+            .id-card { border: 1px solid #ddd; box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="id-card">
+        <div class="watermark">NB</div>
+        
+        <!-- Header -->
+        <div class="id-header bg-{{ color }}">
+            <div>
+                <h5 class="mb-0 fw-bold">NeuroBridge</h5>
+                <small style="opacity: 0.8">{{ hospital_name }}</small>
+            </div>
+            <small class="fw-bold" style="letter-spacing: 1px;">{{ role }}</small>
+        </div>
+
+        <div class="p-3 d-flex align-items-center">
+            <!-- Avatar Placeholder -->
+            <div class="avatar text-{{ color }}">
+                {{ person.name[0] }}
+            </div>
+
+            <div class="ms-3 flex-grow-1">
+                <h4 class="mb-0 fw-bold text-dark">{{ person.name }}</h4>
+                <div class="d-flex align-items-center mt-1">
+                    <span class="badge bg-{{ color }} me-2">{{ person.blood_group }}</span>
+                    <span class="text-secondary small">{{ person.age }} Years</span>
+                </div>
+                <div class="text-muted small mt-1">Organ: <strong>{{ person.organ }}</strong></div>
+            </div>
+
+            <!-- REAL QR Code (Generated via API) -->
+            <div class="qr-box">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ qr_data }}" alt="QR Code" width="75" height="75">
+            </div>
+        </div>
+
+        <div class="px-3 pb-3 d-flex justify-content-between align-items-end">
+            <div class="small text-muted">
+                ID: <strong>NB-{{ person.id }}</strong><br>
+                Issued: {{ date }}
+            </div>
+            <div class="small text-{{ color }} fw-bold">
+                AUTHORIZED
+            </div>
+        </div>
+    </div>
+
+    <button onclick="window.print()" class="btn btn-light btn-print rounded-pill px-4 fw-bold">🖨️ Print Card</button>
+    <a href="/dashboard" class="btn btn-link text-white btn-print mt-2">Back to Dashboard</a>
+
+</body>
+</html>

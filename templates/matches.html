@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>NeuroBridge | Neural Match Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <style>
+        body { background-color: #180f23; background-image: radial-gradient(at 100% 0%, rgba(0, 229, 255, 0.1) 0px, transparent 60%); min-height: 100vh; color: #ecddf9; font-family: 'Inter', sans-serif; }
+        .bionic-glass { background: rgba(24, 15, 35, 0.4); backdrop-filter: blur(24px); border: 1px solid rgba(0, 229, 255, 0.2); }
+        .holographic-border { border: 1px solid transparent; background: linear-gradient(rgba(24, 15, 35, 0.4), rgba(24, 15, 35, 0.4)) padding-box, linear-gradient(45deg, #00E5FF, #c3f5ff, #3f354b) border-box; }
+        .font-headline { font-family: 'Space Grotesk', sans-serif; }
+        
+        .pulse-engine { animation: pulseEngine 2s infinite; }
+        @keyframes pulseEngine {
+            0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(0, 229, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
+        }
+    </style>
+</head>
+<body class="pb-12">
+
+<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-6 mx-auto w-[92%] max-w-7xl border border-cyan-500/20 shadow-[0_0_40px_rgba(0,229,255,0.15)]">
+    <div class="flex items-center gap-3">
+        <span class="text-2xl font-black text-[#00E5FF] tracking-[-0.05em] font-headline">NeuroBridge</span>
+    </div>
+    <a href="/dashboard" class="px-6 py-2 text-xs font-bold uppercase rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20">Back to Core</a>
+</header>
+
+<main class="pt-32 px-4 md:px-8 max-w-7xl mx-auto text-center">
+    
+    <div class="mb-12">
+        <h1 class="font-headline text-5xl font-black text-white tracking-tighter mb-4">Neural Match <span class="text-[#00e5ff]">Engine</span></h1>
+        <p class="text-slate-400 max-w-2xl mx-auto">Initialize the quantum allocation algorithm to cross-reference donor biometrics with waitlist requirements globally.</p>
+    </div>
+
+    <!-- Run Engine Button -->
+    <div class="mb-16">
+        <form action="/run_matching" method="POST">
+            <button type="submit" class="pulse-engine w-64 h-64 rounded-full bg-gradient-to-br from-[#00e5ff] to-[#004d40] flex flex-col items-center justify-center text-[#00626e] hover:scale-105 hover:text-white transition-all mx-auto border-4 border-[#00e5ff]/50 cursor-pointer">
+                <span class="material-symbols-outlined text-6xl mb-2">join_inner</span>
+                <span class="font-headline font-black text-2xl uppercase tracking-tighter">Run Engine</span>
+                <span class="text-[10px] tracking-widest uppercase mt-2 opacity-80">Initialize Algorithm</span>
+            </button>
+        </form>
+    </div>
+
+    <!-- Match Results Area -->
+    {% if matches %}
+    <h3 class="font-headline text-2xl font-bold uppercase tracking-widest text-[#00e5ff] mb-6 border-b border-white/10 pb-4 text-left">Verified Synapse Matches</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
+        {% for match in matches %}
+        <div class="bionic-glass holographic-border rounded-[2rem] p-6 hover:-translate-y-2 transition-transform">
+            <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
+                <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-[10px] font-bold uppercase tracking-widest border border-green-500/50">99.8% Compatibility</span>
+                <span class="text-xl font-black text-white font-headline">{{ match.organ }}</span>
+            </div>
+            
+            <div class="mb-4">
+                <p class="text-[10px] uppercase tracking-widest text-[#00e5ff] mb-1">Donor Node</p>
+                <p class="text-white font-bold">{{ match.donor_name }} <span class="text-slate-400 font-normal">({{ match.blood_group }})</span></p>
+            </div>
+            
+            <div class="mb-6">
+                <p class="text-[10px] uppercase tracking-widest text-[#00e5ff] mb-1">Recipient Node</p>
+                <p class="text-white font-bold">{{ match.recipient_name }} <span class="text-slate-400 font-normal">({{ match.blood_group }})</span></p>
+            </div>
+
+            <a href="/match_report/{{ loop.index }}" target="_blank" class="block w-full py-3 text-center rounded-full bg-white/5 border border-white/20 text-white hover:bg-[#00e5ff] hover:text-[#00626e] hover:border-transparent font-bold text-xs uppercase tracking-widest transition-all">
+                <span class="material-symbols-outlined text-[14px] align-middle mr-1">picture_as_pdf</span> Generate Protocol Report
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% elif request.method == 'POST' %}
+    <div class="bionic-glass rounded-[2rem] p-10 text-center border border-white/10 max-w-2xl mx-auto">
+        <span class="material-symbols-outlined text-6xl text-red-400 mb-4 opacity-80">link_off</span>
+        <h3 class="text-xl font-bold text-white mb-2">No Compatible Matches Found</h3>
+        <p class="text-slate-400">The neural net could not find any active donor-recipient pairings based on current biometrics and blood groups.</p>
+    </div>
+    {% endif %}
+
+</main>
+</body>
+</html>

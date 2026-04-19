@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Establish Node | NeuroBridge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <style>
+        body { background-color: #180f23; background-image: radial-gradient(at 0% 100%, rgba(195, 245, 255, 0.05) 0px, transparent 80%); min-height: 100vh; color: #ecddf9; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; padding: 2rem 1.5rem; }
+        .bionic-glass { background: rgba(24, 15, 35, 0.7); backdrop-filter: blur(24px); border: 1px solid rgba(0, 229, 255, 0.2); }
+        .holographic-border { border: 1px solid transparent; background: linear-gradient(rgba(24, 15, 35, 0.7), rgba(24, 15, 35, 0.7)) padding-box, linear-gradient(45deg, #00E5FF, #c3f5ff, #3f354b) border-box; }
+        .font-headline { font-family: 'Space Grotesk', sans-serif; }
+    </style>
+</head>
+<body>
+
+    <div class="w-full max-w-lg relative">
+        <div class="absolute -bottom-20 -left-20 w-48 h-48 bg-purple-500 opacity-5 blur-[120px] rounded-full"></div>
+        
+        <div class="bionic-glass holographic-border rounded-[3rem] p-8 md:p-12 shadow-2xl relative z-10">
+            <div class="text-center mb-10">
+                <h2 class="font-headline text-3xl md:text-4xl font-black text-white tracking-tighter leading-none">Register <span class="text-[#00e5ff]">New Node</span></h2>
+                <p class="text-slate-400 text-xs mt-3 uppercase tracking-widest font-bold">Synchronize Hospital with the Grid</p>
+            </div>
+
+            <form action="/register" method="POST" class="space-y-5">
+                <div class="grid grid-cols-1 gap-5">
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-[#00e5ff] mb-2 ml-1 font-black">Facility Name</label>
+                        <input type="text" name="name" class="w-full bg-black/40 border border-white/10 text-white rounded-2xl px-5 py-3.5 focus:border-[#00e5ff] focus:ring-1 focus:ring-[#00e5ff] outline-none text-sm" required placeholder="e.g. Metro General">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-[#00e5ff] mb-2 ml-1 font-black">Contact Email</label>
+                        <input type="email" name="email" class="w-full bg-black/40 border border-white/10 text-white rounded-2xl px-5 py-3.5 focus:border-[#00e5ff] focus:ring-1 focus:ring-[#00e5ff] outline-none text-sm" required placeholder="admin@facility.com">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest text-[#00e5ff] mb-2 ml-1 font-black">Base Location</label>
+                            <input type="text" name="city" class="w-full bg-black/40 border border-white/10 text-white rounded-2xl px-5 py-3.5 focus:border-[#00e5ff] focus:ring-1 focus:ring-[#00e5ff] outline-none text-sm" required placeholder="e.g. Mumbai">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest text-[#00e5ff] mb-2 ml-1 font-black">Access Key</label>
+                            <input type="password" name="password" class="w-full bg-black/40 border border-white/10 text-white rounded-2xl px-5 py-3.5 focus:border-[#00e5ff] focus:ring-1 focus:ring-[#00e5ff] outline-none text-sm" required placeholder="••••••••">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-4 rounded-full bg-[#00e5ff] text-[#00626e] font-headline font-bold uppercase tracking-widest text-xs shadow-[0_0_30px_rgba(0,229,255,0.3)] hover:scale-[1.02] hover:bg-white transition-all mt-6">
+                    Initialize Sync
+                </button>
+            </form>
+
+            <div class="mt-10 text-center border-t border-white/5 pt-8">
+                <p class="text-slate-400 text-xs">
+                    Already part of the grid? <a href="/login" class="text-[#00e5ff] hover:text-white font-bold ml-1 transition-colors">Access Portal</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

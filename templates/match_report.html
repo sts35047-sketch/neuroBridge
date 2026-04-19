@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Medical Match Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #525659; } /* Dark background for preview */
+        .paper {
+            background: white;
+            width: 210mm; /* A4 Width */
+            min-height: 297mm; /* A4 Height */
+            margin: 30px auto;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        .header-line { border-bottom: 3px solid #00796B; margin-bottom: 20px; }
+        .watermark {
+            position: absolute;
+            top: 40%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 100px;
+            color: rgba(0,0,0,0.05);
+            font-weight: bold;
+            z-index: 0;
+            pointer-events: none;
+        }
+        @media print {
+            body { background: white; margin: 0; }
+            .paper { box-shadow: none; margin: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Print Button (Hidden when printing) -->
+    <div class="text-center no-print mb-3 mt-3">
+        <button onclick="window.print()" class="btn btn-primary btn-lg shadow">🖨️ Print / Save as PDF</button>
+        <a href="/matches" class="btn btn-secondary btn-lg shadow">Back</a>
+    </div>
+
+    <!-- The Report Paper -->
+    <div class="paper">
+        <div class="watermark">CONFIDENTIAL</div>
+
+        <!-- Header -->
+        <div class="row align-items-end header-line pb-3">
+            <div class="col-8">
+                <h1 class="text-success fw-bold mb-0">NeuroBridge</h1>
+                <small class="text-muted">Medical Organ Allocation System</small>
+            </div>
+            <div class="col-4 text-end">
+                <h5 class="mb-0">MATCH REPORT</h5>
+                <small>Ref: NB-{{ donor.id }}-{{ recipient.id }}</small>
+            </div>
+        </div>
+
+        <!-- Meta Data -->
+        <div class="row mb-5">
+            <div class="col-6">
+                <strong>Generating Hospital:</strong><br>
+                {{ hospital_name }}<br>
+                <small class="text-muted">Authorized Personnel Only</small>
+            </div>
+            <div class="col-6 text-end">
+                <strong>Date Generated:</strong><br>
+                {{ date }}
+            </div>
+        </div>
+
+        <!-- Match Score Big -->
+        <div class="alert alert-light border text-center mb-5">
+            <h4 class="text-muted mb-0">COMPATIBILITY SCORE</h4>
+            <h1 class="display-3 fw-bold text-success">{{ score }}%</h1>
+            {% if score >= 90 %}
+                <span class="badge bg-success">EXCELLENT MATCH</span>
+            {% elif score >= 70 %}
+                <span class="badge bg-warning text-dark">GOOD MATCH</span>
+            {% else %}
+                <span class="badge bg-secondary">MODERATE MATCH</span>
+            {% endif %}
+        </div>
+
+        <!-- Comparison Table -->
+        <h5 class="text-uppercase fw-bold text-secondary border-bottom pb-2">Medical Comparison</h5>
+        <table class="table table-bordered mt-3">
+            <thead class="table-light">
+                <tr>
+                    <th width="30%">Parameter</th>
+                    <th width="35%" class="text-success">Donor</th>
+                    <th width="35%" class="text-primary">Recipient</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Full Name</strong></td>
+                    <td class="fw-bold">{{ donor.name }}</td>
+                    <td class="fw-bold">{{ recipient.name }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Blood Group</strong></td>
+                    <td>{{ donor.blood_group }}</td>
+                    <td>{{ recipient.blood_group }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Organ</strong></td>
+                    <td>{{ donor.organ }}</td>
+                    <td>{{ recipient.organ }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Age</strong></td>
+                    <td>{{ donor.age }} Years</td>
+                    <td>{{ recipient.age }} Years</td>
+                </tr>
+                <tr>
+                    <td><strong>Location</strong></td>
+                    <td>{{ donor.city }}</td>
+                    <td>{{ recipient.city }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Contact</strong></td>
+                    <td>{{ donor.phone }}</td>
+                    <td>{{ recipient.phone }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Signature Section -->
+        <div class="row mt-5 pt-5">
+            <div class="col-6">
+                <div class="border-top border-dark pt-2 w-75">
+                    <strong>Chief Surgeon Signature</strong>
+                </div>
+            </div>
+            <div class="col-6 text-end">
+                <div class="border-top border-dark pt-2 w-75 ms-auto">
+                    <strong>Transplant Coordinator</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="position-absolute bottom-0 start-0 w-100 text-center pb-4 text-muted small">
+            This is a computer-generated document. NeuroBridge assists in matching but final medical decisions rest with the transplant team.
+        </div>
+    </div>
+
+</body>
+</html>

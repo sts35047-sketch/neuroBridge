@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>NeuroBridge | Operational Manual</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <style>
+        body { background-color: #180f23; background-image: radial-gradient(at 0% 0%, rgba(0, 229, 255, 0.1) 0px, transparent 60%); min-height: 100vh; color: #ecddf9; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .bionic-glass { background: rgba(24, 15, 35, 0.4); backdrop-filter: blur(24px); border: 1px solid rgba(0, 229, 255, 0.2); }
+        .font-headline { font-family: 'Space Grotesk', sans-serif; }
+    </style>
+</head>
+<body class="pb-12">
+
+<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-5 md:px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-4 md:mt-6 mx-auto w-[95%] max-w-7xl border border-cyan-500/20 shadow-[0_0_40px_rgba(0,229,255,0.15)]">
+    <div class="flex items-center gap-2 md:gap-3">
+        <span class="text-xl md:text-2xl font-black text-[#00E5FF] tracking-[-0.05em] font-headline">NeuroBridge</span>
+    </div>
+    <a href="/dashboard" class="px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold uppercase rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20">Exit Manual</a>
+</header>
+
+<main class="pt-28 md:pt-32 px-4 md:px-8 max-w-6xl mx-auto flex flex-col md:flex-row gap-8">
+    
+    <!-- Sidebar Index -->
+    <div class="w-full md:w-64 shrink-0">
+        <div class="bionic-glass rounded-3xl p-4 sticky top-32 border border-white/10 shadow-lg">
+            <h4 class="font-headline font-bold uppercase tracking-widest text-[#00e5ff] text-xs mb-4 px-2 border-b border-white/10 pb-2">Data Index</h4>
+            <nav class="flex flex-col gap-1">
+                <a href="#intro" class="text-sm font-bold text-white bg-white/10 rounded-xl px-4 py-2 hover:bg-[#00e5ff] hover:text-[#00626e] transition-colors">1. Initial Protocol</a>
+                <a href="#donors" class="text-sm font-bold text-slate-400 rounded-xl px-4 py-2 hover:bg-white/10 hover:text-white transition-colors">2. Donor Intake</a>
+                <a href="#engine" class="text-sm font-bold text-slate-400 rounded-xl px-4 py-2 hover:bg-white/10 hover:text-white transition-colors">3. Match Engine</a>
+                <a href="#logistics" class="text-sm font-bold text-slate-400 rounded-xl px-4 py-2 hover:bg-white/10 hover:text-white transition-colors">4. Logistics Hub</a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Manual Content -->
+    <div class="flex-1 bionic-glass rounded-[2rem] p-6 md:p-10 border border-white/10 shadow-lg">
+        <h1 class="font-headline text-3xl md:text-4xl font-black text-white tracking-tighter mb-8 border-b border-white/10 pb-6">Operational <span class="text-[#00e5ff]">Manual v4.0</span></h1>
+
+        <section id="intro" class="mb-12">
+            <h3 class="font-headline text-2xl font-bold text-[#00e5ff] mb-4 flex items-center gap-2"><span class="material-symbols-outlined">api</span> Initial Protocol</h3>
+            <p class="text-slate-300 leading-relaxed mb-4 text-sm md:text-base">NeuroBridge is a decentralized, neural-net driven platform designed to map supply and demand metrics across global medical grids. By interfacing your local hospital node with our architecture, you achieve sub-second biometric matching.</p>
+        </section>
+
+        <section id="donors" class="mb-12">
+            <h3 class="font-headline text-2xl font-bold text-[#00e5ff] mb-4 flex items-center gap-2"><span class="material-symbols-outlined">person_add</span> Donor Intake</h3>
+            <ul class="space-y-4 text-slate-300 text-sm md:text-base">
+                <li class="flex items-start gap-3"><span class="text-[#00e5ff] mt-1">●</span> <strong>PIN Location:</strong> Entering a 6-digit PIN triggers a satellite GPS lookup to auto-fill hospital localization data.</li>
+                <li class="flex items-start gap-3"><span class="text-[#00e5ff] mt-1">●</span> <strong>Viability Clock:</strong> Once a donor is registered, the Organ Viability module begins tracking biological deterioration limits automatically (e.g. Heart: 4 hrs, Kidney: 24 hrs).</li>
+            </ul>
+        </section>
+
+        <section id="engine" class="mb-12">
+            <h3 class="font-headline text-2xl font-bold text-[#00e5ff] mb-4 flex items-center gap-2"><span class="material-symbols-outlined">join_inner</span> The Match Engine</h3>
+            <div class="bg-red-500/10 border border-red-500/30 p-4 rounded-xl mb-4">
+                <p class="text-red-400 text-xs font-bold uppercase tracking-widest">Warning: Automated Overrides Active</p>
+                <p class="text-sm mt-1 text-slate-300">The Neural Match Engine prioritizes "Critical" urgency waitlist subjects natively. Blood group matrix logic (Universal Donor rules) applies automatically.</p>
+            </div>
+            <p class="text-slate-300 text-sm md:text-base">Executing the Match Engine cross-references all active donors on the local node with global recipient requests. Generating a "Protocol Report" finalizes the match lock.</p>
+        </section>
+
+        <section id="logistics">
+            <h3 class="font-headline text-2xl font-bold text-[#00e5ff] mb-4 flex items-center gap-2"><span class="material-symbols-outlined">lan</span> Transport Logistics</h3>
+            <p class="text-slate-300 leading-relaxed text-sm md:text-base">Upon successful Match Engine verification, payloads are handed over to the Logistics Hub. You may assign Ground Ambulances, Aerial Drones, or Airlifts. Progress bars track ETA algorithms dynamically.</p>
+        </section>
+
+    </div>
+</main>
+</body>
+</html>

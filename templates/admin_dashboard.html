@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Central Command | NeuroBridge Bionic</title>
+    
+    <!-- Tailwind & Fonts -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "admin-primary": "#8B5CF6", // Purple theme for Admin
+                        "admin-accent": "#00e5ff",
+                        "surface-dark": "#0d0a14",
+                    },
+                    fontFamily: {
+                        headline: ["Space Grotesk"],
+                        body: ["Inter"],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0d0a14;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(0, 229, 255, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(13, 10, 20, 1) 0px, transparent 80%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #ecddf9;
+        }
+        
+        .bionic-glass {
+            background: rgba(13, 10, 20, 0.6);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+        
+        .admin-border {
+            border: 1px solid transparent;
+            background: linear-gradient(rgba(13, 10, 20, 0.8), rgba(13, 10, 20, 0.8)) padding-box,
+                        linear-gradient(45deg, #8B5CF6, #00E5FF, #2f263b) border-box;
+        }
+
+        .floating { animation: float 6s ease-in-out infinite; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 10px; }
+    </style>
+</head>
+<body class="font-body text-slate-200">
+
+<!-- Central Command Header -->
+<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-5 md:px-8 py-3 bg-[#0d0a14]/60 backdrop-blur-[24px] rounded-full mt-4 md:mt-6 mx-auto w-[95%] max-w-7xl border border-purple-500/20 shadow-[0_0_40px_rgba(139,92,246,0.15)]">
+    <div class="flex items-center gap-3">
+        <!-- Main Website Logo -->
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="NeuroBridge" class="h-8 md:h-10 w-auto">
+        <span class="hidden sm:inline text-xl font-black text-white tracking-[-0.05em] font-headline uppercase">Command <span class="text-purple-400">Center</span></span>
+    </div>
+    
+    <div class="flex items-center gap-4">
+        <div class="hidden md:flex gap-6 font-headline text-[10px] uppercase tracking-widest font-bold">
+            <a href="/admin/dashboard" class="text-purple-400 border-b border-purple-400 pb-1">System Overview</a>
+            <a href="/admin/hospitals" class="text-slate-400 hover:text-white transition-colors">Hospital Nodes</a>
+            <a href="/admin/matches" class="text-slate-400 hover:text-white transition-colors">Global Matches</a>
+        </div>
+        <div class="h-8 w-px bg-white/10 hidden md:block"></div>
+        <a href="/logout" class="px-4 py-2 text-[10px] font-bold uppercase rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all border border-red-500/30">Shutdown</a>
+    </div>
+</header>
+
+<!-- Main Command Canvas -->
+<main class="pt-32 px-4 md:px-8 max-w-7xl mx-auto pb-20">
+    
+    <!-- Hero Stats Row -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
+        <div class="bionic-glass rounded-[2rem] p-6 border-l-4 border-purple-500 shadow-lg">
+            <p class="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-black mb-1">Total Hospital Nodes</p>
+            <h2 class="text-3xl font-headline font-black text-white">{{ hospitals|length }}</h2>
+        </div>
+        <div class="bionic-glass rounded-[2rem] p-6 border-l-4 border-cyan-400 shadow-lg">
+            <p class="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-black mb-1">Total Neural Donors</p>
+            <h2 class="text-3xl font-headline font-black text-white">{{ total_donors }}</h2>
+        </div>
+        <div class="bionic-glass rounded-[2rem] p-6 border-l-4 border-blue-500 shadow-lg">
+            <p class="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-black mb-1">Waitlist Recipients</p>
+            <h2 class="text-3xl font-headline font-black text-white">{{ total_recipients }}</h2>
+        </div>
+        <div class="bionic-glass rounded-[2rem] p-6 border-l-4 border-green-500 shadow-lg">
+            <p class="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-black mb-1">Verified Matches</p>
+            <h2 class="text-3xl font-headline font-black text-white">{{ total_matches }}</h2>
+        </div>
+    </div>
+
+    <!-- Active Grid Management -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        
+        <!-- Hospital Management List -->
+        <div class="xl:col-span-2">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-headline text-2xl font-black uppercase tracking-tighter text-white">Active Grid <span class="text-purple-400">Nodes</span></h3>
+                <span class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Live Telemetry</span>
+            </div>
+            
+            <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                {% for h in hospitals %}
+                <div class="group flex items-center justify-between p-5 admin-border rounded-[2rem] hover:bg-purple-500/5 transition-all">
+                    <div class="flex items-center gap-5">
+                        <div class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center font-headline font-black text-purple-400 text-xl shadow-[0_0_15px_rgba(139,92,246,0.2)]">
+                            {{ h.name[0] }}
+                        </div>
+                        <div>
+                            <h4 class="font-headline font-bold text-lg text-white">{{ h.name }}</h4>
+                            <p class="text-[10px] uppercase tracking-widest text-slate-500">Node ID: NB-{{ h.id }} • {{ h.city }}, {{ h.state }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="hidden sm:flex flex-col text-right mr-4">
+                            <span class="text-[9px] uppercase tracking-widest text-slate-500">Node Status</span>
+                            <span class="text-[10px] font-bold text-green-400 uppercase">Synchronized</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <a href="/admin/edit_hospital/{{ h.id }}" class="p-2.5 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-purple-500/20 transition-all"><span class="material-symbols-outlined text-lg">edit</span></a>
+                            <a href="/admin/delete_hospital/{{ h.id }}" onclick="return confirm('Decommission this hospital node?')" class="p-2.5 rounded-full bg-white/5 border border-white/10 text-slate-400 hover:text-red-400 hover:bg-red-500/20 transition-all"><span class="material-symbols-outlined text-lg">delete_forever</span></a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- System Alerts / Notifications Sidebar -->
+        <div class="space-y-6">
+            <div class="bionic-glass rounded-[2.5rem] p-8 border border-purple-500/20 shadow-xl">
+                <h3 class="font-headline text-lg font-bold uppercase tracking-widest text-purple-400 mb-6 border-b border-white/10 pb-4">Broadcast Alert</h3>
+                <form action="/admin/send_notification" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-[9px] uppercase tracking-widest text-slate-500 mb-2 font-black">Target Message</label>
+                        <textarea name="message" rows="4" class="w-full bg-black/40 border border-white/10 text-white rounded-2xl px-4 py-3 focus:border-purple-500 focus:ring-0 text-sm outline-none" placeholder="Enter emergency system broadcast..." required></textarea>
+                    </div>
+                    <button type="submit" class="w-full py-3.5 rounded-full bg-purple-600 text-white font-headline font-bold uppercase tracking-widest text-xs shadow-lg hover:bg-purple-500 transition-all">
+                        Transmit Pulse
+                    </button>
+                </form>
+            </div>
+
+            <div class="bionic-glass rounded-[2.5rem] p-8 border border-cyan-500/20">
+                <h3 class="font-headline text-lg font-bold uppercase tracking-widest text-cyan-400 mb-4">Command AI</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">System integrity is nominal. No anomalies detected in global synapse matching protocols. 4 shipments currently in transit vector.</p>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- NEUROBOT AI ASSISTANT -->
+<div class="fixed bottom-8 right-8 z-50">
+    <button onclick="toggleBot()" class="group relative w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 p-0.5 shadow-[0_0_40px_rgba(139,92,246,0.4)] hover:scale-110 transition-all cursor-pointer overflow-hidden">
+        <!-- Chatbot specific logo -->
+        <div class="w-full h-full rounded-full overflow-hidden bg-[#0d0a14] flex items-center justify-center p-2">
+            <img src="{{ url_for('static', filename='neurobot.png') }}" alt="NeuroBot" class="w-full h-full object-contain">
+        </div>
+        <div class="absolute inset-0 rounded-full border-2 border-white/20 group-hover:border-white/50 transition-colors"></div>
+    </button>
+</div>
+
+<!-- AI Chat Interface -->
+<div id="botWindow" class="fixed bottom-32 right-8 w-80 h-[450px] bionic-glass admin-border rounded-[2.5rem] z-50 flex-col overflow-hidden hidden shadow-2xl animate-fade-in">
+    <div class="bg-gradient-to-r from-purple-700 to-blue-700 p-5 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full overflow-hidden border border-white/30 bg-black">
+                <img src="{{ url_for('static', filename='neurobot.png') }}" alt="Bot" class="w-full h-full object-contain">
+            </div>
+            <span class="font-headline font-bold text-xs tracking-widest text-white uppercase">NeuroBot Core</span>
+        </div>
+        <button onclick="toggleBot()" class="text-white/70 hover:text-white transition-colors"><span class="material-symbols-outlined text-lg">close</span></button>
+    </div>
+    
+    <div id="botBody" class="flex-1 p-5 overflow-y-auto space-y-4 text-xs">
+        <div class="bg-purple-500/10 border border-purple-500/20 text-purple-200 p-4 rounded-2xl rounded-tl-sm leading-relaxed">
+            Welcome to Central Command, Administrator. I am NeuroBot. I can help you monitor grid activity, decommission nodes, or broadcast alerts. What is your query?
+        </div>
+    </div>
+    
+    <div class="p-4 bg-black/40 border-t border-white/5 flex gap-2">
+        <input type="text" id="botInput" class="flex-1 bg-white/5 border border-white/10 text-white rounded-full px-4 py-3 text-xs focus:border-purple-500 focus:ring-0 outline-none" placeholder="Transmit query..." onkeypress="if(event.key==='Enter') queryBot()">
+        <button onclick="queryBot()" class="w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center hover:bg-purple-500 transition-colors shadow-lg">
+            <span class="material-symbols-outlined text-sm">send</span>
+        </button>
+    </div>
+</div>
+
+<script>
+    function toggleBot() {
+        const window = document.getElementById('botWindow');
+        if (window.classList.contains('hidden')) {
+            window.classList.remove('hidden');
+            window.classList.add('flex');
+        } else {
+            window.classList.add('hidden');
+            window.classList.remove('flex');
+        }
+    }
+
+    function queryBot() {
+        const input = document.getElementById('botInput');
+        const msg = input.value;
+        if (!msg) return;
+
+        const body = document.getElementById('botBody');
+        body.innerHTML += `<div class="bg-white/5 border border-white/10 text-white p-4 rounded-2xl rounded-tr-sm self-end max-w-[85%] ml-auto">${msg}</div>`;
+        input.value = "";
+        body.scrollTop = body.scrollHeight;
+
+        fetch('/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message: msg})
+        })
+        .then(r => r.json())
+        .then(d => {
+            setTimeout(() => {
+                body.innerHTML += `<div class="bg-purple-500/10 border border-purple-500/20 text-purple-200 p-4 rounded-2xl rounded-tl-sm self-start max-w-[85%] leading-relaxed">${d.response}</div>`;
+                body.scrollTop = body.scrollHeight;
+            }, 500);
+        });
+    }
+</script>
+
+</body>
+</html>

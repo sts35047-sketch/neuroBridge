@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Logistics Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
+        .shipment-card { border: none; border-radius: 15px; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s; }
+        .shipment-card:hover { transform: translateY(-3px); }
+        .mode-icon { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark"><i class="fas fa-truck-medical me-2"></i> Logistics Hub</h2>
+            <p class="text-muted">Track organ transport and emergency dispatch.</p>
+        </div>
+        <div>
+            <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#newShipmentModal">+ New Dispatch</button>
+            <a href="/dashboard" class="btn btn-secondary rounded-pill px-4 ms-2">Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Active Shipments -->
+    <h5 class="text-secondary fw-bold mb-3">🚚 In Transit</h5>
+    <div class="row g-4 mb-5">
+        {% for item in active %}
+        <div class="col-md-6">
+            <div class="card shipment-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center">
+                        <div class="mode-icon bg-warning bg-opacity-10 text-warning me-3">
+                            <i class="fas {% if item.mode == 'Drone' %}fa-helicopter{% elif item.mode == 'Ambulance' %}fa-ambulance{% else %}fa-plane{% endif %}"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">{{ item.organ }}</h5>
+                            <small class="text-muted">To: {{ item.destination }}</small>
+                        </div>
+                    </div>
+                    <span class="badge bg-warning text-dark px-3 py-2">IN TRANSIT</span>
+                </div>
+                
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" style="width: {{ item.progress }}%"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-2 small fw-bold text-secondary">
+                    <span>Dep: {{ item.start_time }}</span>
+                    <span>ETA: {{ item.arrival_time }}</span>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-4 text-muted border rounded bg-white">
+            No active shipments.
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- History -->
+    <h5 class="text-secondary fw-bold mb-3">📦 Delivery History</h5>
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light"><tr><th>ID</th><th>Organ</th><th>Destination</th><th>Mode</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for item in history %}
+                    <tr>
+                        <td>#LOG-{{ item.id }}</td>
+                        <td class="fw-bold">{{ item.organ }}</td>
+                        <td>{{ item.destination }}</td>
+                        <td>{{ item.mode }}</td>
+                        <td><span class="badge bg-success">DELIVERED</span></td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center py-4 text-muted">No history found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="newShipmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title">New Dispatch Request</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/create_shipment" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Organ Type</label>
+                        <select name="organ" class="form-select">
+                            <option>Kidney</option><option>Heart</option><option>Liver</option><option>Lungs</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Destination Hospital</label>
+                        <input type="text" name="destination" class="form-control" required placeholder="e.g. City Hospital, Mumbai">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Transport Mode</label>
+                        <select name="mode" class="form-select">
+                            <option value="Ambulance">🚑 Ambulance (Standard)</option>
+                            <option value="Drone">🚁 Drone (Fast / Local)</option>
+                            <option value="Airlift">✈️ Airlift (Long Distance)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Dispatch</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
