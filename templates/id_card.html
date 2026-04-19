@@ -5,39 +5,94 @@
     <title>NeuroBridge Digital ID</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #333; display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; }
-        .id-card {
-            width: 400px;
-            height: 250px;
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            position: relative;
+        body { 
+            background: #180f23; /* Matching the dark theme from other pages */
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            flex-direction: column; 
+            font-family: 'Inter', sans-serif;
         }
-        .id-header { padding: 15px; color: white; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Modern Glassmorphic ID Card */
+        .id-card {
+            width: 420px;
+            height: 260px;
+            background: rgba(24,15,35,0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0,229,255,0.3);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6), 0 0 20px rgba(0,229,255,0.1);
+            position: relative;
+            color: white;
+        }
+
+        /* Top Header Bar */
+        .id-header { 
+            padding: 15px 20px; 
+            color: white; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: linear-gradient(135deg, #10b981, #064e3b);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
         .avatar {
-            width: 80px; height: 80px;
-            background: #f0f0f0;
+            width: 85px; height: 85px;
+            background: rgba(0,229,255,0.1);
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 30px; border: 3px solid white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 35px; 
+            border: 3px solid #10b981;
+            box-shadow: 0 0 15px rgba(0,229,255,0.3);
+            color: #10b981;
+            text-transform: uppercase;
         }
+
         .qr-box {
             width: 80px; height: 80px;
             background: white;
             display: flex; align-items: center; justify-content: center;
+            border-radius: 8px;
+            padding: 5px;
         }
+
         .watermark {
-            position: absolute; bottom: -20px; right: -20px;
-            font-size: 100px; opacity: 0.05; font-weight: bold; pointer-events: none;
+            position: absolute; bottom: -30px; right: -20px;
+            font-size: 120px; opacity: 0.03; font-weight: 900; pointer-events: none;
+            color: white;
+            letter-spacing: -5px;
         }
-        .btn-print { margin-top: 20px; }
+
+        /* Print and Action Buttons */
+        .btn-print { margin-top: 25px; transition: all 0.3s; }
+        .btn-print:hover { transform: translateY(-2px); }
+        .btn-glow {
+            background: #10b981;
+            color: #064e3b;
+            box-shadow: 0 0 15px rgba(0,229,255,0.4);
+            border: none;
+        }
+        .btn-glow:hover {
+            background: #00c3db;
+            color: #004d56;
+        }
+
         @media print {
-            body { background: white; }
-            .btn-print { display: none; }
-            .id-card { border: 1px solid #ddd; box-shadow: none; }
+            body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .btn-print { display: none !important; }
+            .id-card { 
+                border: 2px solid #ddd; 
+                box-shadow: none; 
+                background: white; 
+                color: black; 
+                border-radius: 10px;
+            }
+            .id-header { background: #333 !important; -webkit-print-color-adjust: exact; }
+            .watermark { color: black; opacity: 0.05; }
         }
     </style>
 </head>
@@ -47,48 +102,63 @@
         <div class="watermark">NB</div>
         
         <!-- Header -->
-        <div class="id-header bg-{{ color }}">
-            <div>
-                <h5 class="mb-0 fw-bold">NeuroBridge</h5>
-                <small style="opacity: 0.8">{{ hospital_name }}</small>
+        <div class="id-header">
+            <div class="d-flex align-items-center gap-2">
+                <img src="{{ url_for('static', filename='logo.jpeg') }}" alt="Logo" style="width: 30px; height: 30px; border-radius: 6px; object-fit: cover;">
+                <div>
+                    <h5 class="mb-0 fw-bold tracking-wider" style="letter-spacing: 1px;">NeuroBridge</h5>
+                    <small style="opacity: 0.9; font-size: 0.75rem;">{{ hospital_name | default('Central Network') }}</small>
+                </div>
             </div>
-            <small class="fw-bold" style="letter-spacing: 1px;">{{ role }}</small>
+            <small class="fw-bold px-2 py-1 rounded" style="background: rgba(255,255,255,0.2); letter-spacing: 1px;">
+                {{ role | default('DONOR') }}
+            </small>
         </div>
 
-        <div class="p-3 d-flex align-items-center">
+        <div class="p-4 d-flex align-items-center">
             <!-- Avatar Placeholder -->
-            <div class="avatar text-{{ color }}">
-                {{ person.name[0] }}
+            <div class="avatar">
+                {{ person.name[0] if person and person.name else '?' }}
             </div>
 
-            <div class="ms-3 flex-grow-1">
-                <h4 class="mb-0 fw-bold text-dark">{{ person.name }}</h4>
-                <div class="d-flex align-items-center mt-1">
-                    <span class="badge bg-{{ color }} me-2">{{ person.blood_group }}</span>
-                    <span class="text-secondary small">{{ person.age }} Years</span>
+            <div class="ms-4 flex-grow-1">
+                <h4 class="mb-0 fw-bold" style="color: #10b981;">{{ person.name | default('John Doe') }}</h4>
+                <div class="d-flex align-items-center mt-2">
+                    <span class="badge" style="background: #10b981; color: #064e3b; font-size: 0.85rem;">{{ person.blood_group | default('O+') }}</span>
+                    <span class="ms-2" style="color: #aaa; font-size: 0.85rem;">{{ person.age | default('35') }} Years</span>
                 </div>
-                <div class="text-muted small mt-1">Organ: <strong>{{ person.organ }}</strong></div>
+                <div class="mt-2" style="color: #ccc; font-size: 0.85rem;">
+                    Organ: <strong class="text-white">{{ person.organ | default('Kidney') }}</strong>
+                </div>
             </div>
 
             <!-- REAL QR Code (Generated via API) -->
             <div class="qr-box">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ qr_data }}" alt="QR Code" width="75" height="75">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ qr_data | default('NB-DEMO-123') }}" alt="QR Code" style="width: 100%; height: 100%;">
             </div>
         </div>
 
-        <div class="px-3 pb-3 d-flex justify-content-between align-items-end">
-            <div class="small text-muted">
-                ID: <strong>NB-{{ person.id }}</strong><br>
-                Issued: {{ date }}
+        <div class="px-4 pb-3 d-flex justify-content-between align-items-end position-absolute bottom-0 w-100">
+            <div style="font-size: 0.75rem; color: #aaa;">
+                ID: <strong class="text-white">NB-{{ person.id | default('88349') }}</strong><br>
+                Issued: {{ date | default('2026-04-19') }}
             </div>
-            <div class="small text-{{ color }} fw-bold">
+            <div class="fw-bold" style="font-size: 0.8rem; color: #10b981; letter-spacing: 2px;">
                 AUTHORIZED
             </div>
         </div>
     </div>
 
-    <button onclick="window.print()" class="btn btn-light btn-print rounded-pill px-4 fw-bold">🖨️ Print Card</button>
-    <a href="/dashboard" class="btn btn-link text-white btn-print mt-2">Back to Dashboard</a>
+    <!-- Actions -->
+    <div class="d-flex flex-column align-items-center mt-4">
+        <button onclick="window.print()" class="btn btn-glow btn-print rounded-pill px-5 py-2 fw-bold d-flex align-items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Print ID Card
+        </button>
+        <a href="/dashboard" class="btn btn-link text-secondary text-decoration-none btn-print mt-2" style="font-size: 0.9rem;">
+            ← Back to Dashboard
+        </a>
+    </div>
 
 </body>
 </html>

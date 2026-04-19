@@ -7,17 +7,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
     <style>
-        body { background-color: #180f23; background-image: radial-gradient(at 0% 100%, rgba(0, 229, 255, 0.1) 0px, transparent 60%); min-height: 100vh; color: #ecddf9; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .bionic-glass { background: rgba(24, 15, 35, 0.4); backdrop-filter: blur(24px); border: 1px solid rgba(0, 229, 255, 0.2); }
-        .holographic-border { border: 1px solid transparent; background: linear-gradient(rgba(24, 15, 35, 0.4), rgba(24, 15, 35, 0.4)) padding-box, linear-gradient(45deg, #00E5FF, #c3f5ff, #3f354b) border-box; }
+        body { background-color: #180f23; background-image: radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 60%); min-height: 100vh; color: #ecddf9; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .bionic-glass { background: rgba(24, 15, 35, 0.4); backdrop-filter: blur(24px); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .holographic-border { border: 1px solid transparent; background: linear-gradient(rgba(24, 15, 35, 0.4), rgba(24, 15, 35, 0.4)) padding-box, linear-gradient(45deg, #10b981, #6ee7b7, #3f354b) border-box; }
         .font-headline { font-family: 'Space Grotesk', sans-serif; }
     </style>
 </head>
 <body class="pb-12 flex items-center justify-center">
 
-<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-5 md:px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-4 md:mt-6 mx-auto w-[95%] max-w-7xl border border-cyan-500/20 shadow-[0_0_40px_rgba(0,229,255,0.15)]">
+<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-5 md:px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-4 md:mt-6 mx-auto w-[95%] max-w-7xl border border-green-600/20 shadow-[0_0_40px_rgba(0,229,255,0.15)]">
     <div class="flex items-center gap-2 md:gap-3">
-        <span class="text-xl md:text-2xl font-black text-[#00E5FF] tracking-[-0.05em] font-headline">NeuroBridge</span>
+        <span class="text-xl md:text-2xl font-black text-[#10b981] tracking-[-0.05em] font-headline">NeuroBridge</span>
     </div>
     <a href="/dashboard" class="px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold uppercase rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20">Back to Core</a>
 </header>
@@ -25,7 +25,7 @@
 <div class="w-full max-w-xl px-4 mt-32">
     <div class="bionic-glass holographic-border rounded-[2rem] p-8 md:p-10 shadow-2xl">
         <div class="text-center mb-8">
-            <h2 class="font-headline text-3xl font-black text-white tracking-tighter">Node <span class="text-[#00e5ff]">Configuration</span></h2>
+            <h2 class="font-headline text-3xl font-black text-white tracking-tighter">Node <span class="text-[#10b981]">Configuration</span></h2>
             <p class="text-slate-400 text-sm mt-2">Update core facility parameters.</p>
         </div>
 
@@ -39,23 +39,23 @@
 
         <form action="/settings" method="POST" class="space-y-5">
             <div>
-                <label class="block text-[10px] uppercase tracking-widest text-[#00e5ff] mb-2">Hospital Identifier (Name)</label>
-                <input type="text" name="name" value="{{ hospital.name }}" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:border-[#00e5ff] focus:outline-none transition-all" required>
+                <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-2">Hospital Identifier (Name)</label>
+                <input type="text" name="name" value="{{ hospital.name }}" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:border-[#10b981] focus:outline-none transition-all" required>
             </div>
             <div>
-                <label class="block text-[10px] uppercase tracking-widest text-[#00e5ff] mb-2">Grid Comms (Email)</label>
+                <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-2">Grid Comms (Email)</label>
                 <input type="email" name="email" value="{{ hospital.email }}" class="w-full bg-white/5 border border-white/10 text-slate-400 rounded-xl px-4 py-3 cursor-not-allowed" readonly>
             </div>
             <div>
-                <label class="block text-[10px] uppercase tracking-widest text-[#00e5ff] mb-2">New Access Key (Password)</label>
-                <input type="password" name="password" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:border-[#00e5ff] focus:outline-none transition-all" placeholder="Leave blank to keep current">
+                <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-2">New Access Key (Password)</label>
+                <input type="password" name="password" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:border-[#10b981] focus:outline-none transition-all" placeholder="Leave blank to keep current">
             </div>
             <div>
-                <label class="block text-[10px] uppercase tracking-widest text-[#00e5ff] mb-2">Base Location (City)</label>
-                <input type="text" name="city" value="{{ hospital.city }}" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:border-[#00e5ff] focus:outline-none transition-all" required>
+                <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-2">Base Location (City)</label>
+                <input type="text" name="city" value="{{ hospital.city }}" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:border-[#10b981] focus:outline-none transition-all" required>
             </div>
             
-            <button type="submit" class="w-full py-4 mt-6 rounded-full bg-[#00e5ff] text-[#00626e] font-headline font-bold uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:scale-[1.02] hover:bg-white transition-all">
+            <button type="submit" class="w-full py-4 mt-6 rounded-full bg-[#10b981] text-[#064e3b] font-headline font-bold uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:scale-[1.02] hover:bg-white transition-all">
                 Commit Changes
             </button>
         </form>

@@ -37,10 +37,17 @@ def view_analytics():
     o_labels = [x[0] for x in organ_stats]
     o_values = [x[1] for x in organ_stats]
 
+    # 5. Supply vs Demand Trend (Mock data for 6 months)
+    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+    supply = [total_donors] * 6  # Mock: show current donors for each month
+    demand = [total_recipients] * 6  # Mock: show current recipients for each month
+
     return render_template('analytics.html', 
                          total_d=total_donors, total_r=total_recipients,
                          bg_labels=all_groups, 
                          bg_d_values=list(d_data.values()), 
                          bg_r_values=list(r_data.values()),
                          u_labels=u_labels, u_values=u_values,
-                         o_labels=o_labels, o_values=o_values)
+                         o_labels=o_labels, o_values=o_values,
+                         months=months, supply=supply, demand=demand,
+                         b_labels=all_groups, b_values=list(d_data.values()))

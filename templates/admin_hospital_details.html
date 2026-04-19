@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroBridge - Hospital Details</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='theme.css') }}" rel="stylesheet"/>
+    
+    <style>
+        body {
+            background-color: #180f23;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(16,185,129,0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(195,245,255,0.1) 0px, transparent 50%);
+            color: #ecddf9;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        .glass-panel {
+            background: rgba(24,15,35,0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(16,185,129,0.2);
+        }
+    </style>
+</head>
+<body class="font-body text-slate-200">
+
+    <!-- TOP NAVBAR -->
+    <header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-4 bg-[#180f23]/60 backdrop-blur-[24px] border-b border-[#10b981]/20">
+        <div class="flex items-center gap-4">
+            <a href="/admin/dashboard" class="flex items-center gap-3">
+                <img src="{{ url_for('static', filename='logo.jpeg') }}" alt="Logo" class="h-10 w-10 rounded-lg object-cover border border-[#10b981]/40">
+                <h1 class="text-2xl font-black text-[#10b981] font-headline">NeuroBridge Admin</h1>
+            </a>
+        </div>
+        <nav class="flex items-center gap-6">
+            <a href="/admin/dashboard" class="text-slate-400 hover:text-white transition-colors">Dashboard</a>
+            <a href="/admin/logout" class="text-slate-400 hover:text-white transition-colors">Logout</a>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="pt-24 px-8 pb-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-3xl font-bold text-white">Hospital Details</h2>
+                <a href="/admin/dashboard" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                    Back to Dashboard
+                </a>
+            </div>
+            
+            <div class="glass-panel rounded-2xl p-8">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-slate-600">
+                                <th class="py-3 px-4 text-slate-300 font-semibold">ID</th>
+                                <th class="py-3 px-4 text-slate-300 font-semibold">Name</th>
+                                <th class="py-3 px-4 text-slate-300 font-semibold">Email</th>
+                                <th class="py-3 px-4 text-slate-300 font-semibold">Password</th>
+                                <th class="py-3 px-4 text-slate-300 font-semibold">City</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hospital in hospitals %}
+                            <tr class="border-b border-slate-700/50 hover:bg-slate-800/30">
+                                <td class="py-3 px-4 text-slate-400">{{ hospital.id }}</td>
+                                <td class="py-3 px-4 text-white font-medium">{{ hospital.name }}</td>
+                                <td class="py-3 px-4 text-slate-300">{{ hospital.email }}</td>
+                                <td class="py-3 px-4 text-yellow-400 font-mono">{{ hospital.password }}</td>
+                                <td class="py-3 px-4 text-slate-300">{{ hospital.city }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if not hospitals %}
+                <div class="text-center py-12">
+                    <p class="text-slate-400">No hospitals found in the system.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

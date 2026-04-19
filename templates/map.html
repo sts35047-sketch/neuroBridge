@@ -3,22 +3,28 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>NeuroBridge | Global Network Map</title>
+    <title>NeuroBridge | Grid Topography</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <style>
-        body { background-color: #180f23; background-image: radial-gradient(at 50% 50%, rgba(0, 229, 255, 0.1) 0px, transparent 80%); min-height: 100vh; color: #ecddf9; font-family: 'Inter', sans-serif; overflow: hidden; }
-        .bionic-glass { background: rgba(24, 15, 35, 0.4); backdrop-filter: blur(24px); border: 1px solid rgba(0, 229, 255, 0.2); }
+        body { background-color: #180f23; background-image: radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.1) 0px, transparent 80%); min-height: 100vh; color: #ecddf9; font-family: 'Inter', sans-serif; overflow: hidden; }
+        .bionic-glass { background: rgba(24, 15, 35, 0.4); backdrop-filter: blur(24px); border: 1px solid rgba(16, 185, 129, 0.2); }
         .font-headline { font-family: 'Space Grotesk', sans-serif; }
-        /* Style the folium map wrapper to fit perfectly */
-        .map-container iframe { width: 100%; height: 100%; border-radius: 1.5rem; filter: invert(90%) hue-rotate(180deg) brightness(80%) contrast(120%); }
+        .map-container { position: relative; width: 100%; height: 100%; border-radius: 1.5rem; overflow: hidden; }
+        #map { width: 100%; height: 100%; }
+        .leaflet-container { background-color: #1a1a2e; }
+        .leaflet-popup-content-wrapper { background-color: rgba(24, 15, 35, 0.95) !important; border: 1px solid rgba(16, 185, 129, 0.3) !important; border-radius: 0.5rem; }
+        .leaflet-popup-content { color: #ecddf9 !important; font-size: 12px; }
+        .leaflet-popup-close-button { color: #ecddf9 !important; }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
-<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-5 md:px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-4 md:mt-6 mx-auto w-[95%] max-w-7xl border border-cyan-500/20 shadow-[0_0_40px_rgba(0,229,255,0.15)]">
+<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-5 md:px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-4 md:mt-6 mx-auto w-[95%] max-w-7xl border border-green-600/20 shadow-[0_0_40px_rgba(0,229,255,0.15)]">
     <div class="flex items-center gap-2 md:gap-3">
-        <span class="text-xl md:text-2xl font-black text-[#00E5FF] tracking-[-0.05em] font-headline">NeuroBridge</span>
+        <span class="text-xl md:text-2xl font-black text-[#10b981] tracking-[-0.05em] font-headline">NeuroBridge</span>
     </div>
     <a href="/dashboard" class="px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold uppercase rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20">Back to Core</a>
 </header>
@@ -26,7 +32,7 @@
 <main class="flex-1 pt-28 pb-6 px-4 md:px-8 max-w-7xl mx-auto w-full flex flex-col">
     <div class="mb-4 flex justify-between items-end">
         <div>
-            <h1 class="font-headline text-3xl md:text-4xl font-black text-white tracking-tighter mb-1">Grid <span class="text-[#00e5ff]">Topography</span></h1>
+            <h1 class="font-headline text-3xl md:text-4xl font-black text-white tracking-tighter mb-1">Grid <span class="text-[#10b981]">Topography</span></h1>
             <p class="text-xs md:text-sm text-slate-400">Live geospatial tracking of network nodes and payloads.</p>
         </div>
         <div class="hidden md:flex gap-3">
@@ -36,10 +42,59 @@
     </div>
 
     <!-- Map Container -->
-    <div class="flex-1 bionic-glass border border-[#00e5ff]/30 rounded-[2rem] p-2 md:p-4 shadow-[0_0_30px_rgba(0,229,255,0.1)] map-container">
-        {{ map_html | safe }}
+    <div class="flex-1 bionic-glass border border-[#10b981]/30 rounded-[2rem] p-2 md:p-4 shadow-[0_0_30px_rgba(0,229,255,0.1)] map-container overflow-hidden">
+        <div id="map"></div>
     </div>
 </main>
+
+<script>
+// Initialize map
+const map = L.map('map').setView([20.5937, 78.9629], 5);
+
+// Add OpenStreetMap layer with dark styling
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; CartoDB',
+    maxZoom: 19
+}).addTo(map);
+
+// Fetch and display markers
+async function loadMarkers() {
+    try {
+        const response = await fetch('/api/map_data');
+        const markers = await response.json();
+        
+        markers.forEach(marker => {
+            const color = marker.type === 'donor' ? '#00ff00' : '#ff0000';
+            const label = marker.type === 'donor' ? 'Donor' : 'Recipient';
+            
+            let popupText = `<b>${label}</b><br>`;
+            popupText += `Name: ${marker.name}<br>`;
+            popupText += `Organ: ${marker.organ}<br>`;
+            popupText += `Blood: ${marker.blood}<br>`;
+            if (marker.urgency) {
+                popupText += `Urgency: ${marker.urgency}`;
+            }
+            
+            L.circleMarker([marker.lat, marker.lon], {
+                radius: 8,
+                fillColor: color,
+                color: color,
+                weight: 2,
+                opacity: 0.8,
+                fillOpacity: 0.7
+            }).bindPopup(popupText).addTo(map);
+        });
+    } catch (error) {
+        console.error('Error loading markers:', error);
+    }
+}
+
+// Load markers on page load
+loadMarkers();
+
+// Reload markers every 30 seconds
+setInterval(loadMarkers, 30000);
+</script>
 
 </body>
 </html>

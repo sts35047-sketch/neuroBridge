@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from models import db, Hospital, Donor, Recipient, Notification
+from models import db, Hospital, Donor, Recipient, Notification, ActivityLog
+from sqlalchemy import func
 
 admin_bp = Blueprint('admin_bp', __name__, url_prefix='/admin')
 
@@ -107,6 +108,95 @@ def notify_hospital(hospital_id, message):
     db.session.commit()
     
     return "Notification Sent!" # In a real app, use AJAX to avoid page reload
+
+@admin_bp.route('/manage')
+def manage():
+    if not session.get('is_admin'):
+        return redirect(url_for('admin_bp.login'))
+    
+    # System-wide statistics
+    hospitals = Hospital.query.all()
+    donors = Donor.query.all()
+    recipients = Recipient.query.all()
+    activity_logs = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(50).all()
+    
+    stats = {
+        'h_count': len(hospitals),
+        'd_count': len(donors),
+        'r_count': len(recipients),
+        'total_matches': len([d for d in donors if d.hospital_id]),  # Count active donors
+        'total_activity_logs': len(activity_logs)
+    }
+    
+    return render_template('admin_manage.html', 
+                         hospitals=hospitals, 
+                         donors=donors, 
+                         recipients=recipients,
+                         activity_logs=activity_logs,
+                         stats=stats)
+
+@admin_bp.route('/analytics')
+def admin_analytics():
+    if not session.get('is_admin'):
+        return redirect(url_for('admin_bp.login'))
+    
+    # Global analytics data
+    donors = Donor.query.all()
+    recipients = Recipient.query.all()
+    
+    # Blood group distribution for ALL donors
+    blood_counts = db.session.query(Donor.blood_group, func.count(Donor.id)).group_by(Donor.blood_group).all()
+    d_labels = [x[0] for x in blood_counts]
+    d_values = [x[1] for x in blood_counts]
+    
+    # Urgency matrix for ALL recipients
+    urgency_counts = db.session.query(Recipient.urgency, func.count(Recipient.id)).group_by(Recipient.urgency).all()
+    r_labels = [x[0] for x in urgency_counts]
+    r_values = [x[1] for x in urgency_counts]
+    
+    # Supply vs demand trend (last 6 months mock data)
+    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+    supply = [45, 52, 48, 61, 55, 58]
+    demand = [60, 65, 72, 68, 75, 82]
+    
+    return render_template('admin_analytics.html',
+                         d_labels=d_labels, d_values=d_values,
+                         r_labels=r_labels, r_values=r_values,
+                         months=months, supply=supply, demand=demand)
+
+@admin_bp.route('/logistics')
+def admin_logistics():
+    if not session.get('is_admin'):
+        return redirect(url_for('admin_bp.login'))
+    
+    # Global logistics view (all transports)
+    return render_template('admin_logistics.html')
+
+@admin_bp.route('/waitlist')
+def admin_waitlist():
+    if not session.get('is_admin'):
+        return redirect(url_for('admin_bp.login'))
+    
+    # Global waitlist (all recipients)
+    recipients = Recipient.query.order_by(Recipient.urgency.desc()).all()
+    
+    return render_template('admin_waitlist.html', recipients=recipients)
+
+@admin_bp.route('/hospital_details', methods=['GET', 'POST'])
+def hospital_details():
+    if not session.get('is_admin'):
+        return redirect(url_for('admin_bp.login'))
+    
+    if request.method == 'POST':
+        password = request.form.get('password')
+        if password == 'admin123':
+            hospitals = Hospital.query.all()
+            return render_template('admin_hospital_details.html', hospitals=hospitals)
+        else:
+            flash('Incorrect admin password. Access denied.')
+            return redirect(url_for('admin_bp.hospital_details'))
+    
+    return render_template('admin_hospital_details_form.html')
 
 @admin_bp.route('/logout')
 def logout():

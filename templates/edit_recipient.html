@@ -1,67 +1,120 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Edit Recipient</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>NeuroBridge | Edit Recipient</title>
+    
+    <!-- Tailwind & Fonts -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-container": "#10b981",
+                        "on-primary-container": "#064e3b",
+                    },
+                    fontFamily: {
+                        headline: ["Space Grotesk"],
+                        body: ["Inter"],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #180f23;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(195, 245, 255, 0.1) 0px, transparent 50%);
+            min-height: 100vh;
+            color: #ecddf9;
+        }
+        
+        .bionic-glass {
+            background: rgba(24, 15, 35, 0.4);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .holographic-border {
+            border: 1px solid transparent;
+            background: linear-gradient(rgba(24, 15, 35, 0.4), rgba(24, 15, 35, 0.4)) padding-box,
+                        linear-gradient(45deg, #10b981, #6ee7b7, #3f354b) border-box;
+        }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0">Edit Recipient Details</h4>
+<body class="font-body text-slate-200 flex items-center justify-center min-h-screen px-4">
+
+    <div class="w-full max-w-md">
+        <div class="bionic-glass holographic-border rounded-[2rem] p-8 shadow-2xl">
+            <div class="flex items-center gap-3 mb-8">
+                <span class="material-symbols-outlined text-blue-400 text-3xl">clinical_notes</span>
+                <h1 class="font-headline text-3xl font-black text-white">Edit Recipient</h1>
+            </div>
+            
+            <form method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-2">Name</label>
+                    <input type="text" name="name" value="{{ recipient.name }}" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0 transition-colors" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-2">Age</label>
+                        <input type="number" name="age" value="{{ recipient.age }}" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" required>
                     </div>
-                    <div class="card-body">
-                        <form method="POST">
-                            <div class="mb-3">
-                                <label>Name</label>
-                                <input type="text" name="name" class="form-control" value="{{ recipient.name }}" required>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label>Age</label>
-                                    <input type="number" name="age" class="form-control" value="{{ recipient.age }}" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label>Blood Group</label>
-                                    <select name="blood_group" class="form-select">
-                                        <option value="{{ recipient.blood_group }}" selected hidden>{{ recipient.blood_group }}</option>
-                                        <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
-                                        <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label>Organ Needed</label>
-                                <input type="text" name="organ" class="form-control" value="{{ recipient.organ }}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label>Urgency</label>
-                                <select name="urgency" class="form-select">
-                                    <option value="{{ recipient.urgency }}" selected hidden>{{ recipient.urgency }}</option>
-                                    <option value="High">High</option>
-                                    <option value="Medium">Medium</option>
-                                    <option value="Low">Low</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label>City</label>
-                                <input type="text" name="city" class="form-control" value="{{ recipient.city }}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label>Phone</label>
-                                <input type="text" name="phone" class="form-control" value="{{ recipient.phone }}" required>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary w-100">Update Recipient</button>
-                            <a href="/dashboard" class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
-                        </form>
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-2">Blood Group</label>
+                        <select name="blood_group" class="w-full bg-[#2f263b] border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0">
+                            <option value="{{ recipient.blood_group }}" selected hidden>{{ recipient.blood_group }}</option>
+                            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                            <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+                        </select>
                     </div>
                 </div>
-            </div>
+
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-2">Organ Required</label>
+                    <input type="text" name="organ" value="{{ recipient.organ }}" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" required>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-2">Urgency Level</label>
+                    <select name="urgency" class="w-full bg-[#2f263b] border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" required>
+                        <option value="{{ recipient.urgency }}" selected hidden>{{ recipient.urgency }}</option>
+                        <option value="High">Critical (High)</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-2">Phone</label>
+                    <input type="text" name="phone" value="{{ recipient.phone }}" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" required>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-2">City</label>
+                    <input type="text" name="city" value="{{ recipient.city }}" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" required>
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="flex-1 py-3 rounded-full bg-blue-500 text-white font-headline font-bold uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:bg-blue-400 transition-all">
+                        Update Profile
+                    </button>
+                    <a href="/dashboard" class="flex-1 py-3 rounded-full bg-white/10 text-white font-headline font-bold uppercase tracking-widest text-sm hover:bg-white/20 transition-all text-center border border-white/20">
+                        Cancel
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
+
 </body>
 </html>

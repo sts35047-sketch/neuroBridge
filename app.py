@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 from models import db, Hospital, Donor, Recipient, Notification, ActivityLog
 from sqlalchemy import func
 from datetime import datetime
@@ -31,7 +31,17 @@ app.config['SECRET_KEY'] = 'neurobridge_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///neurobridge_v3.db' 
 
 db.init_app(app)
+import os
+from dotenv import load_dotenv
+import pandas as pd
+# Load environment variables from the .env file
+load_dotenv()
 
+# Now you can access your key securely like this:
+my_api_key = os.getenv("GEMINI_API_KEY")
+
+# Example of how you would use it (do not print this in production!):
+# print(f"My API Key is loaded: {my_api_key}")
 # --- REGISTER FEATURES ---
 app.register_blueprint(recipient_bp)
 app.register_blueprint(match_bp)
@@ -64,7 +74,112 @@ with app.app_context():
 @app.route('/')
 def home():
     return render_template('home.html')
+@app.route('/upload/admin_excel', methods=['POST'])
+def upload_admin_excel():
+    file = request.files['file']
 
+    if not file:
+        return "No file uploaded", 400
+
+    try:
+        df = pd.read_excel(file)
+        print(f"Excel file loaded with {len(df)} rows")
+        print("Columns found:", list(df.columns))
+    except Exception as e:
+        print(f"Error reading Excel file: {e}")
+        return f"Error reading Excel file: {e}", 400
+
+    hospitals_created = 0
+    donors_added = 0
+    recipients_added = 0
+    errors = []
+
+    for index, row in df.iterrows():
+        try:
+            hospital_name = str(row['hospital']).strip()
+            if not hospital_name:
+                errors.append(f"Row {index+1}: Missing hospital name")
+                continue
+
+            # Check if hospital exists
+            hospital = Hospital.query.filter_by(name=hospital_name).first()
+
+            # Auto create hospital if it doesn't exist
+            if not hospital:
+                email = f"{hospital_name.lower().replace(' ', '')}@neurobridge.com"
+                # Check if email already exists
+                existing_email = Hospital.query.filter_by(email=email).first()
+                if existing_email:
+                    email = f"{hospital_name.lower().replace(' ', '')}_{index}@neurobridge.com"
+                
+                hospital = Hospital(
+                    name=hospital_name,
+                    email=email,
+                    password=hospital_name,  # Using hospital name as password
+                    city=str(row.get('city', 'Unknown')).strip()
+                )
+                db.session.add(hospital)
+                db.session.commit()  # Commit immediately to get ID
+                hospitals_created += 1
+                print(f"Created hospital: {hospital_name} (ID: {hospital.id})")
+
+            # Add donor or recipient
+            data_type = str(row.get('type', '')).lower().strip()
+            
+            if data_type == 'donor':
+                donor = Donor(
+                    name=str(row['name']).strip(),
+                    age=int(row['age']) if pd.notna(row['age']) else None,
+                    blood_group=str(row['blood_group']).strip(),
+                    organ=str(row['organ']).strip(),
+                    city=str(row.get('city', '')).strip(),
+                    phone=str(row.get('phone', '')).strip(),
+                    hospital_id=hospital.id
+                )
+                db.session.add(donor)
+                donors_added += 1
+                print(f"Added donor: {donor.name} to hospital {hospital.name}")
+                
+            elif data_type == 'recipient':
+                recipient = Recipient(
+                    name=str(row['name']).strip(),
+                    age=int(row['age']) if pd.notna(row['age']) else None,
+                    blood_group=str(row['blood_group']).strip(),
+                    organ=str(row['organ']).strip(),
+                    urgency=str(row.get('urgency', 'Medium')).strip(),
+                    city=str(row.get('city', '')).strip(),
+                    phone=str(row.get('phone', '')).strip(),
+                    hospital_id=hospital.id
+                )
+                db.session.add(recipient)
+                recipients_added += 1
+                print(f"Added recipient: {recipient.name} to hospital {hospital.name}")
+            else:
+                errors.append(f"Row {index+1}: Invalid type '{data_type}'. Must be 'donor' or 'recipient'")
+                
+        except KeyError as e:
+            errors.append(f"Row {index+1}: Missing required column {e}")
+        except Exception as e:
+            errors.append(f"Row {index+1}: Error processing row - {e}")
+            db.session.rollback()  # Rollback on error
+            continue
+
+    try:
+        db.session.commit()
+        print(f"Upload completed: {hospitals_created} hospitals created, {donors_added} donors added, {recipients_added} recipients added")
+        
+        success_msg = f"Upload successful! Hospitals: {hospitals_created}, Donors: {donors_added}, Recipients: {recipients_added}"
+        if errors:
+            error_msg = f"Upload completed with {len(errors)} errors: " + "; ".join(errors[:3])  # Show first 3 errors
+            flash(error_msg, 'warning')
+        flash(success_msg, 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Database commit error: {e}")
+        flash(f"Database error: {e}", 'error')
+
+    return redirect(url_for('admin_bp.dashboard'))
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -167,6 +282,21 @@ def add_recipient():
 def logout():
     session.clear()
     return redirect(url_for('home'))
+
+# Performance Optimization: Add caching headers
+@app.after_request
+def set_cache_headers(response):
+    # Cache static assets for 30 days
+    if response.direct_passthrough is False:
+        if any(ext in request.path for ext in ['.js', '.css', '.jpeg', '.jpg', '.png', '.woff', '.woff2']):
+            response.cache_control.max_age = 2592000  # 30 days
+            response.cache_control.public = True
+        else:
+            # Don't cache HTML pages
+            response.cache_control.no_cache = True
+            response.cache_control.no_store = True
+            response.cache_control.must_revalidate = True
+    return response
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

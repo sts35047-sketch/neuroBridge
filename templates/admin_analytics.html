@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroBridge - Admin Analytics</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="{{ url_for('static', filename='theme.css') }}" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@latest"></script>
+
+    <style>
+        body {
+            background-color: #180f23;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(195, 245, 255, 0.1) 0px, transparent 50%);
+            min-height: 100vh;
+            color: #ecddf9;
+        }
+
+        .glass-panel {
+            background: rgba(24,15,35,0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .holo-accent {
+            background: linear-gradient(135deg, #10b981, #6ee7b7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(24, 15, 35, 0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 10px; }
+    </style>
+</head>
+<body class="font-[Inter]">
+
+    <!-- TOP NAVBAR -->
+    <header class="glass-panel sticky top-0 z-40 px-8 py-4 flex justify-between items-center border-b border-[#10b981]/20">
+        <div class="flex items-center gap-4">
+            <img src="{{ url_for('static', filename='logo.jpeg') }}" alt="Logo" class="h-10 w-10 rounded-lg object-cover border border-[#10b981]/40">
+            <h1 class="text-2xl font-black font-[Space_Grotesk] holo-accent">NeuroBridge Admin</h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="/admin/dashboard" class="px-4 py-2 rounded-full border border-slate-500/50 text-slate-300 hover:text-white hover:bg-slate-500/20 transition text-sm font-bold flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Back to Dashboard
+            </a>
+
+            <div class="flex items-center gap-2 ml-2">
+                <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                <span class="text-sm font-mono text-green-400">System Online</span>
+            </div>
+            <a href="/admin/logout" class="px-5 py-2 rounded-full border border-red-500/50 text-red-400 hover:bg-red-500/10 transition text-sm font-bold">
+                End Session
+            </a>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="p-8 max-w-7xl mx-auto">
+
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-white mb-2 font-[Space_Grotesk]">Global Analytics Engine</h2>
+            <p class="text-slate-400">Network-wide statistics and trends across all hospitals.</p>
+        </div>
+
+        <!-- CHARTS GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+
+            <!-- Supply vs Demand Trend -->
+            <div class="glass-panel rounded-xl p-6 chart-container">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-xl font-bold uppercase tracking-tighter text-white">Supply vs Demand Trend</h3>
+                </div>
+                <div class="flex-1 relative w-full h-full">
+                    <canvas id="supplyDemandChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Global Blood Group Distribution -->
+            <div class="glass-panel rounded-xl p-6 chart-container">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-xl font-bold uppercase tracking-tighter text-white">Blood Group Distribution</h3>
+                </div>
+                <div class="flex-1 relative w-full h-full">
+                    <canvas id="bloodGroupChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- URGENCY MATRIX -->
+        <div class="glass-panel rounded-xl p-6 mb-8">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-bold uppercase tracking-tighter text-white">Global Urgency Matrix</h3>
+            </div>
+            <div class="flex-1 relative w-full h-[350px]">
+                <canvas id="urgencyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- SUMMARY STATS -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="glass-panel p-6 rounded-xl text-center">
+                <p class="text-[10px] uppercase tracking-widest text-slate-400 mb-1">Total Network Capacity</p>
+                <p class="text-4xl font-bold text-[#10b981]">{{ d_values | sum }}</p>
+                <p class="text-sm text-slate-400 mt-1">Active Donors</p>
+            </div>
+            <div class="glass-panel p-6 rounded-xl text-center">
+                <p class="text-[10px] uppercase tracking-widest text-slate-400 mb-1">Critical Cases</p>
+                <p class="text-4xl font-bold text-red-400">{{ r_values[0] if r_values else 0 }}</p>
+                <p class="text-sm text-slate-400 mt-1">High Urgency</p>
+            </div>
+            <div class="glass-panel p-6 rounded-xl text-center">
+                <p class="text-[10px] uppercase tracking-widest text-slate-400 mb-1">Match Rate</p>
+                <p class="text-4xl font-bold text-[#10b981]">87.3%</p>
+                <p class="text-sm text-slate-400 mt-1">Last 30 Days</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Data Parse safely
+        const dLabels = JSON.parse('{{ d_labels | default([]) | tojson | safe }}');
+        const dValues = JSON.parse('{{ d_values | default([]) | tojson | safe }}');
+        const rLabels = JSON.parse('{{ r_labels | default([]) | tojson | safe }}');
+        const rValues = JSON.parse('{{ r_values | default([]) | tojson | safe }}');
+        const months = JSON.parse('{{ months | default([]) | tojson | safe }}');
+        const supply = JSON.parse('{{ supply | default([]) | tojson | safe }}');
+        const demand = JSON.parse('{{ demand | default([]) | tojson | safe }}');
+
+        // Setup Chart.js with Bionic Theme
+        Chart.defaults.color = '#bac9cc';
+        Chart.defaults.font.family = "'Space Grotesk', sans-serif";
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Supply vs Demand Line Chart
+            const supplyDemandCtx = document.getElementById('supplyDemandChart').getContext('2d');
+            new Chart(supplyDemandCtx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Supply (Donors)',
+                        data: supply,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Demand (Recipients)',
+                        data: demand,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#bac9cc' } },
+                        x: { grid: { display: false }, ticks: { color: '#bac9cc' } }
+                    },
+                    plugins: { legend: { position: 'top', labels: { color: '#ecddf9' } } }
+                }
+            });
+
+            // Blood Group Doughnut Chart
+            const bloodGroupCtx = document.getElementById('bloodGroupChart').getContext('2d');
+            new Chart(bloodGroupCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: dLabels,
+                    datasets: [{
+                        data: dValues,
+                        backgroundColor: ['#10b981', '#009688', '#4DB6AC', '#80CBC4', '#B2DFDB'],
+                        borderWidth: 1,
+                        borderColor: '#180f23'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { color: '#ecddf9' } } },
+                    cutout: '65%'
+                }
+            });
+
+            // Urgency Matrix Bar Chart
+            const urgencyCtx = document.getElementById('urgencyChart').getContext('2d');
+            new Chart(urgencyCtx, {
+                type: 'bar',
+                data: {
+                    labels: rLabels,
+                    datasets: [{
+                        label: 'Waitlist Count',
+                        data: rValues,
+                        backgroundColor: ['rgba(239, 68, 68, 0.8)', 'rgba(255, 193, 7, 0.8)', 'rgba(16, 185, 129, 0.8)'],
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: 'rgba(255,255,255,0.2)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { stepSize: 1, color: '#bac9cc' } },
+                        x: { grid: { display: false }, ticks: { color: '#bac9cc' } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

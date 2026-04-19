@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroBridge - System Management</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='theme.css') }}" rel="stylesheet"/>
+    
+    <style>
+        body {
+            background-color: #180f23;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(16,185,129,0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(195,245,255,0.1) 0px, transparent 50%);
+            color: #ecddf9;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        .glass-panel {
+            background: rgba(24,15,35,0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(16,185,129,0.2);
+        }
+    </style>
+</head>
+<body class="font-body text-slate-200">
+
+    <!-- TOP NAVBAR -->
+    <header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-4 bg-[#180f23]/60 backdrop-blur-[24px] border-b border-[#10b981]/20">
+        <div class="flex items-center gap-4">
+            <a href="/admin/dashboard" class="flex items-center gap-3">
+                <img src="{{ url_for('static', filename='logo.jpeg') }}" alt="Logo" class="h-10 w-10 rounded-lg object-cover border border-[#10b981]/40">
+                <h1 class="text-2xl font-black text-[#10b981] font-headline">NeuroBridge Admin</h1>
+            </a>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="/admin/dashboard" class="px-4 py-2 rounded-full border border-slate-500/50 text-slate-300 hover:text-white hover:bg-slate-500/20 transition text-sm font-bold">
+                ← Back to Dashboard
+            </a>
+            <a href="/admin/logout" class="px-5 py-2 rounded-full border border-red-500/50 text-red-400 hover:bg-red-500/10 transition text-sm font-bold">
+                Logout
+            </a>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="pt-32 px-8 pb-12 max-w-7xl mx-auto">
+        
+        <div class="mb-12">
+            <h2 class="text-4xl font-black text-white mb-2 font-headline">System Management</h2>
+            <p class="text-slate-400">Global administration, monitoring, and configuration.</p>
+        </div>
+
+        <!-- STATS GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div class="glass-panel p-6 rounded-2xl border-l-4 border-[#10b981]">
+                <p class="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Total Hospitals</p>
+                <p class="text-3xl font-black text-[#10b981] font-headline">{{ stats.h_count }}</p>
+            </div>
+            <div class="glass-panel p-6 rounded-2xl border-l-4 border-blue-400">
+                <p class="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Total Donors</p>
+                <p class="text-3xl font-black text-blue-400 font-headline">{{ stats.d_count }}</p>
+            </div>
+            <div class="glass-panel p-6 rounded-2xl border-l-4 border-red-400">
+                <p class="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Total Recipients</p>
+                <p class="text-3xl font-black text-red-400 font-headline">{{ stats.r_count }}</p>
+            </div>
+            <div class="glass-panel p-6 rounded-2xl border-l-4 border-purple-400">
+                <p class="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Activity Logs</p>
+                <p class="text-3xl font-black text-purple-400 font-headline">{{ stats.total_activity_logs }}</p>
+            </div>
+        </div>
+
+        <!-- HOSPITALS TABLE -->
+        <div class="glass-panel rounded-2xl p-6 mb-12">
+            <h3 class="text-2xl font-black text-white mb-6 font-headline flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#10b981]">hospital</span> Registered Hospitals
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="border-b border-white/10">
+                        <tr class="text-left text-[10px] uppercase tracking-widest text-slate-400">
+                            <th class="pb-3 font-bold">Hospital Name</th>
+                            <th class="pb-3 font-bold">Email</th>
+                            <th class="pb-3 font-bold">City</th>
+                            <th class="pb-3 font-bold">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for hosp in hospitals %}
+                        <tr class="border-b border-white/5 hover:bg-white/5 transition">
+                            <td class="py-4 font-bold text-white">{{ hosp.name }}</td>
+                            <td class="py-4 text-slate-300">{{ hosp.email }}</td>
+                            <td class="py-4 text-slate-400">{{ hosp.city }}</td>
+                            <td class="py-4"><span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500/50">Active</span></td>
+                        </tr>
+                        {% else %}
+                        <tr class="border-b border-white/5">
+                            <td colspan="4" class="py-8 text-center text-slate-500">No hospitals registered</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- RECENT ACTIVITY LOG -->
+        <div class="glass-panel rounded-2xl p-6">
+            <h3 class="text-2xl font-black text-white mb-6 font-headline flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#10b981]">history</span> Recent Activity (Last 50)
+            </h3>
+            <div class="space-y-3 max-h-[600px] overflow-y-auto">
+                {% for log in activity_logs %}
+                <div class="flex items-start gap-4 p-4 rounded-lg hover:bg-white/5 transition border border-white/5">
+                    <div class="w-10 h-10 rounded-full bg-[#10b981]/20 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-sm text-[#10b981]">
+                            {% if 'Donor' in log.action %}person_add{% elif 'Recipient' in log.action %}clinical_notes{% elif 'Delete' in log.action %}delete{% else %}info{% endif %}
+                        </span>
+                    </div>
+                    <div class="flex-grow">
+                        <p class="text-white font-bold text-sm">{{ log.action }}</p>
+                        <p class="text-slate-400 text-xs">{{ log.details }}</p>
+                        <p class="text-slate-500 text-[10px] mt-1">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-10 text-slate-500">No activity logs available</div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </main>
+
+</body>
+</html>

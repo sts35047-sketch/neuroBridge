@@ -1,125 +1,220 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Logistics Hub</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>NeuroBridge | Logistics Hub</title>
+    
+    <!-- Tailwind & Fonts -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-container": "#10b981",
+                        "on-primary-container": "#064e3b",
+                        "tertiary": "#ececec",
+                        "surface-container-high": "#2f263b",
+                    },
+                    fontFamily: {
+                        headline: ["Space Grotesk"],
+                        body: ["Inter"],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
-        .shipment-card { border: none; border-radius: 15px; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s; }
-        .shipment-card:hover { transform: translateY(-3px); }
-        .mode-icon { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 20px; }
+        body {
+            background-color: #180f23;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(195, 245, 255, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(26, 11, 46, 1) 0px, transparent 80%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #ecddf9;
+        }
+        
+        /* Bionic / Holographic Effects */
+        .bionic-glass {
+            background: rgba(24, 15, 35, 0.4);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .holographic-border {
+            border: 1px solid transparent;
+            background: linear-gradient(rgba(24, 15, 35, 0.4), rgba(24, 15, 35, 0.4)) padding-box,
+                        linear-gradient(45deg, #10b981, #6ee7b7, #3f354b) border-box;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(24, 15, 35, 0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 10px; }
     </style>
 </head>
-<body>
+<body class="font-body text-slate-200">
 
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold text-dark"><i class="fas fa-truck-medical me-2"></i> Logistics Hub</h2>
-            <p class="text-muted">Track organ transport and emergency dispatch.</p>
-        </div>
-        <div>
-            <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#newShipmentModal">+ New Dispatch</button>
-            <a href="/dashboard" class="btn btn-secondary rounded-pill px-4 ms-2">Dashboard</a>
-        </div>
+<!-- Top Nav Shell -->
+<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-6 mx-auto w-[92%] max-w-7xl border border-green-600/20 shadow-[0_0_40px_rgba(0,229,255,0.15)]">
+    <div class="flex items-center gap-3">
+        <span class="text-2xl font-black text-[#10b981] tracking-[-0.05em] font-headline">NeuroBridge</span>
+    </div>
+    <a href="/dashboard" class="px-6 py-2 text-xs font-bold uppercase rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20">Back to Core</a>
+</header>
+
+<!-- Main Canvas -->
+<main class="pt-32 px-4 md:px-8 pb-12 max-w-7xl mx-auto">
+    
+    <!-- Hero Title Section -->
+    <div class="mb-12">
+        <h1 class="font-headline text-4xl md:text-6xl font-black text-white tracking-tighter leading-none mb-3">
+            Logistics <span class="text-[#10b981]">Hub</span>
+        </h1>
+        <p class="text-slate-400 text-sm md:text-base max-w-xl">
+            Real-time monitoring of organ transport and emergency dispatch logistics.
+        </p>
     </div>
 
-    <!-- Active Shipments -->
-    <h5 class="text-secondary fw-bold mb-3">🚚 In Transit</h5>
-    <div class="row g-4 mb-5">
-        {% for item in active %}
-        <div class="col-md-6">
-            <div class="card shipment-card p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="d-flex align-items-center">
-                        <div class="mode-icon bg-warning bg-opacity-10 text-warning me-3">
-                            <i class="fas {% if item.mode == 'Drone' %}fa-helicopter{% elif item.mode == 'Ambulance' %}fa-ambulance{% else %}fa-plane{% endif %}"></i>
+    <!-- Active Shipments Section -->
+    <div class="mb-12">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="font-headline text-2xl font-black uppercase tracking-tighter text-white">🚚 In Transit</h3>
+            <button onclick="toggleModal('newShipmentModal')" class="px-6 py-2 text-xs font-bold uppercase rounded-full bg-[#10b981] text-[#064e3b] hover:scale-105 transition-all border border-transparent shadow-[0_0_20px_rgba(0,229,255,0.3)]">+ New Dispatch</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for item in active %}
+            <div class="bionic-glass holographic-border rounded-[2rem] p-6 hover:bg-green-600/10 transition-all border border-white/5">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/50">
+                            <span class="material-symbols-outlined text-orange-400">
+                                {% if item.mode == 'Drone' %}helicopter{% elif item.mode == 'Ambulance' %}emergency{% else %}flight{% endif %}
+                            </span>
                         </div>
                         <div>
-                            <h5 class="fw-bold mb-0">{{ item.organ }}</h5>
-                            <small class="text-muted">To: {{ item.destination }}</small>
+                            <p class="font-headline font-bold text-lg text-white">{{ item.organ }}</p>
+                            <p class="text-[10px] uppercase tracking-widest text-slate-400">To: {{ item.destination }}</p>
                         </div>
                     </div>
-                    <span class="badge bg-warning text-dark px-3 py-2">IN TRANSIT</span>
+                    <span class="px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 text-[10px] font-bold uppercase tracking-widest border border-orange-500/50">IN TRANSIT</span>
                 </div>
                 
-                <div class="progress" style="height: 8px;">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" style="width: {{ item.progress }}%"></div>
+                <!-- Progress Bar -->
+                <div class="mb-4">
+                    <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden border border-white/5">
+                        <div class="h-full bg-gradient-to-r from-[#10b981] to-[#009688]" style="width: {{ item.progress }}%"></div>
+                    </div>
                 </div>
-                <div class="d-flex justify-content-between mt-2 small fw-bold text-secondary">
+
+                <div class="flex justify-between text-[10px] uppercase tracking-widest text-slate-400">
                     <span>Dep: {{ item.start_time }}</span>
+                    <span>Progress: {{ item.progress }}%</span>
                     <span>ETA: {{ item.arrival_time }}</span>
                 </div>
             </div>
-        </div>
-        {% else %}
-        <div class="col-12 text-center py-4 text-muted border rounded bg-white">
-            No active shipments.
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- History -->
-    <h5 class="text-secondary fw-bold mb-3">📦 Delivery History</h5>
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0 align-middle">
-                <thead class="table-light"><tr><th>ID</th><th>Organ</th><th>Destination</th><th>Mode</th><th>Status</th></tr></thead>
-                <tbody>
-                    {% for item in history %}
-                    <tr>
-                        <td>#LOG-{{ item.id }}</td>
-                        <td class="fw-bold">{{ item.organ }}</td>
-                        <td>{{ item.destination }}</td>
-                        <td>{{ item.mode }}</td>
-                        <td><span class="badge bg-success">DELIVERED</span></td>
-                    </tr>
-                    {% else %}
-                    <tr><td colspan="5" class="text-center py-4 text-muted">No history found.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- Modal -->
-<div class="modal fade" id="newShipmentModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title">New Dispatch Request</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            {% else %}
+            <div class="col-span-full text-center p-8 border border-white/5 rounded-[2rem] bionic-glass text-slate-500 text-sm">
+                No active shipments detected.
             </div>
-            <div class="modal-body">
-                <form action="/create_shipment" method="POST">
-                    <div class="mb-3">
-                        <label class="form-label">Organ Type</label>
-                        <select name="organ" class="form-select">
-                            <option>Kidney</option><option>Heart</option><option>Liver</option><option>Lungs</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Destination Hospital</label>
-                        <input type="text" name="destination" class="form-control" required placeholder="e.g. City Hospital, Mumbai">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Transport Mode</label>
-                        <select name="mode" class="form-select">
-                            <option value="Ambulance">🚑 Ambulance (Standard)</option>
-                            <option value="Drone">🚁 Drone (Fast / Local)</option>
-                            <option value="Airlift">✈️ Airlift (Long Distance)</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Dispatch</button>
-                </form>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Delivery History Section -->
+    <div>
+        <h3 class="font-headline text-2xl font-black uppercase tracking-tighter text-white mb-6">📦 Delivery History</h3>
+        <div class="bionic-glass rounded-[2rem] p-6 holographic-border overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-white/10">
+                            <th class="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-[#10b981] font-bold">ID</th>
+                            <th class="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-[#10b981] font-bold">Organ</th>
+                            <th class="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-[#10b981] font-bold">Destination</th>
+                            <th class="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-[#10b981] font-bold">Mode</th>
+                            <th class="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-[#10b981] font-bold">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in history %}
+                        <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                            <td class="px-4 py-3 text-slate-300">#{{ item.id }}</td>
+                            <td class="px-4 py-3 font-bold text-white">{{ item.organ }}</td>
+                            <td class="px-4 py-3 text-slate-300">{{ item.destination }}</td>
+                            <td class="px-4 py-3 text-slate-300">{{ item.mode }}</td>
+                            <td class="px-4 py-3"><span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-[10px] font-bold uppercase tracking-widest border border-green-500/50">DELIVERED</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-8 text-slate-500">No delivery history found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+</main>
+
+<!-- New Shipment Modal -->
+<div id="modalBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden transition-opacity"></div>
+
+<div id="newShipmentModal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg z-[70] hidden">
+    <div class="bionic-glass holographic-border rounded-[2rem] p-6 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="font-headline text-xl font-bold text-white uppercase tracking-widest">Init: New Dispatch</h3>
+            <button onclick="closeModal()" class="text-slate-400 hover:text-white"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <form action="/create_shipment" method="POST" class="space-y-4">
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-1">Organ Type</label>
+                <select name="organ" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:ring-0" required>
+                    <option>Kidney</option>
+                    <option>Heart</option>
+                    <option>Liver</option>
+                    <option>Lungs</option>
+                    <option>Pancreas</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-1">Destination Hospital</label>
+                <input type="text" name="destination" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:ring-0" placeholder="e.g. City Hospital, Mumbai" required>
+            </div>
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-1">Transport Mode</label>
+                <select name="mode" class="w-full bg-[#2f263b] border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:ring-0" required>
+                    <option value="Ambulance">🚑 Ambulance (Standard - 3 hours)</option>
+                    <option value="Drone">🚁 Drone (Fast - 1 hour)</option>
+                    <option value="Airlift">✈️ Airlift (Long Distance - 5 hours)</option>
+                </select>
+            </div>
+            <button type="submit" class="w-full mt-6 py-3 rounded-full bg-[#10b981] text-[#064e3b] font-headline font-bold uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:bg-white transition-all">
+                Dispatch Payload
+            </button>
+        </form>
+    </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function toggleModal(id) {
+        document.getElementById('modalBackdrop').classList.remove('hidden');
+        document.getElementById(id).classList.remove('hidden');
+    }
+    
+    function closeModal() {
+        document.getElementById('modalBackdrop').classList.add('hidden');
+        document.getElementById('newShipmentModal').classList.add('hidden');
+    }
+
+    // Close modal when clicking backdrop
+    document.getElementById('modalBackdrop')?.addEventListener('click', closeModal);
+</script>
 </body>
 </html>

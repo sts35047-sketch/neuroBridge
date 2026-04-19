@@ -1,0 +1,166 @@
+/* NeuroBridge Green Theme - Shared Styles */
+
+:root {
+    --primary-green: #10b981;
+    --primary-green-light: #6ee7b7;
+    --primary-dark: #064e3b;
+    --bg-dark: #180f23;
+    --surface-dark: rgba(24, 15, 35, 0.4);
+    --text-primary: #ecddf9;
+    --text-secondary: #bac9cc;
+}
+
+/* Bionic & Holographic Effects */
+.bionic-glass {
+    background: var(--surface-dark);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.holographic-border {
+    border: 1px solid transparent;
+    background: linear-gradient(var(--surface-dark), var(--surface-dark)) padding-box,
+                linear-gradient(45deg, var(--primary-green), var(--primary-green-light), #3f354b) border-box;
+}
+
+.action-orb {
+    background: radial-gradient(circle at 30% 30%, rgba(16, 185, 129, 0.3), transparent);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-orb:hover {
+    transform: scale(1.05) translateY(-5px);
+    box-shadow: 0 0 50px rgba(16, 185, 129, 0.3);
+}
+
+/* Animations */
+.floating {
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.neural-node-pulse {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+    50% { box-shadow: 0 0 20px 10px rgba(16, 185, 129, 0); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(24, 15, 35, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(16, 185, 129, 0.3);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(16, 185, 129, 0.5);
+}
+
+/* Chart Container Sizing */
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-canvas-wrapper {
+    position: relative;
+    flex: 1;
+    min-height: 350px;
+    width: 100%;
+}
+
+.chart-canvas-wrapper canvas {
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .chart-container {
+        min-height: 300px;
+    }
+}
+
+/* Loading Skeleton */
+.skeleton {
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+    background-size: 200% 100%;
+    animation: loading 2s infinite;
+    border-radius: 8px;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Green Theme - Button Styles */
+.btn-primary {
+    background-color: var(--primary-green);
+    color: var(--primary-dark);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-green-light);
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Form Inputs with Green Focus */
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--primary-green) !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+}
+
+/* Text Colors */
+.text-green-primary {
+    color: var(--primary-green);
+}
+
+.text-green-light {
+    color: var(--primary-green-light);
+}
+
+/* Header Navigation */
+header {
+    border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+/* Smooth Page Transitions */
+body {
+    transition: background-color 0.3s ease;
+}
+
+/* Performance: Reduce motion for prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

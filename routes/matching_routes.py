@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, session, redirect, url_for
+from flask import Blueprint, render_template, session, redirect, url_for, request
 from models import Donor, Recipient
 
 match_bp = Blueprint('match_bp', __name__)
 
-@match_bp.route('/matches')
+@match_bp.route('/matches', methods=['GET', 'POST'])
 def view_matches():
     if 'hospital_id' not in session:
         return redirect(url_for('login'))
@@ -58,7 +58,11 @@ def view_matches():
             
             matches.append({
                 'donor': donor,
+                'donor_name': donor.name,
                 'recipient': recipient,
+                'recipient_name': recipient.name,
+                'blood_group': donor.blood_group,
+                'organ': donor.organ,
                 'score': score,
                 'reasons': ", ".join(reasons)
             })
@@ -67,4 +71,12 @@ def view_matches():
     matches.sort(key=lambda x: x['score'], reverse=True)
 
     return render_template('matches.html', matches=matches)
+
+@match_bp.route('/run_matching', methods=['POST'])
+def run_matching():
+    if 'hospital_id' not in session:
+        return redirect(url_for('login'))
+    
+    # The algorithm runs when fetching /matches
+    return redirect(url_for('match_bp.view_matches'))
     

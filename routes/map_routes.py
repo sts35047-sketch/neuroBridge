@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for
+from flask import Blueprint, render_template, session, redirect, url_for, jsonify
 from models import Donor, Recipient
 import requests
 
@@ -115,26 +115,74 @@ def live_map():
     donors = Donor.query.filter_by(hospital_id=session['hospital_id']).all()
     recipients = Recipient.query.filter_by(hospital_id=session['hospital_id']).all()
     
-    map_data = []
+    # Collect donor and recipient data with coordinates
+    donor_data = []
+    for donor in donors:
+        city_key = donor.city.split(',')[0].strip() if donor.city else 'New Delhi'
+        coords = get_coordinates(city_key)
+        if coords:
+            donor_data.append({
+                'name': donor.name,
+                'organ': donor.organ,
+                'blood': donor.blood_group,
+                'lat': coords[0],
+                'lon': coords[1],
+                'type': 'donor'
+            })
     
-    def add_to_map(people_list, type_label, color):
-        for p in people_list:
-            # Handle "Mysore, Karnataka" -> "Mysore"
-            city_key = p.city.split(',')[0].strip()
-            
-            coords = get_coordinates(city_key)
-            
-            if coords:
-                map_data.append({
-                    'type': type_label,
-                    'name': p.name,
-                    'organ': p.organ,
-                    'city': p.city,
-                    'coords': coords,
-                    'color': color
-                })
+    recipient_data = []
+    for recipient in recipients:
+        city_key = recipient.city.split(',')[0].strip() if recipient.city else 'New Delhi'
+        coords = get_coordinates(city_key)
+        if coords:
+            recipient_data.append({
+                'name': recipient.name,
+                'organ': recipient.organ,
+                'blood': recipient.blood_group,
+                'urgency': recipient.urgency,
+                'lat': coords[0],
+                'lon': coords[1],
+                'type': 'recipient'
+            })
     
-    add_to_map(donors, 'Donor', 'green')
-    add_to_map(recipients, 'Recipient', 'red')
-            
-    return render_template('map.html', map_data=map_data)
+    markers = donor_data + recipient_data
+    
+    return render_template('map.html', markers=markers)
+
+@map_bp.route('/api/map_data')
+def map_data():
+    if 'hospital_id' not in session:
+        return jsonify([])
+    
+    donors = Donor.query.filter_by(hospital_id=session['hospital_id']).all()
+    recipients = Recipient.query.filter_by(hospital_id=session['hospital_id']).all()
+    
+    data = []
+    for donor in donors:
+        city_key = donor.city.split(',')[0].strip() if donor.city else 'New Delhi'
+        coords = get_coordinates(city_key)
+        if coords:
+            data.append({
+                'name': donor.name,
+                'organ': donor.organ,
+                'blood': donor.blood_group,
+                'lat': coords[0],
+                'lon': coords[1],
+                'type': 'donor'
+            })
+    
+    for recipient in recipients:
+        city_key = recipient.city.split(',')[0].strip() if recipient.city else 'New Delhi'
+        coords = get_coordinates(city_key)
+        if coords:
+            data.append({
+                'name': recipient.name,
+                'organ': recipient.organ,
+                'blood': recipient.blood_group,
+                'urgency': recipient.urgency,
+                'lat': coords[0],
+                'lon': coords[1],
+                'type': 'recipient'
+            })
+    
+    return jsonify(data)
