@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroBridge</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: #180f23;
+    color: #ecddf9;
+    overflow-x: hidden;
+}
+
+/* 3D Canvas — fixed behind everything */
+#neural-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* All content sits above canvas */
+header, section, footer, .above-canvas {
+    position: relative;
+    z-index: 1;
+}
+
+/* Subtle depth vignette over canvas */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(0,229,255,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse at 0% 100%, rgba(16,185,129,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 100% 50%, rgba(195,245,255,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(24,15,35,0.55) 0%, rgba(24,15,35,0.0) 100%);
+    pointer-events: none;
+}
+
+.glass {
+    background: rgba(24,15,35,0.45);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(0,229,255,0.18);
+}
+
+.glow-btn {
+    background: #10b981;
+    color: #064e3b;
+    box-shadow: 0 0 28px rgba(0,229,255,0.35), 0 0 8px rgba(16,185,129,0.5);
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.glow-btn:hover {
+    transform: scale(1.06) translateY(-2px);
+    box-shadow: 0 0 45px rgba(0,229,255,0.55), 0 0 16px rgba(16,185,129,0.6);
+}
+
+.holo-border {
+    border: 1px solid transparent;
+    background: linear-gradient(rgba(24,15,35,0.6), rgba(24,15,35,0.6)) padding-box,
+                linear-gradient(135deg, #10b981, #00e5ff, #6ee7b7, #10b981) border-box;
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), box-shadow 0.4s;
+}
+.holo-border:hover {
+    transform: scale(1.04) translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0,229,255,0.15), 0 0 30px rgba(16,185,129,0.12);
+}
+
+/* Animated scanning line on feature cards */
+.holo-border::after {
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px; right: -1px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00e5ff, transparent);
+    border-radius: 999px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.holo-border:hover::after { opacity: 1; }
+
+/* Glitch text effect on hero */
+@keyframes glitch-shift {
+    0%, 92%, 100% { clip-path: none; transform: none; opacity: 1; }
+    93%  { clip-path: inset(20% 0 60% 0); transform: translateX(-3px); opacity: 0.9; }
+    95%  { clip-path: inset(60% 0 10% 0); transform: translateX(3px); opacity: 0.9; }
+    97%  { clip-path: inset(40% 0 40% 0); transform: translateX(-2px); opacity: 0.95; }
+}
+.glitch-text {
+    animation: glitch-shift 8s infinite;
+}
+
+/* Pulse ring on CTA */
+@keyframes ring-pulse {
+    0%   { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.7); opacity: 0; }
+}
+.ring-pulse {
+    position: absolute;
+    inset: -4px;
+    border-radius: 9999px;
+    border: 2px solid rgba(0,229,255,0.5);
+    animation: ring-pulse 2s ease-out infinite;
+    pointer-events: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #180f23; }
+::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.25); border-radius: 10px; }
+
+/* Floating orb decoration */
+@keyframes float-orb {
+    0%, 100% { transform: translateY(0px) translateX(0px); }
+    33%  { transform: translateY(-18px) translateX(8px); }
+    66%  { transform: translateY(10px) translateX(-6px); }
+}
+.orb { animation: float-orb 9s ease-in-out infinite; }
+</style>
+</head>
+
+<body class="font-[Inter]">
+
+<!-- THREE.JS CANVAS — fixed behind all content -->
+<canvas id="neural-canvas"></canvas>
+
+<!-- ==================== NAVBAR ==================== -->
+<header class="flex justify-between items-center px-8 py-4 glass m-6 rounded-full">
+    <div class="flex items-center gap-3">
+        <img src="{{ url_for('static', filename='logo.jpeg') }}" alt="NeuroBridge Logo" class="h-10 w-10 rounded-lg object-cover border border-[#10b981]/30">
+        <h1 class="text-2xl font-black text-[#10b981] font-[Space_Grotesk]">NeuroBridge</h1>
+    </div>
+    <div class="flex gap-4 flex-wrap">
+        <a href="/login" class="px-6 py-2 rounded-full bg-white/10 hover:bg-white/20 transition text-sm sm:text-base">Hospital Login</a>
+        <a href="/register" class="px-6 py-2 rounded-full glow-btn font-bold text-sm sm:text-base">Register Hospital</a>
+        <a href="#track-section" class="px-6 py-2 rounded-full border border-green-500/50 hover:bg-green-500/10 transition text-sm sm:text-base">Track Status</a>
+    </div>
+</header>
+
+<!-- ==================== HERO ==================== -->
+<section class="text-center mt-24 px-6 relative">
+
+    <!-- Decorative floating orbs -->
+    <div class="orb absolute left-[8%] top-[-40px] w-40 h-40 rounded-full bg-[#00e5ff]/5 blur-3xl pointer-events-none"></div>
+    <div class="orb absolute right-[10%] top-[20px] w-52 h-52 rounded-full bg-[#10b981]/6 blur-3xl pointer-events-none" style="animation-delay: -3s;"></div>
+
+    <!-- Eyebrow badge -->
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-[#00e5ff]/30 text-xs uppercase tracking-[0.2em] text-[#00e5ff] mb-8 font-[Space_Grotesk] font-bold">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#00e5ff] animate-pulse"></span>
+        Bionic OS — Neural Grid v2.0
+    </div>
+
+    <h1 class="text-5xl md:text-7xl font-black font-[Space_Grotesk] mb-6 leading-none tracking-tight glitch-text">
+        The Future of <span class="text-[#10b981]">Organ Networks</span>
+    </h1>
+    <p class="text-slate-400 max-w-xl mx-auto mb-10 text-lg leading-relaxed">
+        AI-powered organ allocation, real-time tracking, and seamless hospital connectivity.
+    </p>
+
+    <div class="flex justify-center gap-4 flex-wrap">
+        <div class="relative inline-block">
+            <div class="ring-pulse"></div>
+            <a href="/login" class="relative px-8 py-4 rounded-full glow-btn font-bold inline-block">Hospital Login</a>
+        </div>
+        <a href="/register" class="px-8 py-4 rounded-full border border-white/20 hover:bg-white/10 transition">Get Started</a>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="mt-20 flex flex-col items-center gap-2 text-slate-600 text-xs tracking-widest uppercase">
+        <span>Scroll to explore</span>
+        <div class="w-px h-10 bg-gradient-to-b from-slate-600 to-transparent animate-pulse"></div>
+    </div>
+</section>
+
+<!-- ==================== FEATURES ==================== -->
+<section class="grid md:grid-cols-3 gap-8 px-10 mt-24 relative">
+    <div class="glass holo-border p-8 rounded-3xl relative overflow-hidden cursor-default">
+        <div class="w-10 h-10 rounded-xl bg-[#10b981]/20 flex items-center justify-center mb-5">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3 text-[#10b981] font-[Space_Grotesk]">Secure Registry</h3>
+        <p class="text-slate-400 leading-relaxed">
+            Encrypted donor-recipient database with real-time updates.
+        </p>
+    </div>
+
+    <div class="glass holo-border p-8 rounded-3xl relative overflow-hidden cursor-default">
+        <div class="w-10 h-10 rounded-xl bg-[#00e5ff]/15 flex items-center justify-center mb-5">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3 text-[#10b981] font-[Space_Grotesk]">AI Matching</h3>
+        <p class="text-slate-400 leading-relaxed">
+            Smart neural algorithms for instant compatibility detection.
+        </p>
+    </div>
+
+    <div class="glass holo-border p-8 rounded-3xl relative overflow-hidden cursor-default">
+        <div class="w-10 h-10 rounded-xl bg-[#6ee7b7]/15 flex items-center justify-center mb-5">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3 text-[#10b981] font-[Space_Grotesk]">Live Tracking</h3>
+        <p class="text-slate-400 leading-relaxed">
+            Real-time organ transport & viability monitoring system.
+        </p>
+    </div>
+</section>
+
+<!-- ==================== STATS BAR ==================== -->
+<section class="px-10 mt-20">
+    <div class="glass rounded-3xl px-8 py-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div>
+            <p class="text-3xl font-black font-[Space_Grotesk] text-[#10b981]">1,200+</p>
+            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Hospitals Connected</p>
+        </div>
+        <div>
+            <p class="text-3xl font-black font-[Space_Grotesk] text-[#00e5ff]">98.7%</p>
+            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Match Accuracy</p>
+        </div>
+        <div>
+            <p class="text-3xl font-black font-[Space_Grotesk] text-[#6ee7b7]">4.2 min</p>
+            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Avg. Match Time</p>
+        </div>
+        <div>
+            <p class="text-3xl font-black font-[Space_Grotesk] text-[#10b981]">8,400+</p>
+            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Lives Saved</p>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== CTA ==================== -->
+<section class="text-center mt-28 pb-8 relative">
+    <div class="orb absolute left-1/2 -translate-x-1/2 top-0 w-96 h-40 rounded-full bg-[#10b981]/8 blur-3xl pointer-events-none"></div>
+    <h2 class="text-3xl md:text-5xl font-black mb-4 font-[Space_Grotesk] tracking-tight relative">
+        Ready to Save Lives?
+    </h2>
+    <p class="text-slate-400 mb-10 relative">Join the network. Every second matters.</p>
+    <div class="relative inline-block">
+        <div class="ring-pulse" style="animation-delay: 0.5s;"></div>
+        <a href="/register" class="relative px-10 py-4 rounded-full glow-btn font-bold inline-block">
+            Join NeuroBridge
+        </a>
+    </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="text-center mt-20 pb-10 text-slate-500 relative">
+    <div class="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8"></div>
+    © 2026 NeuroBridge • Built with Tech &amp; Empathy <br>
+    <a href="/admin/login"
+       class="text-[#10b981] text-sm mt-2 inline-block hover:underline font-bold">
+       Staff &amp; Admin Login
+    </a>
+</footer>
+
+<!-- ==================== THREE.JS — ORGAN ANATOMY SCENE ==================== -->
+<script>
+(function () {
+
+    /* ═══════════════════════════════════════════════════════
+       RENDERER + SCENE + CAMERA
+    ═══════════════════════════════════════════════════════ */
+    const canvas = document.getElementById('neural-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0);
+
+    const scene  = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera.position.set(0, 0, 200);
+
+    /* ═══════════════════════════════════════════════════════
+       MOUSE
+    ═══════════════════════════════════════════════════════ */
+    const mouse  = { x: 0, y: 0 };
+    const target = { x: 0, y: 0 };
+    document.addEventListener('mousemove', e => {
+        target.x = (e.clientX / window.innerWidth  - 0.5);
+        target.y = (e.clientY / window.innerHeight - 0.5);
+    });
+
+    /* ═══════════════════════════════════════════════════════
+       COLOUR PALETTE
+    ═══════════════════════════════════════════════════════ */
+    const C = {
+        cyan:    0x00e5ff,
+        cyanDim: 0x0099bb,
+        violet:  0x7c3aed,
+        purple:  0xc084fc,
+        crimson: 0xff2d55,
+        white:   0xffffff,
+        teal:    0x10b981,
+        dimBlue: 0x1a3a5c,
+    };
+
+    /* ═══════════════════════════════════════════════════════
+       MASTER GROUP — everything rotates together gently
+    ═══════════════════════════════════════════════════════ */
+    const world = new THREE.Group();
+    scene.add(world);
+
+    /* ═══════════════════════════════════════════════════════
+       UTILITY: hollow tube along a CatmullRom path
+    ═══════════════════════════════════════════════════════ */
+    function makeTube(pts, segs, radius, color, opacity) {
+        const curve = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p)));
+        const geo   = new THREE.TubeGeometry(curve, segs, radius, 7, false);
+        const mat   = new THREE.MeshBasicMaterial({ color, transparent: true, opacity, wireframe: false });
+        const mesh  = new THREE.Mesh(geo, mat);
+        world.add(mesh);
+        return mesh;
+    }
+
+    /* UTILITY: torus ring */
+    function makeRing(cx, cy, cz, rx, ry, rz, R, tube, color, opacity) {
+        const geo  = new THREE.TorusGeometry(R, tube, 10, 80);
+        const mat  = new THREE.MeshBasicMaterial({ color, transparent: true, opacity });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(cx, cy, cz);
+        mesh.rotation.set(rx, ry, rz);
+        world.add(mesh);
+        return mesh;
+    }
+
+    /* UTILITY: sphere */
+    function makeSphere(x, y, z, r, color, opacity) {
+        const geo  = new THREE.SphereGeometry(r, 24, 24);
+        const mat  = new THREE.MeshBasicMaterial({ color, transparent: true, opacity });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(x, y, z);
+        world.add(mesh);
+        return mesh;
+    }
+
+    /* UTILITY: point cloud on a parametric surface */
+    function makeCloud(pts, color, size, opacity) {
+        const arr = new Float32Array(pts.length * 3);
+        pts.forEach((p, i) => { arr[i*3]=p[0]; arr[i*3+1]=p[1]; arr[i*3+2]=p[2]; });
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(arr, 3));
+        const mat = new THREE.PointsMaterial({ color, size, transparent:true, opacity, sizeAttenuation:true, depthWrite:false });
+        const mesh = new THREE.Points(geo, mat);
+        world.add(mesh);
+        return mesh;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ❶  HEART — centre-left
+       Built from:
+         - A left ventricle torus (angled ovoid shape)
+         - A right ventricle torus (smaller, rightward)
+         - Aortic arch tube
+         - Pulmonary artery tubes (left + right)
+         - Superior / inferior vena cava stubs
+         - Coronary artery surface lines
+         - Glow point cloud forming the muscle silhouette
+    ═══════════════════════════════════════════════════════ */
+    const heartGroup = new THREE.Group();
+    heartGroup.position.set(-55, 10, 0);
+    world.add(heartGroup);
+
+    function addToHeart(mesh) { heartGroup.add(mesh); mesh.position.sub(heartGroup.position); return mesh; }
+
+    // Left ventricle — dominant rounded body
+    const lvGeo = new THREE.SphereGeometry(1, 32, 32);
+    lvGeo.scale(14, 18, 12);
+    const lvMesh = new THREE.Mesh(lvGeo,
+        new THREE.MeshBasicMaterial({ color: C.crimson, transparent:true, opacity:0.18, wireframe:false }));
+    lvMesh.rotation.z = -0.25;
+    heartGroup.add(lvMesh);
+
+    // Wireframe over LV for structure
+    const lvWire = new THREE.Mesh(lvGeo.clone(),
+        new THREE.MeshBasicMaterial({ color: C.cyan, transparent:true, opacity:0.08, wireframe:true }));
+    lvWire.rotation.z = -0.25;
+    heartGroup.add(lvWire);
+
+    // Right ventricle — smaller, to the right and front
+    const rvGeo = new THREE.SphereGeometry(1, 24, 24);
+    rvGeo.scale(9, 13, 8);
+    const rvMesh = new THREE.Mesh(rvGeo,
+        new THREE.MeshBasicMaterial({ color: C.violet, transparent:true, opacity:0.14, wireframe:false }));
+    rvMesh.position.set(10, 3, 3);
+    rvMesh.rotation.z = 0.3;
+    heartGroup.add(rvMesh);
+
+    const rvWire = new THREE.Mesh(rvGeo.clone(),
+        new THREE.MeshBasicMaterial({ color: C.purple, transparent:true, opacity:0.07, wireframe:true }));
+    rvWire.position.set(10, 3, 3);
+    rvWire.rotation.z = 0.3;
+    heartGroup.add(rvWire);
+
+    // Aortic arch — large tube sweeping up and right
+    const aortaPoints = [
+        [0, 18, 0], [2, 22, 2], [8, 26, 0], [14, 24, -2],
+        [18, 18, -4], [18, 10, -3]
+    ];
+    const aortaCurve = new THREE.CatmullRomCurve3(aortaPoints.map(p => new THREE.Vector3(...p)));
+    const aortaGeo   = new THREE.TubeGeometry(aortaCurve, 40, 2.2, 10, false);
+    const aortaMesh  = new THREE.Mesh(aortaGeo,
+        new THREE.MeshBasicMaterial({ color: C.cyan, transparent:true, opacity:0.55 }));
+    heartGroup.add(aortaMesh);
+
+    // Aorta wireframe overlay
+    const aortaWire = new THREE.Mesh(aortaGeo.clone(),
+        new THREE.MeshBasicMaterial({ color: C.white, transparent:true, opacity:0.06, wireframe:true }));
+    heartGroup.add(aortaWire);
+
+    // Pulmonary artery — right branch
+    const paCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(8, 20, 2), new THREE.Vector3(14, 22, 4),
+        new THREE.Vector3(18, 20, 6), new THREE.Vector3(20, 16, 5)
+    ]);
+    heartGroup.add(new THREE.Mesh(
+        new THREE.TubeGeometry(paCurve, 20, 1.4, 8, false),
+        new THREE.MeshBasicMaterial({ color: C.violet, transparent:true, opacity:0.50 })
+    ));
+
+    // Pulmonary artery — left branch
+    const paLCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(6, 22, 0), new THREE.Vector3(2, 24, -3),
+        new THREE.Vector3(-4, 22, -4), new THREE.Vector3(-8, 18, -3)
+    ]);
+    heartGroup.add(new THREE.Mesh(
+        new THREE.TubeGeometry(paLCurve, 20, 1.2, 8, false),
+        new THREE.MeshBasicMaterial({ color: C.violet, transparent:true, opacity:0.45 })
+    ));
+
+    // Superior vena cava
+    const svcCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-4, 28, 0), new THREE.Vector3(-5, 22, 0),
+        new THREE.Vector3(-5, 18, 0)
+    ]);
+    heartGroup.add(new THREE.Mesh(
+        new THREE.TubeGeometry(svcCurve, 10, 1.1, 8, false),
+        new THREE.MeshBasicMaterial({ color: C.cyanDim, transparent:true, opacity:0.40 })
+    ));
+
+    // Coronary arteries — thin surface lines curving over the muscle
+    const coronaryPaths = [
+        [[0,8,12],[4,4,14],[8,-2,12],[10,-8,10],[8,-14,8]],
+        [[0,8,12],[-4,4,13],[-8,-2,12],[-10,-8,10]],
+        [[0,8,12],[2,2,14],[4,-4,14],[2,-10,12]],
+    ];
+    coronaryPaths.forEach((pts, idx) => {
+        const cv = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p)));
+        const gm = new THREE.TubeGeometry(cv, 20, 0.45, 6, false);
+        heartGroup.add(new THREE.Mesh(gm,
+            new THREE.MeshBasicMaterial({ color: idx===0 ? C.cyan : C.teal, transparent:true, opacity:0.65 })));
+    });
+
+    // Muscle glow cloud — 2400 points forming a heart silhouette volume
+    const heartCloud = [];
+    for (let i = 0; i < 2400; i++) {
+        const u = (Math.random()-0.5)*2, v = (Math.random()-0.5)*2, w = (Math.random()-0.5)*2;
+        const r = Math.sqrt(u*u + v*v + w*w);
+        if (r < 1.0) {
+            heartCloud.push([u*14*1.1, v*18*1.1 - 1, w*12*1.1]);
+        }
+    }
+    const hCloudArr = new Float32Array(heartCloud.length * 3);
+    heartCloud.forEach((p,i) => { hCloudArr[i*3]=p[0]; hCloudArr[i*3+1]=p[1]; hCloudArr[i*3+2]=p[2]; });
+    const hCloudGeo = new THREE.BufferGeometry();
+    hCloudGeo.setAttribute('position', new THREE.BufferAttribute(hCloudArr, 3));
+    const hCloudMat = new THREE.PointsMaterial({ color:C.crimson, size:0.8, transparent:true, opacity:0.30, sizeAttenuation:true, depthWrite:false });
+    const hCloud = new THREE.Points(hCloudGeo, hCloudMat);
+    heartGroup.add(hCloud);
+
+    /* ═══════════════════════════════════════════════════════
+       ❷  KIDNEY — right side
+       Kidney shape = elongated torus + cortex details
+    ═══════════════════════════════════════════════════════ */
+    const kidneyGroup = new THREE.Group();
+    kidneyGroup.position.set(58, -5, 0);
+    world.add(kidneyGroup);
+
+    // Outer cortex — scaled torus (bean shape)
+    const kOuterGeo = new THREE.TorusGeometry(10, 6.5, 28, 60);
+    const kOuter = new THREE.Mesh(kOuterGeo,
+        new THREE.MeshBasicMaterial({ color: C.cyanDim, transparent:true, opacity:0.16 }));
+    kOuter.rotation.x = Math.PI / 2;
+    kOuter.scale.set(1, 0.72, 0.55);
+    kidneyGroup.add(kOuter);
+
+    const kWire = new THREE.Mesh(kOuterGeo.clone(),
+        new THREE.MeshBasicMaterial({ color: C.cyan, transparent:true, opacity:0.10, wireframe:true }));
+    kWire.rotation.x = Math.PI / 2;
+    kWire.scale.set(1, 0.72, 0.55);
+    kidneyGroup.add(kWire);
+
+    // Renal pelvis — inner cavity
+    const kPelvisGeo = new THREE.SphereGeometry(1, 20, 20);
+    kPelvisGeo.scale(5, 6.5, 3);
+    kidneyGroup.add(new THREE.Mesh(kPelvisGeo,
+        new THREE.MeshBasicMaterial({ color: C.violet, transparent:true, opacity:0.20 })));
+
+    // Ureter — tube going down
+    const ureterCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, -8, 0), new THREE.Vector3(1, -14, 0),
+        new THREE.Vector3(2, -20, 1), new THREE.Vector3(2, -26, 0)
+    ]);
+    kidneyGroup.add(new THREE.Mesh(
+        new THREE.TubeGeometry(ureterCurve, 20, 0.7, 7, false),
+        new THREE.MeshBasicMaterial({ color: C.cyan, transparent:true, opacity:0.45 })
+    ));
+
+    // Renal artery + vein — horizontal vessels
+    const rArteryCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-18, 2, 0), new THREE.Vector3(-12, 2, 0),
+        new THREE.Vector3(-6, 2, 0),  new THREE.Vector3(-2, 2, 0)
+    ]);
+    kidneyGroup.add(new THREE.Mesh(
+        new THREE.TubeGeometry(rArteryCurve, 12, 0.9, 7, false),
+        new THREE.MeshBasicMaterial({ color: C.crimson, transparent:true, opacity:0.55 })
+    ));
+    const rVeinCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-18, -1, 0), new THREE.Vector3(-12, -1, 0),
+        new THREE.Vector3(-6, -1, 0),  new THREE.Vector3(-2, -1, 0)
+    ]);
+    kidneyGroup.add(new THREE.Mesh(
+        new THREE.TubeGeometry(rVeinCurve, 12, 0.75, 7, false),
+        new THREE.MeshBasicMaterial({ color: C.cyanDim, transparent:true, opacity:0.50 })
+    ));
+
+    // Cortex point cloud
+    const kCloud = [];
+    for (let i = 0; i < 1800; i++) {
+        const theta = Math.random() * Math.PI * 2;
+        const phi   = Math.random() * Math.PI;
+        const r     = 8 + Math.random() * 5.5;
+        const x     = r * Math.sin(phi) * Math.cos(theta);
+        const y     = r * Math.cos(phi) * 0.72;
+        const z     = r * Math.sin(phi) * Math.sin(theta) * 0.55;
+        if (Math.abs(x) < 17 && Math.abs(y) < 13) kCloud.push([x, y, z]);
+    }
+    const kArr = new Float32Array(kCloud.length*3);
+    kCloud.forEach((p,i)=>{ kArr[i*3]=p[0]; kArr[i*3+1]=p[1]; kArr[i*3+2]=p[2]; });
+    const kGeo = new THREE.BufferGeometry();
+    kGeo.setAttribute('position', new THREE.BufferAttribute(kArr, 3));
+    kidneyGroup.add(new THREE.Points(kGeo,
+        new THREE.PointsMaterial({ color:C.cyan, size:0.75, transparent:true, opacity:0.25, sizeAttenuation:true, depthWrite:false })));
+
+    /* ═══════════════════════════════════════════════════════
+       ❸  LIVER — bottom centre
+       Large domed wedge shape
+    ═══════════════════════════════════════════════════════ */
+    const liverGroup = new THREE.Group();
+    liverGroup.position.set(0, -52, 0);
+    world.add(liverGroup);
+
+    // Main lobe — flattened sphere scaled into a dome wedge
+    const lGeo = new THREE.SphereGeometry(1, 40, 30);
+    lGeo.scale(28, 14, 18);
+    const lMesh = new THREE.Mesh(lGeo,
+        new THREE.MeshBasicMaterial({ color: C.violet, transparent:true, opacity:0.14 }));
+    lMesh.rotation.z = 0.15;
+    liverGroup.add(lMesh);
+    const lWire = new THREE.Mesh(lGeo.clone(),
+        new THREE.MeshBasicMaterial({ color: C.purple, transparent:true, opacity:0.06, wireframe:true }));
+    lWire.rotation.z = 0.15;
+    liverGroup.add(lWire);
+
+    // Right lobe slightly larger
+    const rlGeo = new THREE.SphereGeometry(1, 30, 24);
+    rlGeo.scale(18, 13, 14);
+    const rlMesh = new THREE.Mesh(rlGeo,
+        new THREE.MeshBasicMaterial({ color: C.violet, transparent:true, opacity:0.12 }));
+    rlMesh.position.set(16, 1, 0);
+    rlMesh.rotation.z = -0.1;
+    liverGroup.add(rlMesh);
+
+    // Portal vein tree — branching tubes
+    const portalPaths = [
+        [[0,-1,0],[4,4,0],[10,8,2],[16,10,4]],
+        [[0,-1,0],[-4,4,0],[-10,8,-2],[-16,9,-3]],
+        [[0,-1,0],[2,5,2],[4,9,5],[6,12,7]],
+        [[4,4,0],[6,2,3],[8,0,5],[10,-2,6]],
+        [[-4,4,0],[-6,2,-3],[-8,0,-4]],
+    ];
+    portalPaths.forEach((pts, i) => {
+        const cv = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p)));
+        liverGroup.add(new THREE.Mesh(
+            new THREE.TubeGeometry(cv, 16, i < 2 ? 1.1 : 0.65, 7, false),
+            new THREE.MeshBasicMaterial({ color: i%2===0 ? C.cyan : C.violet, transparent:true, opacity:0.50 })
+        ));
+    });
+
+    // Hepatic artery
+    const haCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-2, -2, 0), new THREE.Vector3(0, 2, 1),
+        new THREE.Vector3(2, 6, 2), new THREE.Vector3(4, 10, 3)
+    ]);
+    liverGroup.add(new THREE.Mesh(
+        new THREE.TubeGeometry(haCurve, 12, 0.8, 7, false),
+        new THREE.MeshBasicMaterial({ color: C.crimson, transparent:true, opacity:0.55 })
+    ));
+
+    // Liver cloud
+    const lvCloud = [];
+    for (let i = 0; i < 2200; i++) {
+        const u = (Math.random()-0.5)*2, v = (Math.random()-0.5)*2, w = (Math.random()-0.5)*2;
+        if (u*u + v*v + w*w < 0.92)
+            lvCloud.push([u*28, v*14, w*18]);
+    }
+    const lvArr = new Float32Array(lvCloud.length*3);
+    lvCloud.forEach((p,i)=>{ lvArr[i*3]=p[0]; lvArr[i*3+1]=p[1]; lvArr[i*3+2]=p[2]; });
+    const lvGeoCloud = new THREE.BufferGeometry();
+    lvGeoCloud.setAttribute('position', new THREE.BufferAttribute(lvArr, 3));
+    liverGroup.add(new THREE.Points(lvGeoCloud,
+        new THREE.PointsMaterial({ color:C.purple, size:0.75, transparent:true, opacity:0.22, sizeAttenuation:true, depthWrite:false })));
+
+    /* ═══════════════════════════════════════════════════════
+       ❹  LUNGS — flanking the heart (left + right pair)
+    ═══════════════════════════════════════════════════════ */
+    [[-1, -85, 0], [1, 85, 0]].forEach((sign, idx) => {
+        const lungsGroup = new THREE.Group();
+        const sx = idx === 0 ? -88 : 12;   // left lung far left, right lung between heart+kidney
+        lungsGroup.position.set(sx, 15, 0);
+        world.add(lungsGroup);
+
+        // Upper lobe
+        const ulGeo = new THREE.SphereGeometry(1, 24, 20);
+        ulGeo.scale(10, 18, 9);
+        lungsGroup.add(new THREE.Mesh(ulGeo,
+            new THREE.MeshBasicMaterial({ color: C.teal, transparent:true, opacity:0.13, wireframe:false })));
+        lungsGroup.add(new THREE.Mesh(ulGeo.clone(),
+            new THREE.MeshBasicMaterial({ color: C.cyan, transparent:true, opacity:0.07, wireframe:true })));
+
+        // Lower lobe
+        const llGeo = new THREE.SphereGeometry(1, 20, 18);
+        llGeo.scale(11, 14, 9);
+        const llMesh = new THREE.Mesh(llGeo,
+            new THREE.MeshBasicMaterial({ color: C.teal, transparent:true, opacity:0.12 }));
+        llMesh.position.set(0, -18, 0);
+        lungsGroup.add(llMesh);
+
+        // Bronchial tree — branching down from centre
+        const s = idx === 0 ? -1 : 1;
+        const bronchPaths = [
+            [[0, 5, 0],[0, -2, 0],[0, -10, 0]],
+            [[0,-2,0],[s*4, -6, 1],[s*7,-10, 2],[s*9,-14, 2]],
+            [[0,-2,0],[s*-2,-6,-1],[s*-4,-10,-2]],
+            [[s*4,-6,1],[s*6,-9,3],[s*8,-13,4]],
+        ];
+        bronchPaths.forEach((pts, bi) => {
+            const cv = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p)));
+            lungsGroup.add(new THREE.Mesh(
+                new THREE.TubeGeometry(cv, 12, bi===0?1.1:0.55, 6, false),
+                new THREE.MeshBasicMaterial({ color: bi===0?C.cyan:C.teal, transparent:true, opacity:0.55 })
+            ));
+        });
+
+        // Alveolar cloud
+        const aCloud = [];
+        for (let i = 0; i < 1400; i++) {
+            const u=(Math.random()-0.5)*2, v=(Math.random()-0.5)*2, w=(Math.random()-0.5)*2;
+            if (u*u+v*v+w*w < 0.9) aCloud.push([u*10, v*18 - 4, w*9]);
+        }
+        const aArr = new Float32Array(aCloud.length*3);
+        aCloud.forEach((p,i)=>{ aArr[i*3]=p[0]; aArr[i*3+1]=p[1]; aArr[i*3+2]=p[2]; });
+        const aGeo = new THREE.BufferGeometry();
+        aGeo.setAttribute('position', new THREE.BufferAttribute(aArr, 3));
+        lungsGroup.add(new THREE.Points(aGeo,
+            new THREE.PointsMaterial({ color:C.teal, size:0.7, transparent:true, opacity:0.20, sizeAttenuation:true, depthWrite:false })));
+    });
+
+    /* ═══════════════════════════════════════════════════════
+       ❺  SPINE COLUMN — vertical axis of symmetry
+       Simple stack of vertebra rings with a central canal tube
+    ═══════════════════════════════════════════════════════ */
+    const spineGroup = new THREE.Group();
+    spineGroup.position.set(0, 30, -18);
+    world.add(spineGroup);
+
+    // Central canal
+    const spinalCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, 70, 0), new THREE.Vector3(0.5, 50, 0),
+        new THREE.Vector3(0, 30, 0), new THREE.Vector3(-0.5, 10, 0),
+        new THREE.Vector3(0, -10, 0), new THREE.Vector3(0.5, -30, 0),
+        new THREE.Vector3(0, -50, 0),
+    ]);
+    spineGroup.add(new THREE.Mesh(
+        new THREE.TubeGeometry(spinalCurve, 50, 1.0, 8, false),
+        new THREE.MeshBasicMaterial({ color: C.cyan, transparent:true, opacity:0.20 })
+    ));
+
+    // Vertebra discs
+    for (let i = 0; i < 11; i++) {
+        const y = 62 - i * 12;
+        const vGeo = new THREE.CylinderGeometry(4.5, 4.5, 1.8, 14, 1, false);
+        spineGroup.add(new THREE.Mesh(vGeo,
+            new THREE.MeshBasicMaterial({ color: C.cyanDim, transparent:true, opacity:0.18 })));
+        spineGroup.children[spineGroup.children.length-1].position.set(0, y, 0);
+
+        // Spinous process — short horizontal bar
+        const spGeo = new THREE.BoxGeometry(0.8, 1.6, 5);
+        const sp = new THREE.Mesh(spGeo,
+            new THREE.MeshBasicMaterial({ color: C.cyan, transparent:true, opacity:0.14 }));
+        sp.position.set(0, y, -5);
+        spineGroup.add(sp);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ❻  MAJOR VESSELS — Aorta + IVC running vertically
+       connecting organs together with flowing tubes
+    ═══════════════════════════════════════════════════════ */
+    const vesselGroup = new THREE.Group();
+    world.add(vesselGroup);
+
+    // Descending aorta
+    const descAorta = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-8, 45, 0), new THREE.Vector3(-9, 30, 0),
+        new THREE.Vector3(-9, 10, 0), new THREE.Vector3(-10, -10, 0),
+        new THREE.Vector3(-10, -30, 0), new THREE.Vector3(-9, -50, 0),
+    ]);
+    vesselGroup.add(new THREE.Mesh(
+        new THREE.TubeGeometry(descAorta, 40, 2.0, 10, false),
+        new THREE.MeshBasicMaterial({ color: C.crimson, transparent:true, opacity:0.40 })
+    ));
+
+    // Inferior vena cava
+    const ivcCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-4, 40, 0), new THREE.Vector3(-4, 20, 0),
+        new THREE.Vector3(-4, 0, 0),  new THREE.Vector3(-4, -20, 0),
+        new THREE.Vector3(-4, -40, 0),
+    ]);
+    vesselGroup.add(new THREE.Mesh(
+        new THREE.TubeGeometry(ivcCurve, 30, 1.6, 10, false),
+        new THREE.MeshBasicMaterial({ color: C.cyanDim, transparent:true, opacity:0.35 })
+    ));
+
+    // Renal artery branch from aorta to kidney
+    const renalBranch = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-9, 0, 0), new THREE.Vector3(4, 0, 0),
+        new THREE.Vector3(20, 0, 0), new THREE.Vector3(36, -3, 0)
+    ]);
+    vesselGroup.add(new THREE.Mesh(
+        new THREE.TubeGeometry(renalBranch, 16, 1.0, 7, false),
+        new THREE.MeshBasicMaterial({ color: C.crimson, transparent:true, opacity:0.45 })
+    ));
+
+    // Hepatic portal from liver upward
+    const portalMain = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-4, -40, 0), new THREE.Vector3(-5, -28, 0),
+        new THREE.Vector3(-6, -16, 0), new THREE.Vector3(-7, -4, 0)
+    ]);
+    vesselGroup.add(new THREE.Mesh(
+        new THREE.TubeGeometry(portalMain, 20, 1.1, 8, false),
+        new THREE.MeshBasicMaterial({ color: C.violet, transparent:true, opacity:0.40 })
+    ));
+
+    /* ═══════════════════════════════════════════════════════
+       ❼  DATA PULSE PARTICLES — flowing along vessels
+       Small bright dots that travel along paths
+    ═══════════════════════════════════════════════════════ */
+    const PULSE_N = 180;
+    const pulsePos = new Float32Array(PULSE_N * 3);
+    const pulseT   = new Float32Array(PULSE_N);   // 0..1 progress along path
+    const pulsePth = [];  // which curve each particle rides
+
+    const pulsePaths = [descAorta, ivcCurve, renalBranch, portalMain, aortaCurve];
+    for (let i = 0; i < PULSE_N; i++) {
+        pulseT[i] = Math.random();
+        pulsePth.push(pulsePaths[i % pulsePaths.length]);
+        const p = pulsePth[i].getPoint(pulseT[i]);
+        pulsePos[i*3] = p.x; pulsePos[i*3+1] = p.y; pulsePos[i*3+2] = p.z;
+    }
+    const pulseGeo = new THREE.BufferGeometry();
+    pulseGeo.setAttribute('position', new THREE.BufferAttribute(pulsePos, 3));
+    const pulseMat = new THREE.PointsMaterial({ color:C.white, size:2.2, transparent:true, opacity:0.85, sizeAttenuation:true, depthWrite:false });
+    world.add(new THREE.Points(pulseGeo, pulseMat));
+
+    /* ═══════════════════════════════════════════════════════
+       ❽  AMBIENT STARS — deep background field
+    ═══════════════════════════════════════════════════════ */
+    const STAR_N = 900;
+    const starArr = new Float32Array(STAR_N * 3);
+    for (let i = 0; i < STAR_N; i++) {
+        starArr[i*3]   = (Math.random()-0.5) * 600;
+        starArr[i*3+1] = (Math.random()-0.5) * 500;
+        starArr[i*3+2] = -120 - Math.random() * 200;
+    }
+    const starGeo = new THREE.BufferGeometry();
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starArr, 3));
+    scene.add(new THREE.Points(starGeo,
+        new THREE.PointsMaterial({ color:C.cyanDim, size:0.6, transparent:true, opacity:0.18, sizeAttenuation:true, depthWrite:false })));
+
+    /* ═══════════════════════════════════════════════════════
+       ANIMATION LOOP
+    ═══════════════════════════════════════════════════════ */
+    let clock = 0;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        clock += 0.008;
+
+        // Smooth mouse
+        mouse.x += (target.x - mouse.x) * 0.030;
+        mouse.y += (target.y - mouse.y) * 0.030;
+
+        // Camera gentle parallax
+        camera.position.x += (mouse.x * 14 - camera.position.x) * 0.018;
+        camera.position.y += (-mouse.y * 9 - camera.position.y) * 0.018;
+        camera.lookAt(0, -8, 0);
+
+        // World slow rotation
+        world.rotation.y  += 0.0012;
+        world.rotation.x   = mouse.y * 0.08;
+        world.rotation.z   = mouse.x * 0.04;
+
+        // Heartbeat — ~60 BPM
+        const beat    = Math.sin(clock * 1.3);
+        const systole = Math.max(0, beat);
+        const hbScale = 1.0 + systole * 0.055;
+        heartGroup.scale.setScalar(hbScale);
+        hCloudMat.opacity  = 0.22 + systole * 0.18;
+        hCloudMat.size     = 0.7 + systole * 0.4;
+
+        // Kidneys gentle sway
+        kidneyGroup.rotation.z = Math.sin(clock * 0.5) * 0.04;
+
+        // Liver breathe
+        liverGroup.scale.y = 1.0 + Math.sin(clock * 0.8) * 0.018;
+
+        // Pulse particles travel along vessels
+        const PP = pulseGeo.attributes.position;
+        const speed = 0.0035 + systole * 0.002;
+        for (let i = 0; i < PULSE_N; i++) {
+            pulseT[i] += speed * (0.6 + (i % 4) * 0.2);
+            if (pulseT[i] > 1) pulseT[i] -= 1;
+            const p = pulsePth[i].getPoint(Math.min(pulseT[i], 0.9999));
+            PP.array[i*3] = p.x; PP.array[i*3+1] = p.y; PP.array[i*3+2] = p.z;
+        }
+        PP.needsUpdate = true;
+        pulseMat.opacity = 0.65 + systole * 0.30;
+
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    window.addEventListener('scroll', () => {
+        const t = window.scrollY / Math.max(1, document.body.scrollHeight - window.innerHeight);
+        world.position.y = -t * 18;
+    });
+
+})();
+
+// ── Modal Functions ──
+function openDonorTracking() { document.getElementById('donorTrackingModal').style.display = 'flex'; }
+function closeDonorTracking() { document.getElementById('donorTrackingModal').style.display = 'none'; }
+function openRecipientTracking() { document.getElementById('recipientTrackingModal').style.display = 'flex'; }
+function closeRecipientTracking() { document.getElementById('recipientTrackingModal').style.display = 'none'; }
+function searchDonor() {
+    const phone = document.getElementById('donorPhone').value;
+    if (!phone || phone.length < 10) { alert('Please enter a valid 10-digit phone number'); return; }
+    window.location.href = `/donor/track/${phone}`;
+}
+function searchRecipient() {
+    const phone = document.getElementById('recipientPhone').value;
+    if (!phone || phone.length < 10) { alert('Please enter a valid 10-digit phone number'); return; }
+    window.location.href = `/recipient/track/${phone}`;
+}
+document.addEventListener('click', function(e) {
+    const dm = document.getElementById('donorTrackingModal');
+    const rm = document.getElementById('recipientTrackingModal');
+    if (e.target === dm) closeDonorTracking();
+    if (e.target === rm) closeRecipientTracking();
+});
+</script>
+
+</body>
+</html>

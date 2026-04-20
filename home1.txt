@@ -1,0 +1,539 @@
+// another code ui 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>NeuroBridge</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:#08080f;color:#e8e0f0;overflow-x:hidden;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
+
+#neural-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+header,section,footer{position:relative;z-index:2}
+
+body::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(0,210,255,.07) 0%,transparent 70%),
+    radial-gradient(ellipse 60% 60% at 10% 85%,rgba(16,230,150,.04) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 50% at 90% 55%,rgba(140,80,255,.04) 0%,transparent 55%);}
+body::after{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.022;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px;}
+
+.glass{background:rgba(10,6,20,.58);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(0,210,255,.14)}
+
+.glow-btn{background:linear-gradient(135deg,#10e596,#00c8ff);color:#012920;font-weight:700;
+  box-shadow:0 0 28px rgba(0,200,255,.28),0 0 56px rgba(16,229,150,.12);
+  transition:all .32s cubic-bezier(.4,0,.2,1);display:inline-block;text-align:center}
+.glow-btn:hover{transform:scale(1.05) translateY(-2px);box-shadow:0 0 45px rgba(0,200,255,.5),0 0 90px rgba(16,229,150,.22)}
+
+.ghost-btn{border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.7);
+  transition:all .28s ease;display:inline-block;text-align:center}
+.ghost-btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.25)}
+
+.track-btn{border:1px solid rgba(16,229,150,.32);color:#10e596;
+  transition:all .28s ease;display:inline-block;text-align:center}
+.track-btn:hover{background:rgba(16,229,150,.08)}
+
+.holo-card{border:1px solid transparent;
+  background:linear-gradient(rgba(8,5,18,.72),rgba(8,5,18,.72)) padding-box,
+    linear-gradient(135deg,rgba(16,229,150,.55),rgba(0,200,255,.55),rgba(140,80,255,.38),rgba(16,229,150,.55)) border-box;
+  transition:transform .38s cubic-bezier(.4,0,.2,1),box-shadow .38s;position:relative;overflow:hidden}
+.holo-card::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,210,255,.85),transparent);transition:left .55s ease}
+.holo-card:hover::before{left:100%}
+@media(hover:hover){.holo-card:hover{transform:translateY(-6px) scale(1.025);box-shadow:0 20px 60px rgba(0,200,255,.10)}}
+
+@keyframes glitch{0%,90%,100%{clip-path:none;transform:none;opacity:1}
+  91%{clip-path:inset(25% 0 55% 0);transform:translateX(-3px);opacity:.88}
+  93%{clip-path:inset(55% 0 15% 0);transform:translateX(3px);opacity:.88}
+  96%{clip-path:inset(35% 0 45% 0);transform:translateX(-2px);opacity:.95}}
+.glitch{animation:glitch 9s infinite}
+
+@keyframes pulse-ring{0%{transform:scale(1);opacity:.7}100%{transform:scale(2.2);opacity:0}}
+.pulse-ring{position:absolute;inset:-4px;border-radius:9999px;pointer-events:none;
+  border:1.5px solid rgba(0,210,255,.5);animation:pulse-ring 2.2s ease-out infinite}
+
+@keyframes float-orb{0%,100%{transform:translateY(0) translateX(0)}33%{transform:translateY(-18px) translateX(8px)}66%{transform:translateY(11px) translateX(-6px)}}
+.float-orb{animation:float-orb 10s ease-in-out infinite}
+
+@keyframes ping{75%,100%{transform:scale(2.2);opacity:0}}
+.ping-dot{animation:ping 1.5s cubic-bezier(0,0,.2,1) infinite}
+
+@keyframes count-glow{0%,100%{text-shadow:0 0 18px currentColor}50%{text-shadow:0 0 36px currentColor,0 0 72px currentColor}}
+.stat-glow{animation:count-glow 3s ease-in-out infinite}
+
+@keyframes scan-anim{0%{top:-3px;opacity:0}8%{opacity:.4}92%{opacity:.4}100%{top:100vh;opacity:0}}
+.scan-line{position:fixed;left:0;right:0;height:3px;z-index:3;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(0,210,255,.18),transparent);animation:scan-anim 7s linear infinite}
+
+/* ── MOBILE MENU ── */
+#mob-menu{display:none;position:fixed;inset:0;z-index:100;
+  background:rgba(4,3,12,.97);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  flex-direction:column;align-items:center;justify-content:center;gap:2.25rem}
+#mob-menu.open{display:flex}
+#mob-menu a{font-size:1.45rem;font-weight:800;color:#e8e0f0;font-family:'Syne',sans-serif;transition:color .2s;text-decoration:none}
+#mob-menu a:active{color:#10e596}
+
+.ham{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;background:none;border:none;z-index:110}
+.ham span{width:22px;height:2px;background:#e8e0f0;border-radius:2px;transition:all .3s ease;display:block}
+.ham.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.ham.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.ham.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+@media(max-width:767px){
+  .ham{display:flex}
+  .nav-desktop{display:none!important}
+}
+
+/* Responsive padding */
+.sp{padding-left:clamp(1.1rem,5vw,3.5rem);padding-right:clamp(1.1rem,5vw,3.5rem)}
+
+/* Stats 2-col on tiny phones */
+@media(max-width:479px){.stats-g{grid-template-columns:1fr 1fr!important}}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:#08080f}
+::-webkit-scrollbar-thumb{background:rgba(0,210,255,.2);border-radius:10px}
+
+@media(hover:none){.glow-btn:active{transform:scale(.97)}.ghost-btn:active{background:rgba(255,255,255,.07)}}
+</style>
+</head>
+<body>
+
+<canvas id="neural-canvas"></canvas>
+<div class="scan-line"></div>
+
+<!-- MOBILE OVERLAY -->
+<div id="mob-menu" role="dialog" aria-modal="true">
+  <button onclick="closeMob()" style="position:absolute;top:1.25rem;right:1.25rem;background:none;border:none;color:#e8e0f0;cursor:pointer;padding:10px" aria-label="Close menu">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <a href="/login" onclick="closeMob()">Hospital Login</a>
+  <a href="/register" onclick="closeMob()" style="color:#10e596">Register Hospital</a>
+  <a href="#track" onclick="closeMob()" style="color:#00c8ff">Track Status</a>
+  <div style="width:40px;height:1px;background:rgba(255,255,255,.1)"></div>
+  <a href="/admin/login" onclick="closeMob()" style="color:rgba(200,190,220,.4);font-size:.95rem">Staff &amp; Admin</a>
+</div>
+
+<!-- NAVBAR -->
+<header class="flex justify-between items-center glass"
+  style="margin:clamp(.6rem,2vw,1.1rem);border-radius:9999px;padding:.7rem clamp(.85rem,3.5vw,1.6rem)">
+  <!-- Brand -->
+  <div class="flex items-center" style="gap:.6rem">
+    <div style="width:36px;height:36px;flex-shrink:0;border-radius:9px;
+      background:linear-gradient(135deg,#10e596,#00c8ff);
+      box-shadow:0 0 16px rgba(0,200,255,.28);
+      display:flex;align-items:center;justify-content:center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="3" fill="#012920"/>
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="#012920" stroke-width="1.5"/>
+        <path d="M2 12h4M18 12h4M12 2v4M12 18v4" stroke="#012920" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span style="font-family:'Syne',sans-serif;font-weight:900;font-size:clamp(1rem,3vw,1.15rem);letter-spacing:-.02em;color:#fff;white-space:nowrap">
+      Neuro<span style="color:#10e596">Bridge</span>
+    </span>
+  </div>
+  <!-- Desktop nav -->
+  <nav class="nav-desktop flex items-center" style="gap:.6rem">
+    <a href="/login" class="ghost-btn" style="padding:.4rem 1rem;border-radius:9999px;font-size:.82rem;font-weight:500;text-decoration:none">Hospital Login</a>
+    <a href="/register" class="glow-btn" style="padding:.4rem 1rem;border-radius:9999px;font-size:.82rem;text-decoration:none">Register</a>
+    <a href="#track" class="track-btn" style="padding:.4rem 1rem;border-radius:9999px;font-size:.82rem;font-weight:500;text-decoration:none">Track Status</a>
+  </nav>
+  <!-- Hamburger -->
+  <button class="ham" id="ham" onclick="toggleMob()" aria-label="Open navigation">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<!-- HERO -->
+<section class="text-center sp" style="margin-top:clamp(3rem,8vw,6rem)">
+  <!-- Decorative orbs -->
+  <div class="float-orb" style="position:absolute;left:4%;top:-3rem;width:min(20vw,11rem);height:min(20vw,11rem);border-radius:50%;background:radial-gradient(circle,rgba(0,200,255,.06) 0%,transparent 70%);pointer-events:none"></div>
+  <div class="float-orb" style="position:absolute;right:5%;top:.5rem;width:min(24vw,14rem);height:min(24vw,14rem);border-radius:50%;background:radial-gradient(circle,rgba(16,229,150,.05) 0%,transparent 70%);pointer-events:none;animation-delay:-4s"></div>
+
+  <!-- Badge -->
+  <div style="display:inline-flex;align-items:center;gap:.5rem;padding:.38rem .95rem;border-radius:9999px;margin-bottom:clamp(1.25rem,4vw,2.25rem)" class="glass" style="border-color:rgba(0,210,255,.24)">
+    <span style="position:relative;display:flex;width:.5rem;height:.5rem">
+      <span class="ping-dot" style="position:absolute;inset:0;border-radius:50%;background:#00d2ff;opacity:.75"></span>
+      <span style="position:relative;display:block;border-radius:50%;width:.5rem;height:.5rem;background:#00d2ff"></span>
+    </span>
+    <span style="font-size:.68rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#00d2ff;font-family:'Syne',sans-serif;white-space:nowrap">Neural OS · Live v2.0</span>
+  </div>
+
+  <!-- H1 -->
+  <h1 class="glitch" style="font-family:'Syne',sans-serif;font-weight:900;
+    font-size:clamp(2.2rem,9.5vw,6.5rem);line-height:1.0;letter-spacing:-.03em;
+    margin-bottom:clamp(.85rem,2.5vw,1.4rem)">
+    The Future of<br>
+    <span style="background:linear-gradient(135deg,#10e596,#00c8ff,#8c50ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Organ Networks</span>
+  </h1>
+
+  <!-- Sub -->
+  <p style="max-width:min(92%,33rem);margin:0 auto;line-height:1.78;color:rgba(200,190,220,.60);
+    margin-bottom:clamp(1.75rem,5vw,3.25rem);font-size:clamp(.88rem,2.5vw,1.08rem)">
+    AI-powered allocation, real-time tracking, and seamless hospital connectivity — redefining life-saving infrastructure.
+  </p>
+
+  <!-- CTA buttons -->
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:.75rem">
+    <div style="position:relative;display:inline-block">
+      <div class="pulse-ring"></div>
+      <a href="/login" class="glow-btn" style="font-family:'Syne',sans-serif;text-decoration:none;
+        padding:clamp(.7rem,2.2vw,1rem) clamp(1.4rem,4vw,2.4rem);
+        border-radius:9999px;font-size:clamp(.82rem,2vw,.98rem)">Hospital Login</a>
+    </div>
+    <a href="/register" class="ghost-btn" style="text-decoration:none;font-weight:500;
+      padding:clamp(.7rem,2.2vw,1rem) clamp(1.4rem,4vw,2.4rem);
+      border-radius:9999px;font-size:clamp(.82rem,2vw,.98rem)">Get Started →</a>
+  </div>
+
+  <!-- Scroll hint -->
+  <div style="margin-top:clamp(2.5rem,7vw,5.5rem);display:flex;flex-direction:column;align-items:center;gap:.55rem;color:rgba(255,255,255,.18)">
+    <span style="font-size:.62rem;letter-spacing:.28em;text-transform:uppercase">Scroll to explore</span>
+    <div style="width:1px;height:2rem;background:linear-gradient(to bottom,rgba(0,210,255,.4),transparent)" class="animate-pulse"></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="sp" style="margin-top:clamp(3rem,7vw,5rem)">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:clamp(.85rem,2.5vw,1.4rem)">
+
+    <article class="holo-card" style="padding:clamp(1.35rem,3.5vw,2.1rem);border-radius:1.4rem;background:rgba(8,5,18,.68)">
+      <div style="width:2.75rem;height:2.75rem;border-radius:.8rem;background:rgba(16,229,150,.12);border:1px solid rgba(16,229,150,.2);display:flex;align-items:center;justify-content:center;margin-bottom:1.1rem">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#10e596" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <h3 style="font-family:'Syne',sans-serif;font-size:clamp(.95rem,2.5vw,1.05rem);font-weight:800;color:#fff;margin-bottom:.65rem">Secure Registry</h3>
+      <p style="color:rgba(180,170,200,.56);line-height:1.72;font-size:clamp(.82rem,2vw,.9rem)">End-to-end encrypted donor-recipient database with quantum-resistant key infrastructure and real-time updates across 1,200+ nodes.</p>
+    </article>
+
+    <article class="holo-card" style="padding:clamp(1.35rem,3.5vw,2.1rem);border-radius:1.4rem;background:rgba(8,5,18,.68)">
+      <div style="width:2.75rem;height:2.75rem;border-radius:.8rem;background:rgba(0,200,255,.10);border:1px solid rgba(0,200,255,.2);display:flex;align-items:center;justify-content:center;margin-bottom:1.1rem">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#00c8ff" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/></svg>
+      </div>
+      <h3 style="font-family:'Syne',sans-serif;font-size:clamp(.95rem,2.5vw,1.05rem);font-weight:800;color:#fff;margin-bottom:.65rem">AI Matching</h3>
+      <p style="color:rgba(180,170,200,.56);line-height:1.72;font-size:clamp(.82rem,2vw,.9rem)">Transformer-based neural algorithms processing 400+ compatibility vectors in milliseconds — 98.7% accuracy across blood type, HLA, and tissue factors.</p>
+    </article>
+
+    <article class="holo-card" style="padding:clamp(1.35rem,3.5vw,2.1rem);border-radius:1.4rem;background:rgba(8,5,18,.68)">
+      <div style="width:2.75rem;height:2.75rem;border-radius:.8rem;background:rgba(140,80,255,.10);border:1px solid rgba(140,80,255,.22);display:flex;align-items:center;justify-content:center;margin-bottom:1.1rem">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8c50ff" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <h3 style="font-family:'Syne',sans-serif;font-size:clamp(.95rem,2.5vw,1.05rem);font-weight:800;color:#fff;margin-bottom:.65rem">Live Tracking</h3>
+      <p style="color:rgba(180,170,200,.56);line-height:1.72;font-size:clamp(.82rem,2vw,.9rem)">Sub-second GPS telemetry with predictive viability decay modeling. Every organ shipment tracked from harvest to implant in real time.</p>
+    </article>
+
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="sp" style="margin-top:clamp(2rem,4.5vw,3.5rem)">
+  <div class="glass stats-g" style="border-radius:1.4rem;
+    padding:clamp(1.25rem,3.5vw,2rem) clamp(1rem,3.5vw,1.75rem);
+    display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(.6rem,2vw,1.25rem);text-align:center">
+
+    <div>
+      <p class="stat-glow" style="font-family:'Syne',sans-serif;font-weight:900;color:#10e596;line-height:1.1;font-size:clamp(1.4rem,4vw,2.4rem)">1,200<span style="font-size:.58em;color:rgba(16,229,150,.5)">+</span></p>
+      <p style="font-size:clamp(.55rem,1.4vw,.68rem);margin-top:.35rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(200,190,220,.36)">Hospitals</p>
+    </div>
+    <div>
+      <p class="stat-glow" style="font-family:'Syne',sans-serif;font-weight:900;color:#00c8ff;line-height:1.1;font-size:clamp(1.4rem,4vw,2.4rem);animation-delay:.5s">98.7<span style="font-size:.52em;color:rgba(0,200,255,.5)">%</span></p>
+      <p style="font-size:clamp(.55rem,1.4vw,.68rem);margin-top:.35rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(200,190,220,.36)">Accuracy</p>
+    </div>
+    <div>
+      <p class="stat-glow" style="font-family:'Syne',sans-serif;font-weight:900;color:#8c50ff;line-height:1.1;font-size:clamp(1.4rem,4vw,2.4rem);animation-delay:1s">4.2<span style="font-size:.52em;color:rgba(140,80,255,.5)">m</span></p>
+      <p style="font-size:clamp(.55rem,1.4vw,.68rem);margin-top:.35rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(200,190,220,.36)">Match Time</p>
+    </div>
+    <div>
+      <p class="stat-glow" style="font-family:'Syne',sans-serif;font-weight:900;color:#10e596;line-height:1.1;font-size:clamp(1.4rem,4vw,2.4rem);animation-delay:1.5s">8,400<span style="font-size:.58em;color:rgba(16,229,150,.5)">+</span></p>
+      <p style="font-size:clamp(.55rem,1.4vw,.68rem);margin-top:.35rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(200,190,220,.36)">Lives Saved</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="text-center sp" style="margin-top:clamp(3.5rem,9vw,7rem);padding-bottom:clamp(1.75rem,4vw,2.5rem);position:relative">
+  <div class="float-orb" style="position:absolute;left:50%;transform:translateX(-50%);top:-2rem;width:min(80vw,28rem);height:7rem;border-radius:50%;background:radial-gradient(ellipse,rgba(16,229,150,.07) 0%,transparent 70%);pointer-events:none"></div>
+  <p style="font-size:.68rem;letter-spacing:.26em;text-transform:uppercase;color:rgba(0,210,255,.5);font-family:'Syne',sans-serif;margin-bottom:.8rem">Every second matters</p>
+  <h2 style="font-family:'Syne',sans-serif;font-weight:900;font-size:clamp(1.85rem,7vw,3.8rem);letter-spacing:-.03em;margin-bottom:.9rem;line-height:1.05">Ready to Save Lives?</h2>
+  <p style="color:rgba(200,190,220,.46);margin-bottom:clamp(1.75rem,4.5vw,2.75rem);font-size:clamp(.85rem,2vw,1rem)">Join the network. Become part of the future.</p>
+  <div style="position:relative;display:inline-block">
+    <div class="pulse-ring" style="animation-delay:.5s"></div>
+    <a href="/register" class="glow-btn" style="font-family:'Syne',sans-serif;text-decoration:none;letter-spacing:.02em;
+      padding:clamp(.82rem,2.5vw,1.1rem) clamp(1.8rem,5vw,3.2rem);
+      border-radius:9999px;font-size:clamp(.88rem,2.2vw,1.05rem)">Join NeuroBridge</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="text-center sp" style="padding-top:clamp(1.25rem,3.5vw,2.25rem);padding-bottom:clamp(1.75rem,4vw,3rem)">
+  <div style="width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);margin-bottom:clamp(1rem,2.5vw,1.75rem)"></div>
+  <p style="color:rgba(200,190,220,.26);font-size:clamp(.75rem,2vw,.82rem)">© 2026 NeuroBridge · Built with Tech &amp; Empathy</p>
+  <a href="/admin/login" style="display:inline-block;margin-top:.55rem;font-size:clamp(.75rem,2vw,.82rem);font-weight:700;color:#10e596;text-decoration:none">Staff &amp; Admin Login</a>
+</footer>
+
+<!-- THREE.JS -->
+<script>
+(function(){
+  function isMob(){return window.innerWidth<768}
+  function brainScale(){
+    const w=window.innerWidth;
+    if(w<360)return.48;if(w<420)return.56;if(w<520)return.64;
+    if(w<640)return.72;if(w<768)return.82;if(w<1024)return.91;return 1;
+  }
+  function getCamZ(){
+    const w=window.innerWidth;
+    if(w<360)return 188;if(w<420)return 175;if(w<520)return 162;
+    if(w<640)return 150;if(w<768)return 138;if(w<1024)return 124;return 112;
+  }
+
+  const canvas=document.getElementById('neural-canvas');
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,isMob()?1.5:2));
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  renderer.setClearColor(0,0);
+
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(48,window.innerWidth/window.innerHeight,.1,2000);
+  camera.position.set(0,8,getCamZ());
+
+  const mouse={x:0,y:0},tgt={x:0,y:0};
+  document.addEventListener('mousemove',e=>{tgt.x=(e.clientX/innerWidth-.5);tgt.y=(e.clientY/innerHeight-.5);});
+  document.addEventListener('touchmove',e=>{if(!e.touches[0])return;tgt.x=(e.touches[0].clientX/innerWidth-.5)*.55;tgt.y=(e.touches[0].clientY/innerHeight-.5)*.55;},{passive:true});
+
+  const root=new THREE.Group();scene.add(root);
+
+  const C={cy:0x00d2ff,tc:0x007a99,te:0x10e596,lt:0x6effd4,vi:0x6620cc,pu:0xab70ff,wh:0xffffff,sk:0x44ccff,mi:0x00ffb8};
+  function v3(x,y,z){return new THREE.Vector3(x,y,z)}
+  function ep(a,b,c,phi,t){return v3(a*Math.sin(phi)*Math.cos(t),b*Math.cos(phi),c*Math.sin(phi)*Math.sin(t))}
+  function gyrus(g,a,b,c,pf,tr,ax,seg,r,col,op,ox){
+    const pts=[];
+    for(let s=0;s<=seg;s++){
+      const t=s/seg;let phi,theta;
+      if(ax==='lat'){phi=pf+Math.sin(t*Math.PI*2.5+pf)*.12+Math.sin(t*Math.PI*6)*.035;theta=tr[0]+t*(tr[1]-tr[0]);}
+      else{phi=tr[0]+t*(tr[1]-tr[0]);theta=pf+Math.sin(t*Math.PI*3.5)*.13+Math.cos(t*Math.PI*7)*.03;}
+      const p=ep(a,b,c,phi,theta);p.x+=ox;pts.push(p);
+    }
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),seg,r,8,false),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op})));
+  }
+  function sulcus(g,a,b,c,pf,tr,ax,col,op,ox){gyrus(g,a*.944,b*.944,c*.944,pf,tr,ax,36,.21,col,op*.58,ox);}
+
+  const LA=27,LB=23,LC=21,LOFF=-15,ROFF=15;
+  [[new THREE.Group(),LOFF,0,Math.PI,C.te,C.cy,C.pu,C.tc,C.vi,[.20,.42,.65,.88,1.12,1.36,1.60,1.85,2.10,2.55,2.82,3.00],[.92,1.55],C.cy],
+   [new THREE.Group(),ROFF,Math.PI,2*Math.PI,C.pu,C.cy,C.te,C.vi,C.tc,[3.46,3.70,3.96,4.22,4.50,4.78,5.06,5.35,5.65,5.90,6.08,6.20],[.90,1.53],C.pu]
+  ].forEach(([grp,ox,t0,t1,c1,c2,c3,sc,sc2,lons,dp,dc])=>{
+    root.add(grp);
+    const sg=new THREE.SphereGeometry(1,64,48,ox===LOFF?0:Math.PI,Math.PI);sg.scale(LA,LB,LC);
+    grp.add(new THREE.Mesh(sg,new THREE.MeshBasicMaterial({color:0x050310,transparent:true,opacity:.78})));
+    const cs=[c1,c2,c3];
+    [.48,.70,.88,1.06,1.22,1.40,1.58,1.76,1.94,2.12,2.30].forEach((phi,i)=>gyrus(grp,LA,LB,LC,phi,[t0+.04,t1-.04],'lat',48,.70,cs[i%3],.26+.08*(i%2),ox));
+    [.59,.79,.97,1.14,1.31,1.49,1.67,1.85,2.03,2.21,2.40].forEach((phi,i)=>gyrus(grp,LA,LB,LC,phi,[t0+.07,t1-.07],'lat',40,.41,[C.tc,C.vi,C.lt,C.sk,C.mi][i%5],.17,ox));
+    [.54,.73,.92,1.10,1.29,1.47,1.65,1.83,2.02,2.20].forEach((phi,i)=>sulcus(grp,LA,LB,LC,phi,[t0+.06,t1-.06],'lat',i%2?sc:sc2,.28,ox));
+    lons.forEach((theta,i)=>gyrus(grp,LA,LB,LC,theta,[.22,Math.PI-.2],'lon',30,.31,i%2?sc:sc2,.15,ox));
+    dp.forEach(phi=>gyrus(grp,LA*.94,LB*.94,LC*.94,phi,[t0+.05,t1-.05],'lat',32,.17,dc,.20,ox));
+    grp.add(new THREE.Mesh(sg.clone(),new THREE.MeshBasicMaterial({color:ox===LOFF?C.te:C.pu,transparent:true,opacity:.024,wireframe:true})));
+    grp.position.x=ox;
+  });
+
+  // Fissure
+  const fp=[];for(let i=0;i<=40;i++){const t=i/40;fp.push(v3(Math.sin(t*Math.PI)*.6,LB*Math.cos(t*Math.PI*.8+.25)*.92,LC*(t-.5)*1.7));}
+  root.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(fp),new THREE.LineBasicMaterial({color:C.cy,transparent:true,opacity:.26})));
+
+  // Corpus callosum
+  const ccp=[];for(let i=0;i<=32;i++){const t=i/32*Math.PI;ccp.push(v3(Math.cos(t)*19,-3+Math.sin(t)*6+Math.sin(t*3)*.8,Math.sin(t*.5)*2));}
+  const ccC=new THREE.CatmullRomCurve3(ccp);
+  root.add(new THREE.Mesh(new THREE.TubeGeometry(ccC,40,2.2,12,false),new THREE.MeshBasicMaterial({color:0xdddaff,transparent:true,opacity:.20})));
+  for(let f=0;f<12;f++){const fr=f/11,x=Math.cos(fr*Math.PI)*19,y=-3+Math.sin(fr*Math.PI)*6,sg=fr<.5?-1:1;
+    root.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([v3(x,y,0),v3(x*.5+sg*10,y+7,0),v3(sg*18,y+3,-4)]),new THREE.LineBasicMaterial({color:C.wh,transparent:true,opacity:.08})));}
+
+  // Thalamus
+  const tg=new THREE.SphereGeometry(1,24,18);tg.scale(7,5.5,6);
+  const thal=new THREE.Mesh(tg,new THREE.MeshBasicMaterial({color:0x3311aa,transparent:true,opacity:.52}));
+  thal.position.set(0,-5,0);root.add(thal);
+
+  // Hippocampus
+  [-8,8].forEach(ox=>{const hp=[];for(let i=0;i<=24;i++){const t=i/24;hp.push(v3(ox+Math.sin(t*Math.PI)*4*Math.sign(ox),-14+t*8-Math.sin(t*Math.PI*2)*2,-2+Math.cos(t*Math.PI)*5));}
+    root.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(hp),20,1.4,8,false),new THREE.MeshBasicMaterial({color:0x6622cc,transparent:true,opacity:.36})));});
+
+  // Brainstem
+  const bs=new THREE.Group();bs.position.set(0,-22,9);root.add(bs);
+  bs.add(new THREE.Mesh(new THREE.CylinderGeometry(5.8,6.5,9,20),new THREE.MeshBasicMaterial({color:C.vi,transparent:true,opacity:.28})));
+  const med=new THREE.Mesh(new THREE.CylinderGeometry(3.8,2.5,11,14),new THREE.MeshBasicMaterial({color:C.tc,transparent:true,opacity:.26}));med.position.y=-11;bs.add(med);
+  for(let i=0;i<10;i++){const t=i/10*Math.PI*2;bs.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([v3(5.5*Math.cos(t),3,5.5*Math.sin(t)),v3(4.8*Math.cos(t),-6,4.8*Math.sin(t)),v3(3.4*Math.cos(t),-17,3.4*Math.sin(t))]),new THREE.LineBasicMaterial({color:C.cy,transparent:true,opacity:.14})));}
+  const pb=new THREE.SphereGeometry(1,16,12);pb.scale(6.5,3.5,5);
+  bs.add(new THREE.Mesh(pb,new THREE.MeshBasicMaterial({color:0x220055,transparent:true,opacity:.40})));
+
+  // Cerebellum
+  const cb=new THREE.Group();cb.position.set(0,-19,-19);root.add(cb);
+  [-11,11].forEach((ox,side)=>{
+    const cg=new THREE.SphereGeometry(1,32,24);cg.scale(10.5,7.5,9);
+    const cm=new THREE.Mesh(cg,new THREE.MeshBasicMaterial({color:0x1a0044,transparent:true,opacity:.26}));cm.position.x=ox;cb.add(cm);
+    for(let f=0;f<13;f++){const phi=.40+f*.19,fpts=[];const tr2=side===0?[.04,Math.PI-.04]:[Math.PI+.04,2*Math.PI-.04];
+      for(let k=0;k<=28;k++){const th=tr2[0]+(k/28)*(tr2[1]-tr2[0]);fpts.push(v3(10.5*Math.sin(phi)*Math.cos(th)+ox,7.5*Math.cos(phi),9*Math.sin(phi)*Math.sin(th)));}
+      cb.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(fpts),new THREE.LineBasicMaterial({color:side===0?C.tc:C.vi,transparent:true,opacity:.19+f*.01})));}
+  });
+  const vp=[];for(let i=0;i<=20;i++){const t=i/20;vp.push(v3(0,-1+Math.sin(t*Math.PI)*3,9*(t-.5)*1.8));}
+  cb.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(vp),20,1.8,8,false),new THREE.MeshBasicMaterial({color:C.vi,transparent:true,opacity:.24})));
+
+  // Tracts
+  const tDefs=[
+    {p:[[-12,-1,12],[-9,-7,8],[-5,-14,7],[-2,-22,9]],c:C.te,r:.6,o:.38},
+    {p:[[12,-1,12],[9,-7,8],[5,-14,7],[2,-22,9]],c:C.pu,r:.6,o:.38},
+    {p:[[-24,-3,0],[-15,3,5],[-5,6,8],[5,6,8]],c:C.wh,r:.36,o:.15},
+    {p:[[24,-3,0],[15,3,5],[5,6,8],[-5,6,8]],c:C.wh,r:.36,o:.15},
+    {p:[[-14,0,-15],[-7,-3,-9],[0,-7,-4],[5,-14,5]],c:C.te,r:.34,o:.30},
+    {p:[[14,0,-15],[7,-3,-9],[0,-7,-4],[-5,-14,5]],c:C.te,r:.34,o:.30},
+    {p:[[-22,8,4],[-15,18,-1],[-9,15,-9],[-6,5,-13]],c:C.cy,r:.40,o:.24},
+    {p:[[22,8,4],[15,18,-1],[9,15,-9],[6,5,-13]],c:C.pu,r:.40,o:.24},
+    {p:[[-9,9,-1],[-4,13,1],[0,15,2],[4,13,0],[9,9,-1]],c:C.vi,r:.46,o:.20},
+    {p:[[-16,6,8],[-10,14,4],[-4,18,0],[2,16,-4]],c:C.sk,r:.28,o:.28},
+    {p:[[16,6,8],[10,14,4],[4,18,0],[-2,16,-4]],c:C.sk,r:.28,o:.28},
+  ];
+  const tCurves=tDefs.map(td=>{
+    const cv=new THREE.CatmullRomCurve3(td.p.map(p=>v3(...p)));
+    root.add(new THREE.Mesh(new THREE.TubeGeometry(cv,28,td.r,7,false),new THREE.MeshBasicMaterial({color:td.c,transparent:true,opacity:td.o})));
+    return cv;
+  });
+
+  // Scan rings
+  const scanRing=new THREE.Mesh(new THREE.TorusGeometry(32,.22,10,120),new THREE.MeshBasicMaterial({color:C.cy,transparent:true,opacity:.26}));
+  scanRing.rotation.x=Math.PI/2;root.add(scanRing);
+  root.add(new THREE.Mesh(new THREE.TorusGeometry(38,.10,8,140),new THREE.MeshBasicMaterial({color:C.pu,transparent:true,opacity:.08})));
+
+  /* NEURAL NETWORK */
+  const NN=isMob()?140:300;
+  const nnN=[],nnP=new Float32Array(NN*3);
+  for(let i=0;i<NN;i++){
+    const ga=Math.PI*(3-Math.sqrt(5)),y=1-(i/(NN-1))*2,r=Math.sqrt(1-y*y),th=ga*i,rad=65+Math.random()*175;
+    const nx=r*Math.cos(th)*rad,ny=y*rad*.7+8,nz=r*Math.sin(th)*rad-40;
+    nnN.push({x:nx,y:ny,z:nz});nnP[i*3]=nx;nnP[i*3+1]=ny;nnP[i*3+2]=nz;
+  }
+  const nnG=new THREE.BufferGeometry();nnG.setAttribute('position',new THREE.BufferAttribute(nnP,3));
+  const nnM=new THREE.PointsMaterial({color:C.tc,size:1.2,transparent:true,opacity:.30,sizeAttenuation:true,depthWrite:false});
+  scene.add(new THREE.Points(nnG,nnM));
+
+  const hIdx=[];for(let i=0;i<NN;i++) if(Math.random()<.18) hIdx.push(i);
+  const hP=new Float32Array(hIdx.length*3);
+  hIdx.forEach((idx,j)=>{hP[j*3]=nnN[idx].x;hP[j*3+1]=nnN[idx].y;hP[j*3+2]=nnN[idx].z;});
+  const hG=new THREE.BufferGeometry();hG.setAttribute('position',new THREE.BufferAttribute(hP,3));
+  scene.add(new THREE.Points(hG,new THREE.PointsMaterial({color:C.te,size:2.5,transparent:true,opacity:.48,sizeAttenuation:true,depthWrite:false})));
+
+  const eP=[];
+  for(let i=0;i<NN;i++) for(let j=i+1;j<NN;j++){
+    const dx=nnN[i].x-nnN[j].x,dy=nnN[i].y-nnN[j].y,dz=nnN[i].z-nnN[j].z;
+    if(dx*dx+dy*dy+dz*dz<2600){eP.push(nnN[i].x,nnN[i].y,nnN[i].z,nnN[j].x,nnN[j].y,nnN[j].z);}
+  }
+  const eG=new THREE.BufferGeometry();eG.setAttribute('position',new THREE.BufferAttribute(new Float32Array(eP),3));
+  scene.add(new THREE.LineSegments(eG,new THREE.LineBasicMaterial({color:C.tc,transparent:true,opacity:.065})));
+
+  const beP=[];
+  for(let i=0;i<NN;i+=3) for(let j=i+1;j<NN;j+=3){
+    const dx=nnN[i].x-nnN[j].x,dy=nnN[i].y-nnN[j].y,dz=nnN[i].z-nnN[j].z;
+    if(dx*dx+dy*dy+dz*dz<1300){beP.push(nnN[i].x,nnN[i].y,nnN[i].z,nnN[j].x,nnN[j].y,nnN[j].z);}
+  }
+  const beG=new THREE.BufferGeometry();beG.setAttribute('position',new THREE.BufferAttribute(new Float32Array(beP),3));
+  scene.add(new THREE.LineSegments(beG,new THREE.LineBasicMaterial({color:C.te,transparent:true,opacity:.11})));
+
+  const NSG=isMob()?35:72;
+  const nsP=new Float32Array(NSG*3),nsT=new Float32Array(NSG),nsCv=[];
+  for(let i=0;i<NSG;i++){
+    const a=hIdx[Math.floor(Math.random()*hIdx.length)];let b=hIdx[Math.floor(Math.random()*hIdx.length)];
+    while(b===a) b=hIdx[Math.floor(Math.random()*hIdx.length)];
+    const mid=v3((nnN[a].x+nnN[b].x)/2+Math.random()*18-9,(nnN[a].y+nnN[b].y)/2+Math.random()*18-9,(nnN[a].z+nnN[b].z)/2+Math.random()*18-9);
+    nsCv.push(new THREE.QuadraticBezierCurve3(v3(nnN[a].x,nnN[a].y,nnN[a].z),mid,v3(nnN[b].x,nnN[b].y,nnN[b].z)));nsT[i]=Math.random();
+  }
+  const nsG=new THREE.BufferGeometry();nsG.setAttribute('position',new THREE.BufferAttribute(nsP,3));
+  scene.add(new THREE.Points(nsG,new THREE.PointsMaterial({color:C.te,size:3.2,transparent:true,opacity:.62,sizeAttenuation:true,depthWrite:false})));
+
+  // Synaptic particles
+  const SYN=isMob()?180:360;
+  const syP=new Float32Array(SYN*3),syL=new Float32Array(SYN),sySi=new Uint8Array(SYN),syPhi=new Float32Array(SYN),syTh=new Float32Array(SYN);
+  for(let i=0;i<SYN;i++){
+    sySi[i]=i%2;syPhi[i]=.18+Math.random()*(Math.PI-.36);
+    syTh[i]=sySi[i]===0?.04+Math.random()*(Math.PI-.08):Math.PI+.04+Math.random()*(Math.PI-.08);
+    syL[i]=Math.random();
+    const a=LA,b=LB,c2=LC,ox2=sySi[i]===0?LOFF:ROFF;
+    const p=ep(a,b,c2,syPhi[i],syTh[i]);syP[i*3]=p.x+ox2;syP[i*3+1]=p.y;syP[i*3+2]=p.z;
+  }
+  const syG=new THREE.BufferGeometry();syG.setAttribute('position',new THREE.BufferAttribute(syP,3));
+  const syM=new THREE.PointsMaterial({color:C.wh,size:1.5,transparent:true,opacity:.70,sizeAttenuation:true,depthWrite:false});
+  root.add(new THREE.Points(syG,syM));
+
+  // Tract signals
+  const TS=isMob()?70:140;
+  const tsP=new Float32Array(TS*3),tsT=new Float32Array(TS);
+  for(let i=0;i<TS;i++) tsT[i]=Math.random();
+  const tsG=new THREE.BufferGeometry();tsG.setAttribute('position',new THREE.BufferAttribute(tsP,3));
+  const tsM=new THREE.PointsMaterial({color:C.cy,size:2.4,transparent:true,opacity:.80,sizeAttenuation:true,depthWrite:false});
+  root.add(new THREE.Points(tsG,tsM));
+
+  // Stars
+  const ST=isMob()?500:1100;
+  const stA=new Float32Array(ST*3);
+  for(let i=0;i<ST;i++){stA[i*3]=(Math.random()-.5)*850;stA[i*3+1]=(Math.random()-.5)*650;stA[i*3+2]=-200-Math.random()*380;}
+  const stG=new THREE.BufferGeometry();stG.setAttribute('position',new THREE.BufferAttribute(stA,3));
+  scene.add(new THREE.Points(stG,new THREE.PointsMaterial({color:C.tc,size:.42,transparent:true,opacity:.10,sizeAttenuation:true,depthWrite:false})));
+
+  /* Scale brain */
+  function applyScale(){const s=brainScale();root.scale.set(s,s,s);}
+  applyScale();
+
+  /* ANIMATE */
+  let clk=0;
+  function animate(){
+    requestAnimationFrame(animate);clk+=.0065;
+    mouse.x+=(tgt.x-mouse.x)*.028;mouse.y+=(tgt.y-mouse.y)*.028;
+    camera.position.x+=(mouse.x*14-camera.position.x)*.016;
+    camera.position.y+=(10-mouse.y*9-camera.position.y)*.016;
+    camera.lookAt(0,4,0);
+    root.rotation.y+=.00108;root.rotation.x=mouse.y*.088;root.rotation.z=mouse.x*.043;
+    scene.rotation.y+=.00020;
+    scanRing.position.y=Math.sin(clk*.42)*24;
+    scanRing.material.opacity=.13+.19*Math.abs(Math.sin(clk*.42));
+    const beat=Math.sin(clk*1.32),fire=Math.max(0,beat);
+    if(Math.floor(clk*60)%2===0) for(let i=0;i<SYN;i++){syL[i]+=.055+Math.random()*.042;if(syL[i]>1) syL[i]=0;}
+    syM.opacity=.40+fire*.36;syM.size=1.15+fire*.68;
+    const SP=tsG.attributes.position,spd=.0036+fire*.0023;
+    for(let i=0;i<TS;i++){tsT[i]+=spd*(0.5+(i%7)*.14);if(tsT[i]>1) tsT[i]-=1;const p=tCurves[i%tCurves.length].getPoint(Math.min(tsT[i],.999));SP.array[i*3]=p.x;SP.array[i*3+1]=p.y;SP.array[i*3+2]=p.z;}
+    SP.needsUpdate=true;tsM.opacity=.50+fire*.34;tsM.size=1.8+fire*.95;
+    const NS=nsG.attributes.position;
+    for(let i=0;i<NSG;i++){nsT[i]+=(.0028+fire*.0018)*(0.4+(i%5)*.22);if(nsT[i]>1) nsT[i]-=1;const p=nsCv[i].getPoint(Math.min(nsT[i],.999));NS.array[i*3]=p.x;NS.array[i*3+1]=p.y;NS.array[i*3+2]=p.z;}
+    NS.needsUpdate=true;nnM.opacity=.24+fire*.12;
+    cb.rotation.z=Math.sin(clk*.36)*.024;cb.rotation.x=Math.sin(clk*.22)*.013;
+    thal.material.opacity=.40+fire*.15;
+    renderer.render(scene,camera);
+  }
+  animate();
+
+  window.addEventListener('resize',()=>{
+    camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth,innerHeight);camera.position.z=getCamZ();
+    applyScale();renderer.setPixelRatio(Math.min(devicePixelRatio,isMob()?1.5:2));
+  });
+  window.addEventListener('scroll',()=>{
+    const t=scrollY/Math.max(1,document.body.scrollHeight-innerHeight);
+    root.position.y=-t*16;
+  },{passive:true});
+})();
+
+function toggleMob(){
+  const m=document.getElementById('mob-menu'),h=document.getElementById('ham');
+  const o=m.classList.toggle('open');h.classList.toggle('open',o);
+  document.body.style.overflow=o?'hidden':'';
+}
+function closeMob(){
+  document.getElementById('mob-menu').classList.remove('open');
+  document.getElementById('ham').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape') closeMob();});
+</script>
+</body>
+</html>

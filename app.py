@@ -27,6 +27,7 @@ from routes.message_routes import message_bp
 from routes.chatbot_routes import chatbot_bp # <--- NEW: Import Chatbot
 from routes.ai_features_routes import success_predictor_bp  # <--- NEW: AI Features
 from routes.premium_features_routes import premium_bp  # <--- NEW: Premium Features
+from routes.saas_routes import saas_bp  # <--- NEW: SaaS Features
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'neurobridge_secret_key'
@@ -68,6 +69,7 @@ app.register_blueprint(message_bp)
 app.register_blueprint(chatbot_bp) # <--- NEW: Register Chatbot
 app.register_blueprint(success_predictor_bp)  # <--- NEW: Register AI Features
 app.register_blueprint(premium_bp)  # <--- NEW: Register Premium Features
+app.register_blueprint(saas_bp)  # <--- NEW: Register SaaS Features
 
 # Create tables
 with app.app_context():
@@ -220,9 +222,9 @@ def dashboard():
     if 'hospital_id' not in session:
         return redirect(url_for('login'))
     
-    my_donors = Donor.query.filter_by(hospital_id=session['hospital_id']).all()
-    my_recipients = Recipient.query.filter_by(hospital_id=session['hospital_id']).all()
-    notifications = Notification.query.filter_by(hospital_id=session['hospital_id']).order_by(Notification.id.desc()).all()
+    my_donors = Donor.query.filter_by(hospital_id=session['hospital_id']).limit(50).all()
+    my_recipients = Recipient.query.filter_by(hospital_id=session['hospital_id']).limit(50).all()
+    notifications = Notification.query.filter_by(hospital_id=session['hospital_id']).order_by(Notification.id.desc()).limit(20).all()
     
     recent_activity = ActivityLog.query.filter_by(hospital_id=session['hospital_id']).order_by(ActivityLog.timestamp.desc()).limit(10).all()
 

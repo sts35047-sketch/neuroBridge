@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5">
     <title>NeuroBot - AI Transplant Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -93,7 +93,7 @@
             }
         }
     </style>
-</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='responsive-system.css') }}"/></head>
 <body class="bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 text-slate-100 min-h-screen">
     <div class="flex flex-col h-screen">
         <!-- Header -->
@@ -350,5 +350,5 @@
             document.getElementById('messageInput').focus();
         });
     </script>
-</body>
+<script src="{{ url_for('static', filename='responsive-menu.js') }}"></script></body>
 </html>

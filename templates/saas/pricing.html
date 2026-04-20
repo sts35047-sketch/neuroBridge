@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>NeuroBridge SaaS Pricing | Plans</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #180f23 0%, #1f1b3e 100%);
+            background-attachment: fixed;
+        }
+        
+        .pricing-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-8px);
+        }
+        
+        .featured-badge {
+            position: absolute;
+            top: -12px;
+            right: -12px;
+            background: linear-gradient(135deg, #10b981, #00e5ff);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="pb-12">
+
+<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-6 mx-auto w-[92%] max-w-7xl border border-green-600/20 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+    <div class="flex items-center gap-3">
+        <span class="text-2xl font-black text-[#10b981] font-[Space_Grotesk]">NeuroBridge SaaS</span>
+    </div>
+    <a href="/dashboard" class="px-6 py-2 text-xs font-bold uppercase rounded-full bg-[#10b981]/20 hover:bg-[#10b981]/30 text-[#10b981] transition-all border border-[#10b981]/30">Back</a>
+</header>
+
+<main class="pt-32 px-8 max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-16">
+        <h1 class="text-5xl md:text-6xl font-black text-white font-[Space_Grotesk] mb-4">
+            SaaS Plans for <span class="gradient-text">Every Hospital</span>
+        </h1>
+        <p class="text-xl text-slate-400 max-w-2xl mx-auto">
+            Unlock advanced AI features, predictive analytics, and enterprise support. 
+            Choose the plan that fits your hospital's needs.
+        </p>
+    </div>
+
+    <!-- Pricing Cards -->
+    <div class="grid md:grid-cols-3 gap-8 mb-16">
+        {% for tier in tiers %}
+        <div class="pricing-card {{ 'ring-2 ring-[#10b981]' if tier.recommended else 'border border-white/10' }} bg-white/5 rounded-[2rem] p-8 backdrop-blur-sm {{ 'scale-105 md:scale-110' if tier.recommended else '' }}">
+            {% if tier.recommended %}
+            <div class="featured-badge">
+                <span class="text-white font-black font-[Space_Grotesk] text-center">
+                    <span class="text-2xl">⭐</span>
+                </span>
+            </div>
+            {% endif %}
+
+            <h3 class="text-2xl font-black text-white font-[Space_Grotesk] mb-2">{{ tier.name }}</h3>
+            
+            <div class="mb-6">
+                <span class="text-4xl font-black text-[#10b981] font-[Space_Grotesk]">{{ tier.price }}</span>
+                <span class="text-slate-400 text-sm ml-2">{{ tier.period }}</span>
+            </div>
+
+            <button class="w-full py-3 rounded-full {{ 'bg-[#10b981] text-[#064e3b] font-bold' if tier.recommended else 'bg-white/10 hover:bg-white/20 text-white' }} transition-all mb-8">
+                Get Started
+            </button>
+
+            <!-- Features List -->
+            <div class="space-y-4">
+                {% for feature in tier.features %}
+                <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-[#10b981] flex-shrink-0 mt-0.5">check_circle</span>
+                    <span class="text-slate-300">{{ feature }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Feature Comparison -->
+    <div class="mb-16">
+        <h2 class="text-3xl font-black text-white font-[Space_Grotesk] mb-8 text-center">
+            Feature Comparison
+        </h2>
+        
+        <div class="bg-white/5 rounded-[2rem] p-8 border border-white/10 overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-white/10">
+                        <th class="text-left py-4 px-4 text-white font-bold">Features</th>
+                        <th class="text-center py-4 px-4 text-white font-bold">Starter</th>
+                        <th class="text-center py-4 px-4 text-white font-bold">Professional</th>
+                        <th class="text-center py-4 px-4 text-white font-bold">Enterprise</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-white/5">
+                        <td class="py-4 px-4 text-slate-300">Donor Profiles</td>
+                        <td class="text-center py-4 px-4"><span class="text-[#10b981]">50</span></td>
+                        <td class="text-center py-4 px-4"><span class="text-[#10b981]">500</span></td>
+                        <td class="text-center py-4 px-4"><span class="text-[#10b981]">Unlimited</span></td>
+                    </tr>
+                    <tr class="border-b border-white/5">
+                        <td class="py-4 px-4 text-slate-300">AI Matching</td>
+                        <td class="text-center py-4 px-4"><span class="material-symbols-outlined text-[#10b981]">check_circle</span></td>
+                        <td class="text-center py-4 px-4"><span class="material-symbols-outlined text-[#10b981]">check_circle</span></td>
+                        <td class="text-center py-4 px-4"><span class="material-symbols-outlined text-[#10b981]">check_circle</span></td>
+                    </tr>
+                    <tr class="border-b border-white/5">
+                        <td class="py-4 px-4 text-slate-300">NeuralPulse Crisis Alerts</td>
+                        <td class="text-center py-4 px-4">—</td>
+                        <td class="text-center py-4 px-4"><span class="material-symbols-outlined text-[#10b981]">check_circle</span></td>
+                        <td class="text-center py-4 px-4"><span class="material-symbols-outlined text-[#10b981]">check_circle</span></td>
+                    </tr>
+                    <tr class="border-b border-white/5">
+                        <td class="py-4 px-4 text-slate-300">DestinyMatch QOL Prediction</td>
+                        <td class="text-center py-4 px-4">—</td>
+                        <td class="text-center py-4 px-4">—</td>
+                        <td class="text-center py-4 px-4"><span class="material-symbols-outlined text-[#10b981]">check_circle</span></td>
+                    </tr>
+                    <tr class="border-b border-white/5">
+                        <td class="py-4 px-4 text-slate-300">User Accounts</td>
+                        <td class="text-center py-4 px-4"><span class="text-[#10b981]">1</span></td>
+                        <td class="text-center py-4 px-4"><span class="text-[#10b981]">5</span></td>
+                        <td class="text-center py-4 px-4"><span class="text-[#10b981]">Unlimited</span></td>
+                    </tr>
+                    <tr class="border-b border-white/5">
+                        <td class="py-4 px-4 text-slate-300">Custom Analytics Reports</td>
+                        <td class="text-center py-4 px-4">—</td>
+                        <td class="text-center py-4 px-4"><span class="material-symbols-outlined text-[#10b981]">check_circle</span></td>
+                        <td class="text-center py-4 px-4"><span class="material-symbols-outlined text-[#10b981]">check_circle</span></td>
+                    </tr>
+                    <tr class="border-b border-white/5">
+                        <td class="py-4 px-4 text-slate-300">API Access</td>
+                        <td class="text-center py-4 px-4">—</td>
+                        <td class="text-center py-4 px-4">—</td>
+                        <td class="text-center py-4 px-4"><span class="material-symbols-outlined text-[#10b981]">check_circle</span></td>
+                    </tr>
+                    <tr class="border-b border-white/5">
+                        <td class="py-4 px-4 text-slate-300">Support</td>
+                        <td class="text-center py-4 px-4"><span class="text-slate-400">Email</span></td>
+                        <td class="text-center py-4 px-4"><span class="text-[#10b981]">Priority Phone</span></td>
+                        <td class="text-center py-4 px-4"><span class="text-[#10b981]">24/7 Dedicated</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="mb-16">
+        <h2 class="text-3xl font-black text-white font-[Space_Grotesk] mb-8 text-center">
+            Frequently Asked Questions
+        </h2>
+        
+        <div class="space-y-6 max-w-3xl mx-auto">
+            <div class="bg-white/5 rounded-[2rem] p-6 border border-white/10">
+                <h4 class="font-bold text-white mb-2">Can I upgrade or downgrade at any time?</h4>
+                <p class="text-slate-300">Yes! Change your plan anytime. Pricing adjusts automatically on your next billing cycle.</p>
+            </div>
+
+            <div class="bg-white/5 rounded-[2rem] p-6 border border-white/10">
+                <h4 class="font-bold text-white mb-2">What does NeuralPulse predict?</h4>
+                <p class="text-slate-300">Regional organ shortages 7-14 days in advance with 89% accuracy. Gives your hospital time to activate donor recruitment campaigns.</p>
+            </div>
+
+            <div class="bg-white/5 rounded-[2rem] p-6 border border-white/10">
+                <h4 class="font-bold text-white mb-2">How does DestinyMatch work?</h4>
+                <p class="text-slate-300">ML model predicts post-transplant quality of life, expected longevity, and success probability for each donor-recipient match.</p>
+            </div>
+
+            <div class="bg-white/5 rounded-[2rem] p-6 border border-white/10">
+                <h4 class="font-bold text-white mb-2">Is there a free trial?</h4>
+                <p class="text-slate-300">Yes! Enterprise customers get a free 30-day trial. Contact sales for details.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="text-center py-12">
+        <h2 class="text-3xl font-black text-white font-[Space_Grotesk] mb-6">
+            Ready to Transform Your Hospital?
+        </h2>
+        <a href="/register" class="px-10 py-4 rounded-full bg-gradient-to-r from-[#10b981] to-[#00e5ff] text-white font-bold hover:shadow-lg hover:shadow-[#10b981]/50 transition-all">
+            Start Your Free Trial Today
+        </a>
+    </div>
+</main>
+
+</body>
+</html>

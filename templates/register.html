@@ -2,10 +2,11 @@
 <html class="dark" lang="en">
 <head>
     <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5"/>
     <title>Establish Node | NeuroBridge</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='responsive-system.css') }}"/>
     <style>
         body { background-color: #180f23; background-image: radial-gradient(at 0% 100%, rgba(195, 245, 255, 0.05) 0px, transparent 80%); min-height: 100vh; color: #ecddf9; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; padding: 2rem 1.5rem; }
         .bionic-glass { background: rgba(24, 15, 35, 0.7); backdrop-filter: blur(24px); border: 1px solid rgba(16, 185, 129, 0.2); }
@@ -28,36 +29,37 @@
                 <div class="grid grid-cols-1 gap-5">
                     <div>
                         <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-2 ml-1 font-black">Facility Name</label>
-                        <input type="text" name="name" class="w-full bg-black/40 border border-white/10 text-white rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981] outline-none text-sm" required placeholder="e.g. Metro General">
+                        <input type="text" name="name" class="w-full bg-black/40 border border-white/10 text-white rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981] outline-none text-sm" required placeholder="e.g. Metro General" style="min-height: 44px;">
                     </div>
                     <div>
                         <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-2 ml-1 font-black">Contact Email</label>
-                        <input type="email" name="email" class="w-full bg-black/40 border border-white/10 text-white rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981] outline-none text-sm" required placeholder="admin@facility.com">
+                        <input type="email" name="email" class="w-full bg-black/40 border border-white/10 text-white rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981] outline-none text-sm" required placeholder="admin@facility.com" style="min-height: 44px;">
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-2 ml-1 font-black">Base Location</label>
-                            <input type="text" name="city" class="w-full bg-black/40 border border-white/10 text-white rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981] outline-none text-sm" required placeholder="e.g. Mumbai">
+                            <input type="text" name="city" class="w-full bg-black/40 border border-white/10 text-white rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981] outline-none text-sm" required placeholder="e.g. Mumbai" style="min-height: 44px;">
                         </div>
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-2 ml-1 font-black">Access Key</label>
-                            <input type="password" name="password" class="w-full bg-black/40 border border-white/10 text-white rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981] outline-none text-sm" required placeholder="••••••••">
+                            <input type="password" name="password" class="w-full bg-black/40 border border-white/10 text-white rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981] outline-none text-sm" required placeholder="••••••••" style="min-height: 44px;">
                         </div>
                     </div>
                 </div>
 
-                <button type="submit" class="w-full py-3 sm:py-4 rounded-full bg-[#10b981] text-[#064e3b] font-headline font-bold uppercase tracking-widest text-xs shadow-[0_0_30px_rgba(0,229,255,0.3)] hover:scale-[1.02] hover:bg-white transition-all mt-6 sm:mt-8">
+                <button type="submit" class="w-full py-3 sm:py-4 rounded-full bg-[#10b981] text-[#064e3b] font-headline font-bold uppercase tracking-widest text-xs shadow-[0_0_30px_rgba(0,229,255,0.3)] hover:scale-[1.02] hover:bg-white transition-all mt-6 sm:mt-8" style="min-height: 44px;">
                     Initialize Sync
                 </button>
             </form>
 
             <div class="mt-10 text-center border-t border-white/5 pt-8">
                 <p class="text-slate-400 text-xs">
-                    Already part of the grid? <a href="/login" class="text-[#10b981] hover:text-white font-bold ml-1 transition-colors">Access Portal</a>
+                    Already part of the grid? <a href="/login" class="text-[#10b981] hover:text-white font-bold ml-1 transition-colors inline-block" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Access Portal</a>
                 </p>
             </div>
         </div>
     </div>
 
+    <script src="{{ url_for('static', filename='responsive-menu.js') }}"></script>
 </body>
 </html>

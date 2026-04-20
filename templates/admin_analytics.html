@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, viewport-fit=cover, maximum-scale=5">
     <title>NeuroBridge - Admin Analytics</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -38,7 +38,7 @@
         ::-webkit-scrollbar-track { background: rgba(24, 15, 35, 0.2); }
         ::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 10px; }
     </style>
-</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='responsive-system.css') }}"/></head>
 <body class="font-[Inter]">
 
     <!-- TOP NAVBAR -->
@@ -224,5 +224,5 @@
         });
     </script>
 
-</body>
+<script src="{{ url_for('static', filename='responsive-menu.js') }}"></script></body>
 </html>

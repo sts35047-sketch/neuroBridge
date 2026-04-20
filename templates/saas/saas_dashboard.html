@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SaaS Dashboard | NeuroBridge</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #180f23 0%, #1a0f2e 100%);
+            background-attachment: fixed;
+        }
+        
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+    </style>
+</head>
+<body class="pb-12">
+
+<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-6 mx-auto w-[92%] max-w-7xl border border-green-600/20 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+    <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[#10b981] to-[#00e5ff] flex items-center justify-center">
+            <span class="text-lg font-black text-white">🚀</span>
+        </div>
+        <span class="text-2xl font-black text-[#10b981] font-[Space_Grotesk]">SaaS Dashboard</span>
+    </div>
+    <div class="flex items-center gap-4">
+        <a href="/pricing" class="px-4 py-2 text-xs font-bold uppercase rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20">Pricing</a>
+        <a href="/dashboard" class="px-6 py-2 text-xs font-bold uppercase rounded-full bg-[#10b981]/20 hover:bg-[#10b981]/30 text-[#10b981] transition-all border border-[#10b981]/30">Back</a>
+    </div>
+</header>
+
+<main class="pt-32 px-8 max-w-7xl mx-auto">
+    <!-- Welcome Section -->
+    <div class="mb-12">
+        <h1 class="text-5xl font-black text-white font-[Space_Grotesk] mb-3">
+            Welcome to NeuroBridge SaaS
+        </h1>
+        <p class="text-xl text-slate-400">
+            Advanced AI features and analytics for enterprise organ transplant management
+        </p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid md:grid-cols-4 gap-6 mb-8">
+        <div class="stat-card bg-gradient-to-br from-[#10b981]/10 to-[#059669]/10 rounded-[2rem] p-6 border border-[#10b981]/20">
+            <p class="text-sm text-slate-400 uppercase tracking-widest mb-2">Total Hospitals</p>
+            <p class="text-4xl font-black text-[#10b981] font-[Space_Grotesk]">{{ total_hospitals }}</p>
+            <p class="text-xs text-slate-400 mt-2">Connected to platform</p>
+        </div>
+
+        <div class="stat-card bg-gradient-to-br from-[#ec4899]/10 to-[#db2777]/10 rounded-[2rem] p-6 border border-[#ec4899]/20">
+            <p class="text-sm text-slate-400 uppercase tracking-widest mb-2">Active Matches</p>
+            <p class="text-4xl font-black text-[#ec4899] font-[Space_Grotesk]">{{ active_matches }}</p>
+            <p class="text-xs text-slate-400 mt-2">Pending transplants</p>
+        </div>
+
+        <div class="stat-card bg-gradient-to-br from-[#ef4444]/10 to-[#dc2626]/10 rounded-[2rem] p-6 border border-[#ef4444]/20">
+            <p class="text-sm text-slate-400 uppercase tracking-widest mb-2">Crisis Alerts</p>
+            <p class="text-4xl font-black text-[#ef4444] font-[Space_Grotesk]">{{ crisis_alerts }}</p>
+            <p class="text-xs text-slate-400 mt-2">Regions needing action</p>
+        </div>
+
+        <div class="stat-card bg-gradient-to-br from-[#10b981]/10 to-[#00e5ff]/10 rounded-[2rem] p-6 border border-[#10b981]/20">
+            <p class="text-sm text-slate-400 uppercase tracking-widest mb-2">Successful Today</p>
+            <p class="text-4xl font-black text-[#10b981] font-[Space_Grotesk]">{{ successful_matches_today }}</p>
+            <p class="text-xs text-slate-400 mt-2">Completed transplants</p>
+        </div>
+    </div>
+
+    <!-- Feature Grid -->
+    <div class="mb-12">
+        <h2 class="text-2xl font-bold text-white font-[Space_Grotesk] mb-6">
+            Premium AI Features
+        </h2>
+        
+        <div class="grid md:grid-cols-2 gap-6">
+            <!-- NeuralPulse -->
+            <a href="/saas/neuralpulse" class="group bg-gradient-to-br from-[#ef4444]/10 to-[#dc2626]/10 rounded-[2rem] p-8 border border-[#ef4444]/20 hover:border-[#ef4444]/50 transition-all">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="text-2xl font-black text-white mb-2 font-[Space_Grotesk]">NeuralPulse</h3>
+                        <p class="text-sm text-slate-300">Predictive crisis prevention</p>
+                    </div>
+                    <span class="material-symbols-outlined text-5xl text-[#ef4444] group-hover:text-[#f87171] transition-all">
+                        trending_up
+                    </span>
+                </div>
+                <p class="text-slate-400 mb-4">
+                    Forecast regional organ shortages 7-14 days in advance with 89% ML accuracy. 
+                    Alerts give your hospital time for proactive donor campaigns.
+                </p>
+                <div class="text-xs text-[#10b981] font-bold group-hover:translate-x-2 transition-transform">
+                    Explore NeuralPulse →
+                </div>
+            </a>
+
+            <!-- DestinyMatch -->
+            <a href="/saas/destiny-match" class="group bg-gradient-to-br from-[#ec4899]/10 to-[#db2777]/10 rounded-[2rem] p-8 border border-[#ec4899]/20 hover:border-[#ec4899]/50 transition-all">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="text-2xl font-black text-white mb-2 font-[Space_Grotesk]">DestinyMatch</h3>
+                        <p class="text-sm text-slate-300">QOL prediction AI</p>
+                    </div>
+                    <span class="material-symbols-outlined text-5xl text-[#ec4899] group-hover:text-[#f472b6] transition-all">
+                        favorite
+                    </span>
+                </div>
+                <p class="text-slate-400 mb-4">
+                    Beyond tissue matching: predict post-transplant quality of life, longevity (12-28 years), 
+                    and success probability for each donor-recipient pair.
+                </p>
+                <div class="text-xs text-[#10b981] font-bold group-hover:translate-x-2 transition-transform">
+                    Explore DestinyMatch →
+                </div>
+            </a>
+
+            <!-- Performance KPIs -->
+            <a href="/kpi/performance" class="group bg-gradient-to-br from-[#10b981]/10 to-[#00e5ff]/10 rounded-[2rem] p-8 border border-[#10b981]/20 hover:border-[#10b981]/50 transition-all">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="text-2xl font-black text-white mb-2 font-[Space_Grotesk]">Performance KPIs</h3>
+                        <p class="text-sm text-slate-300">Real-time analytics</p>
+                    </div>
+                    <span class="material-symbols-outlined text-5xl text-[#10b981] group-hover:text-[#34d399] transition-all">
+                        dashboard
+                    </span>
+                </div>
+                <p class="text-slate-400 mb-4">
+                    Comprehensive performance metrics: donor stats, recipient stats, hospital performance, 
+                    success rates, and organ distribution analysis.
+                </p>
+                <div class="text-xs text-[#10b981] font-bold group-hover:translate-x-2 transition-transform">
+                    View Analytics →
+                </div>
+            </a>
+
+            <!-- Smart Recommendations -->
+            <a href="/recommendations/smart" class="group bg-gradient-to-br from-[#00e5ff]/10 to-[#0891b2]/10 rounded-[2rem] p-8 border border-[#00e5ff]/20 hover:border-[#00e5ff]/50 transition-all">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="text-2xl font-black text-white mb-2 font-[Space_Grotesk]">Smart Recommendations</h3>
+                        <p class="text-sm text-slate-300">AI-powered suggestions</p>
+                    </div>
+                    <span class="material-symbols-outlined text-5xl text-[#00e5ff] group-hover:text-[#22d3ee] transition-all">
+                        lightbulb
+                    </span>
+                </div>
+                <p class="text-slate-400 mb-4">
+                    AI-powered optimization suggestions for improving match success rates, donor recruitment, 
+                    and operational efficiency.
+                </p>
+                <div class="text-xs text-[#10b981] font-bold group-hover:translate-x-2 transition-transform">
+                    Get Recommendations →
+                </div>
+            </a>
+
+            <!-- Compliance & Audit -->
+            <a href="/compliance/audit" class="group bg-gradient-to-br from-[#8b5cf6]/10 to-[#7c3aed]/10 rounded-[2rem] p-8 border border-[#8b5cf6]/20 hover:border-[#8b5cf6]/50 transition-all">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="text-2xl font-black text-white mb-2 font-[Space_Grotesk]">Compliance & Audit</h3>
+                        <p class="text-sm text-slate-300">HIPAA tracking</p>
+                    </div>
+                    <span class="material-symbols-outlined text-5xl text-[#8b5cf6] group-hover:text-[#a78bfa] transition-all">
+                        shield_admin
+                    </span>
+                </div>
+                <p class="text-slate-400 mb-4">
+                    Complete audit trail with 100+ activities logged. HIPAA-compliant tracking and reporting 
+                    for regulatory compliance and accountability.
+                </p>
+                <div class="text-xs text-[#10b981] font-bold group-hover:translate-x-2 transition-transform">
+                    View Audit Trail →
+                </div>
+            </a>
+
+            <!-- Real-time Notifications -->
+            <a href="/notifications/dashboard" class="group bg-gradient-to-br from-[#f59e0b]/10 to-[#d97706]/10 rounded-[2rem] p-8 border border-[#f59e0b]/20 hover:border-[#f59e0b]/50 transition-all">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="text-2xl font-black text-white mb-2 font-[Space_Grotesk]">Notifications</h3>
+                        <p class="text-sm text-slate-300">Real-time alerts</p>
+                    </div>
+                    <span class="material-symbols-outlined text-5xl text-[#f59e0b] group-hover:text-[#fbbf24] transition-all">
+                        notifications_active
+                    </span>
+                </div>
+                <p class="text-slate-400 mb-4">
+                    Real-time alert hub with 30-second refresh. Priority filtering for critical alerts, 
+                    unread counters, and notification management.
+                </p>
+                <div class="text-xs text-[#10b981] font-bold group-hover:translate-x-2 transition-transform">
+                    View Alerts →
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Why SaaS -->
+    <div class="bg-gradient-to-r from-[#10b981]/10 to-[#00e5ff]/10 rounded-[2rem] p-12 border border-[#10b981]/20 mb-12">
+        <h2 class="text-3xl font-black text-white font-[Space_Grotesk] mb-8">
+            Why Choose NeuroBridge SaaS?
+        </h2>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+            <div>
+                <h4 class="font-bold text-[#10b981] mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined">verified</span>
+                    Never-Before-Seen AI
+                </h4>
+                <p class="text-slate-300 text-sm">
+                    NeuralPulse and DestinyMatch are revolutionary features not available anywhere else in the world.
+                </p>
+            </div>
+            <div>
+                <h4 class="font-bold text-[#10b981] mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined">speed</span>
+                    89% Prediction Accuracy
+                </h4>
+                <p class="text-slate-300 text-sm">
+                    ML models trained on real transplant data for highly accurate crisis forecasting and QOL predictions.
+                </p>
+            </div>
+            <div>
+                <h4 class="font-bold text-[#10b981] mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined">security</span>
+                    Enterprise Security
+                </h4>
+                <p class="text-slate-300 text-sm">
+                    HIPAA compliant, end-to-end encryption, and complete audit trails for regulatory compliance.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="text-center py-12">
+        <h2 class="text-3xl font-black text-white font-[Space_Grotesk] mb-6">
+            Ready for the Future of Organ Transplantation?
+        </h2>
+        <div class="flex gap-4 justify-center">
+            <a href="/pricing" class="px-8 py-4 rounded-full bg-gradient-to-r from-[#10b981] to-[#00e5ff] text-white font-bold hover:shadow-lg hover:shadow-[#10b981]/50 transition-all">
+                View SaaS Plans
+            </a>
+            <a href="/dashboard" class="px-8 py-4 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-all border border-white/20">
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

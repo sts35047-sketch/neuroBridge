@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>NeuroBridge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: #08080f;
+            color: #e8e0f0;
+            overflow-x: hidden;
+            font-family: 'DM Sans', sans-serif;
+        }
+        
+        #neural-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        header, section, footer {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .glass {
+            background: rgba(10, 6, 20, 0.58);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(0, 210, 255, 0.14);
+        }
+        
+        .glow-btn {
+            background: linear-gradient(135deg, #10e596, #00c8ff);
+            color: #012920;
+            font-weight: 700;
+            padding: 0.7rem 1.4rem;
+            border-radius: 9999px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.32s ease;
+        }
+        
+        .glow-btn:hover {
+            transform: scale(1.05) translateY(-2px);
+        }
+        
+        .ghost-btn {
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 0.7rem 1.4rem;
+            border-radius: 9999px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.28s ease;
+        }
+        
+        .ghost-btn:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="neural-canvas"></canvas>
+    
+    <!-- NAVBAR -->
+    <header class="flex justify-between items-center glass" style="margin: 1rem; border-radius: 9999px; padding: 0.7rem 1.5rem;">
+        <div class="flex items-center" style="gap: 0.6rem;">
+            <span style="font-weight: 900; font-size: 1.1rem; color: white;">Neuro<span style="color: #10e596;">Bridge</span></span>
+        </div>
+        <nav class="flex items-center" style="gap: 0.6rem;">
+            <a href="/login" class="ghost-btn">Hospital Login</a>
+            <a href="/register" class="glow-btn">Register</a>
+        </nav>
+    </header>
+    
+    <!-- HERO -->
+    <section style="text-align: center; margin-top: 4rem; padding: 0 2rem;">
+        <h1 style="font-weight: 900; font-size: 3.5rem; margin-bottom: 1.5rem; line-height: 1;">
+            The Future of<br>
+            <span style="background: linear-gradient(135deg, #10e596, #00c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Organ Networks</span>
+        </h1>
+        
+        <p style="max-width: 35rem; margin: 0 auto 2rem; color: rgba(200, 190, 220, 0.6); font-size: 1.05rem; line-height: 1.8;">
+            AI-powered allocation, real-time tracking, and seamless hospital connectivity — redefining life-saving infrastructure.
+        </p>
+        
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;">
+            <a href="/login" class="glow-btn">Hospital Login</a>
+            <a href="/register" class="ghost-btn">Get Started →</a>
+        </div>
+    </section>
+    
+    <!-- FEATURES -->
+    <section style="margin-top: 4rem; padding: 0 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1.5rem;">
+            <article class="glass" style="padding: 2rem; border-radius: 1.4rem;">
+                <h3 style="font-size: 1.05rem; font-weight: 800; color: white; margin-bottom: 0.8rem;">Secure Registry</h3>
+                <p style="color: rgba(180, 170, 200, 0.56); line-height: 1.72;">End-to-end encrypted donor-recipient database with quantum-resistant key infrastructure.</p>
+            </article>
+            
+            <article class="glass" style="padding: 2rem; border-radius: 1.4rem;">
+                <h3 style="font-size: 1.05rem; font-weight: 800; color: white; margin-bottom: 0.8rem;">AI Matching</h3>
+                <p style="color: rgba(180, 170, 200, 0.56); line-height: 1.72;">Transformer-based neural algorithms with 98.7% accuracy across blood type, HLA, and tissue factors.</p>
+            </article>
+            
+            <article class="glass" style="padding: 2rem; border-radius: 1.4rem;">
+                <h3 style="font-size: 1.05rem; font-weight: 800; color: white; margin-bottom: 0.8rem;">Live Tracking</h3>
+                <p style="color: rgba(180, 170, 200, 0.56); line-height: 1.72;">Sub-second GPS telemetry with predictive viability decay modeling.</p>
+            </article>
+        </div>
+    </section>
+    
+    <!-- FOOTER -->
+    <footer class="text-center" style="margin-top: 4rem; padding: 2rem;">
+        <p style="color: rgba(200, 190, 220, 0.26); font-size: 0.9rem;">© 2026 NeuroBridge · Built with Tech & Empathy</p>
+    </footer>
+    
+    <!-- THREE.JS SCRIPT -->
+    <script>
+    (function(){
+        const canvas = document.getElementById('neural-canvas');
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0, 0);
+        
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.position.set(0, 8, 120);
+        
+        // Simple cube instead of complex brain
+        const geometry = new THREE.BoxGeometry(20, 20, 20);
+        const material = new THREE.MeshBasicMaterial({ color: 0x10e596, wireframe: true, transparent: true, opacity: 0.3 });
+        const cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
+        
+        // Add some particles
+        const particleGeometry = new THREE.BufferGeometry();
+        const particleCount = 1000;
+        const positions = new Float32Array(particleCount * 3);
+        
+        for (let i = 0; i < particleCount * 3; i += 3) {
+            positions[i] = (Math.random() - 0.5) * 400;
+            positions[i + 1] = (Math.random() - 0.5) * 400;
+            positions[i + 2] = (Math.random() - 0.5) * 400;
+        }
+        
+        particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const particleMaterial = new THREE.PointsMaterial({ color: 0x00c8ff, size: 2, transparent: true, opacity: 0.5 });
+        const particles = new THREE.Points(particleGeometry, particleMaterial);
+        scene.add(particles);
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            cube.rotation.x += 0.001;
+            cube.rotation.y += 0.002;
+            particles.rotation.x += 0.0003;
+            particles.rotation.y += 0.0005;
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // Handle resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    })();
+    </script>
+</body>
+</html>

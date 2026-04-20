@@ -58,7 +58,7 @@
         ::-webkit-scrollbar-track { background: rgba(24, 15, 35, 0.2); }
         ::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 10px; }
     </style>
-</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='responsive-system.css') }}"/></head>
 <body class="font-body text-slate-200">
 
 <!-- Top Nav Shell -->
@@ -216,5 +216,5 @@
     // Close modal when clicking backdrop
     document.getElementById('modalBackdrop')?.addEventListener('click', closeModal);
 </script>
-</body>
+<script src="{{ url_for('static', filename='responsive-menu.js') }}"></script></body>
 </html>

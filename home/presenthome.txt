@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroBridge</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: #180f23;
+    color: #ecddf9;
+    overflow-x: hidden;
+}
+
+/* 3D Canvas — fixed behind everything */
+#neural-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* All content sits above canvas */
+header, section, footer, .above-canvas {
+    position: relative;
+    z-index: 1;
+}
+
+/* Subtle depth vignette over canvas */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(0,229,255,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse at 0% 100%, rgba(16,185,129,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 100% 50%, rgba(195,245,255,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(24,15,35,0.55) 0%, rgba(24,15,35,0.0) 100%);
+    pointer-events: none;
+}
+
+.glass {
+    background: rgba(24,15,35,0.45);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(0,229,255,0.18);
+}
+
+.glow-btn {
+    background: #10b981;
+    color: #064e3b;
+    box-shadow: 0 0 28px rgba(0,229,255,0.35), 0 0 8px rgba(16,185,129,0.5);
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.glow-btn:hover {
+    transform: scale(1.06) translateY(-2px);
+    box-shadow: 0 0 45px rgba(0,229,255,0.55), 0 0 16px rgba(16,185,129,0.6);
+}
+
+.holo-border {
+    border: 1px solid transparent;
+    background: linear-gradient(rgba(24,15,35,0.6), rgba(24,15,35,0.6)) padding-box,
+                linear-gradient(135deg, #10b981, #00e5ff, #6ee7b7, #10b981) border-box;
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), box-shadow 0.4s;
+}
+.holo-border:hover {
+    transform: scale(1.04) translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0,229,255,0.15), 0 0 30px rgba(16,185,129,0.12);
+}
+
+/* Animated scanning line on feature cards */
+.holo-border::after {
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px; right: -1px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00e5ff, transparent);
+    border-radius: 999px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.holo-border:hover::after { opacity: 1; }
+
+/* Glitch text effect on hero */
+@keyframes glitch-shift {
+    0%, 92%, 100% { clip-path: none; transform: none; opacity: 1; }
+    93%  { clip-path: inset(20% 0 60% 0); transform: translateX(-3px); opacity: 0.9; }
+    95%  { clip-path: inset(60% 0 10% 0); transform: translateX(3px); opacity: 0.9; }
+    97%  { clip-path: inset(40% 0 40% 0); transform: translateX(-2px); opacity: 0.95; }
+}
+.glitch-text {
+    animation: glitch-shift 8s infinite;
+}
+
+/* Pulse ring on CTA */
+@keyframes ring-pulse {
+    0%   { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.7); opacity: 0; }
+}
+.ring-pulse {
+    position: absolute;
+    inset: -4px;
+    border-radius: 9999px;
+    border: 2px solid rgba(0,229,255,0.5);
+    animation: ring-pulse 2s ease-out infinite;
+    pointer-events: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #180f23; }
+::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.25); border-radius: 10px; }
+
+/* Floating orb decoration */
+@keyframes float-orb {
+    0%, 100% { transform: translateY(0px) translateX(0px); }
+    33%  { transform: translateY(-18px) translateX(8px); }
+    66%  { transform: translateY(10px) translateX(-6px); }
+}
+.orb { animation: float-orb 9s ease-in-out infinite; }
+</style>
+</head>
+
+<body class="font-[Inter]">
+
+<!-- THREE.JS CANVAS — fixed behind all content -->
+<canvas id="neural-canvas"></canvas>
+
+<!-- ==================== NAVBAR ==================== -->
+<header class="flex justify-between items-center px-8 py-4 glass m-6 rounded-full">
+    <div class="flex items-center gap-3">
+        <img src="{{ url_for('static', filename='logo.jpeg') }}" alt="NeuroBridge Logo" class="h-10 w-10 rounded-lg object-cover border border-[#10b981]/30">
+        <h1 class="text-2xl font-black text-[#10b981] font-[Space_Grotesk]">NeuroBridge</h1>
+    </div>
+    <div class="flex gap-4 flex-wrap">
+        <a href="/login" class="px-6 py-2 rounded-full bg-white/10 hover:bg-white/20 transition text-sm sm:text-base">Hospital Login</a>
+        <a href="/register" class="px-6 py-2 rounded-full glow-btn font-bold text-sm sm:text-base">Register Hospital</a>
+        <a href="#track-section" class="px-6 py-2 rounded-full border border-green-500/50 hover:bg-green-500/10 transition text-sm sm:text-base">Track Status</a>
+    </div>
+</header>
+
+<!-- ==================== HERO ==================== -->
+<section class="text-center mt-24 px-6 relative">
+
+    <!-- Decorative floating orbs -->
+    <div class="orb absolute left-[8%] top-[-40px] w-40 h-40 rounded-full bg-[#00e5ff]/5 blur-3xl pointer-events-none"></div>
+    <div class="orb absolute right-[10%] top-[20px] w-52 h-52 rounded-full bg-[#10b981]/6 blur-3xl pointer-events-none" style="animation-delay: -3s;"></div>
+
+    <!-- Eyebrow badge -->
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-[#00e5ff]/30 text-xs uppercase tracking-[0.2em] text-[#00e5ff] mb-8 font-[Space_Grotesk] font-bold">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#00e5ff] animate-pulse"></span>
+        Bionic OS — Neural Grid v2.0
+    </div>
+
+    <h1 class="text-5xl md:text-7xl font-black font-[Space_Grotesk] mb-6 leading-none tracking-tight glitch-text">
+        The Future of <span class="text-[#10b981]">Organ Networks</span>
+    </h1>
+    <p class="text-slate-400 max-w-xl mx-auto mb-10 text-lg leading-relaxed">
+        AI-powered organ allocation, real-time tracking, and seamless hospital connectivity.
+    </p>
+
+    <div class="flex justify-center gap-4 flex-wrap">
+        <div class="relative inline-block">
+            <div class="ring-pulse"></div>
+            <a href="/login" class="relative px-8 py-4 rounded-full glow-btn font-bold inline-block">Hospital Login</a>
+        </div>
+        <a href="/register" class="px-8 py-4 rounded-full border border-white/20 hover:bg-white/10 transition">Get Started</a>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="mt-20 flex flex-col items-center gap-2 text-slate-600 text-xs tracking-widest uppercase">
+        <span>Scroll to explore</span>
+        <div class="w-px h-10 bg-gradient-to-b from-slate-600 to-transparent animate-pulse"></div>
+    </div>
+</section>
+
+<!-- ==================== FEATURES ==================== -->
+<section class="grid md:grid-cols-3 gap-8 px-10 mt-24 relative">
+    <div class="glass holo-border p-8 rounded-3xl relative overflow-hidden cursor-default">
+        <div class="w-10 h-10 rounded-xl bg-[#10b981]/20 flex items-center justify-center mb-5">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3 text-[#10b981] font-[Space_Grotesk]">Secure Registry</h3>
+        <p class="text-slate-400 leading-relaxed">
+            Encrypted donor-recipient database with real-time updates.
+        </p>
+    </div>
+
+    <div class="glass holo-border p-8 rounded-3xl relative overflow-hidden cursor-default">
+        <div class="w-10 h-10 rounded-xl bg-[#00e5ff]/15 flex items-center justify-center mb-5">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3 text-[#10b981] font-[Space_Grotesk]">AI Matching</h3>
+        <p class="text-slate-400 leading-relaxed">
+            Smart neural algorithms for instant compatibility detection.
+        </p>
+    </div>
+
+    <div class="glass holo-border p-8 rounded-3xl relative overflow-hidden cursor-default">
+        <div class="w-10 h-10 rounded-xl bg-[#6ee7b7]/15 flex items-center justify-center mb-5">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3 text-[#10b981] font-[Space_Grotesk]">Live Tracking</h3>
+        <p class="text-slate-400 leading-relaxed">
+            Real-time organ transport & viability monitoring system.
+        </p>
+    </div>
+</section>
+
+<!-- ==================== STATS BAR ==================== -->
+<section class="px-10 mt-20">
+    <div class="glass rounded-3xl px-8 py-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div>
+            <p class="text-3xl font-black font-[Space_Grotesk] text-[#10b981]">1,200+</p>
+            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Hospitals Connected</p>
+        </div>
+        <div>
+            <p class="text-3xl font-black font-[Space_Grotesk] text-[#00e5ff]">98.7%</p>
+            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Match Accuracy</p>
+        </div>
+        <div>
+            <p class="text-3xl font-black font-[Space_Grotesk] text-[#6ee7b7]">4.2 min</p>
+            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Avg. Match Time</p>
+        </div>
+        <div>
+            <p class="text-3xl font-black font-[Space_Grotesk] text-[#10b981]">8,400+</p>
+            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Lives Saved</p>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== CTA ==================== -->
+<section class="text-center mt-28 pb-8 relative">
+    <div class="orb absolute left-1/2 -translate-x-1/2 top-0 w-96 h-40 rounded-full bg-[#10b981]/8 blur-3xl pointer-events-none"></div>
+    <h2 class="text-3xl md:text-5xl font-black mb-4 font-[Space_Grotesk] tracking-tight relative">
+        Ready to Save Lives?
+    </h2>
+    <p class="text-slate-400 mb-10 relative">Join the network. Every second matters.</p>
+    <div class="relative inline-block">
+        <div class="ring-pulse" style="animation-delay: 0.5s;"></div>
+        <a href="/register" class="relative px-10 py-4 rounded-full glow-btn font-bold inline-block">
+            Join NeuroBridge
+        </a>
+    </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="text-center mt-20 pb-10 text-slate-500 relative">
+    <div class="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8"></div>
+    © 2026 NeuroBridge • Built with Tech &amp; Empathy <br>
+    <a href="/admin/login"
+       class="text-[#10b981] text-sm mt-2 inline-block hover:underline font-bold">
+       Staff &amp; Admin Login
+    </a>
+</footer>
+
+<!-- ==================== THREE.JS — 3D BRAIN ==================== -->
+<script>
+(function () {
+
+    /* ═══════════════════════════════════════════════════════
+       RENDERER + SCENE + CAMERA
+    ═══════════════════════════════════════════════════════ */
+    const canvas = document.getElementById('neural-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0);
+
+    const scene  = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1200);
+    camera.position.set(0, 12, 110);
+
+    /* ═══════════════════════════════════════════════════════
+       MOUSE
+    ═══════════════════════════════════════════════════════ */
+    const mouse  = { x: 0, y: 0 };
+    const target = { x: 0, y: 0 };
+    document.addEventListener('mousemove', e => {
+        target.x = (e.clientX / window.innerWidth  - 0.5);
+        target.y = (e.clientY / window.innerHeight - 0.5);
+    });
+
+    /* ═══════════════════════════════════════════════════════
+       ROOT GROUP — whole brain rotates together
+    ═══════════════════════════════════════════════════════ */
+    const root = new THREE.Group();
+    scene.add(root);
+
+    /* ═══════════════════════════════════════════════════════
+       COLOUR CONSTANTS
+    ═══════════════════════════════════════════════════════ */
+    const CYN  = 0x00e5ff;
+    const TCYN = 0x0099bb;
+    const VIO  = 0x7c3aed;
+    const PUR  = 0xc084fc;
+    const EMR  = 0x10b981;
+    const WHT  = 0xffffff;
+    const CRM  = 0xff2d55;
+
+    /* ═══════════════════════════════════════════════════════
+       HEMISPHERE BUILDER
+       A brain hemisphere is approximated by a half-ellipsoid
+       whose surface is covered with GYRUS RIDGE TUBES.
+       Each gyrus is a CatmullRom tube that follows a curved
+       path over the surface — giving the folded, wrinkled
+       look of real cortex.
+    ═══════════════════════════════════════════════════════ */
+
+    /* Sample a point on an ellipsoid surface */
+    function ellipsoidPt(a, b, c, phi, theta) {
+        return new THREE.Vector3(
+            a * Math.sin(phi) * Math.cos(theta),
+            b * Math.cos(phi),
+            c * Math.sin(phi) * Math.sin(theta)
+        );
+    }
+
+    /* Build one gyrus as a tube following a surface path.
+       axis: 'lat'=horizontal fold, 'lon'=vertical fold      */
+    function addGyrus(group, a, b, c, fixedAngle, swingRange,
+                      axis, segments, tubeR, color, opacity, offX) {
+        const pts = [];
+        for (let s = 0; s <= segments; s++) {
+            const t = s / segments;
+            let phi, theta;
+            if (axis === 'lat') {           // horizontal wrinkle
+                phi   = fixedAngle + Math.sin(t * Math.PI * 3) * 0.08;
+                theta = swingRange[0] + t * (swingRange[1] - swingRange[0]);
+            } else {                        // vertical / meridional wrinkle
+                phi   = swingRange[0] + t * (swingRange[1] - swingRange[0]);
+                theta = fixedAngle + Math.sin(t * Math.PI * 4) * 0.10;
+            }
+            const p = ellipsoidPt(a, b, c, phi, theta);
+            p.x += offX;
+            pts.push(p);
+        }
+        const curve = new THREE.CatmullRomCurve3(pts);
+        const geo   = new THREE.TubeGeometry(curve, segments, tubeR, 7, false);
+        const mat   = new THREE.MeshBasicMaterial({ color, transparent: true, opacity });
+        const mesh  = new THREE.Mesh(geo, mat);
+        group.add(mesh);
+        return mesh;
+    }
+
+    /* ── LEFT HEMISPHERE ── */
+    const leftHemi = new THREE.Group();
+    root.add(leftHemi);
+
+    const LA = 26, LB = 22, LC = 20;   // ellipsoid semi-axes
+    const LOFF = -14;                    // shift left
+
+    // Base shell — dim filled half-ellipsoid
+    const lShellGeo = new THREE.SphereGeometry(1, 48, 32, 0, Math.PI);
+    lShellGeo.scale(LA, LB, LC);
+    leftHemi.add(new THREE.Mesh(lShellGeo,
+        new THREE.MeshBasicMaterial({ color: 0x0d1a2e, transparent: true, opacity: 0.55 })));
+
+    // Wireframe cage over shell
+    leftHemi.add(new THREE.Mesh(lShellGeo.clone(),
+        new THREE.MeshBasicMaterial({ color: CYN, transparent: true, opacity: 0.05, wireframe: true })));
+
+    // Horizontal gyri (latitude folds) — left hemi
+    const latAnglesL = [0.55, 0.75, 0.95, 1.15, 1.35, 1.55, 1.75, 1.95, 2.15, 2.35];
+    latAnglesL.forEach((phi, i) => {
+        const color  = i % 3 === 0 ? CYN : (i % 3 === 1 ? PUR : EMR);
+        const op     = 0.30 + (i % 2) * 0.12;
+        addGyrus(leftHemi, LA, LB, LC, phi, [0.05, Math.PI - 0.05],
+                 'lat', 40, 0.55, color, op, LOFF);
+    });
+
+    // Vertical / meridional sulci — left hemi
+    const lonAnglesL = [0.18, 0.45, 0.75, 1.05, 1.35, 1.65, 1.95, 2.25, 2.55, 2.80];
+    lonAnglesL.forEach((theta, i) => {
+        const color = i % 2 === 0 ? TCYN : VIO;
+        addGyrus(leftHemi, LA, LB, LC, theta, [0.25, Math.PI - 0.2],
+                 'lon', 32, 0.40, color, 0.22, LOFF);
+    });
+
+    // Deep sulcus lines — thinner, darker, diagonal
+    [[0.62, [0.3, 2.1]], [1.10, [0.4, 2.5]], [1.58, [0.2, 2.8]], [2.0, [0.35, 2.6]]].forEach(([phi, sw]) => {
+        addGyrus(leftHemi, LA * 0.97, LB * 0.97, LC * 0.97, phi, sw,
+                 'lat', 28, 0.28, CYN, 0.18, LOFF);
+    });
+
+    leftHemi.position.x = LOFF;
+
+    /* ── RIGHT HEMISPHERE ── */
+    const rightHemi = new THREE.Group();
+    root.add(rightHemi);
+
+    const RA = 26, RB = 22, RC = 20;
+    const ROFF = 14;
+
+    const rShellGeo = new THREE.SphereGeometry(1, 48, 32, Math.PI, Math.PI);
+    rShellGeo.scale(RA, RB, RC);
+    rightHemi.add(new THREE.Mesh(rShellGeo,
+        new THREE.MeshBasicMaterial({ color: 0x0d1a2e, transparent: true, opacity: 0.55 })));
+    rightHemi.add(new THREE.Mesh(rShellGeo.clone(),
+        new THREE.MeshBasicMaterial({ color: PUR, transparent: true, opacity: 0.05, wireframe: true })));
+
+    const latAnglesR = [0.52, 0.72, 0.92, 1.12, 1.32, 1.52, 1.72, 1.92, 2.12, 2.32];
+    latAnglesR.forEach((phi, i) => {
+        const color = i % 3 === 0 ? PUR : (i % 3 === 1 ? CYN : VIO);
+        const op    = 0.28 + (i % 2) * 0.14;
+        addGyrus(rightHemi, RA, RB, RC, phi, [Math.PI + 0.05, Math.PI * 2 - 0.05],
+                 'lat', 40, 0.55, color, op, ROFF);
+    });
+
+    const lonAnglesR = [3.45, 3.72, 4.02, 4.32, 4.62, 4.92, 5.22, 5.52, 5.82, 6.08];
+    lonAnglesR.forEach((theta, i) => {
+        const color = i % 2 === 0 ? VIO : TCYN;
+        addGyrus(rightHemi, RA, RB, RC, theta, [0.25, Math.PI - 0.2],
+                 'lon', 32, 0.40, color, 0.22, ROFF);
+    });
+
+    [[0.60, [Math.PI + 0.3, Math.PI * 2 - 0.3]],
+     [1.08, [Math.PI + 0.4, Math.PI * 2 - 0.4]],
+     [1.56, [Math.PI + 0.2, Math.PI * 2 - 0.25]],
+     [2.00, [Math.PI + 0.35, Math.PI * 2 - 0.35]]].forEach(([phi, sw]) => {
+        addGyrus(rightHemi, RA * 0.97, RB * 0.97, RC * 0.97, phi, sw,
+                 'lat', 28, 0.28, PUR, 0.18, ROFF);
+    });
+
+    rightHemi.position.x = ROFF;
+
+    /* ── INTER-HEMISPHERIC FISSURE LINE ── */
+    const fissurePts = [];
+    for (let i = 0; i <= 30; i++) {
+        const t = i / 30;
+        fissurePts.push(new THREE.Vector3(
+            Math.sin(t * Math.PI) * 0.5,
+            LB * Math.cos(t * Math.PI * 0.75 + 0.3) * 0.9,
+            LC * (t - 0.5) * 1.6
+        ));
+    }
+    const fissureGeo = new THREE.BufferGeometry().setFromPoints(fissurePts);
+    root.add(new THREE.Line(fissureGeo,
+        new THREE.LineBasicMaterial({ color: CYN, transparent: true, opacity: 0.35 })));
+
+    /* ═══════════════════════════════════════════════════════
+       CORPUS CALLOSUM — the connecting bridge between hemispheres
+       Arch-shaped tube running front-to-back at the base
+    ═══════════════════════════════════════════════════════ */
+    const ccPts = [];
+    for (let i = 0; i <= 24; i++) {
+        const t = (i / 24) * Math.PI;
+        ccPts.push(new THREE.Vector3(
+            Math.cos(t) * 18,
+            -4 + Math.sin(t) * 5,
+            0
+        ));
+    }
+    const ccCurve = new THREE.CatmullRomCurve3(ccPts);
+    root.add(new THREE.Mesh(
+        new THREE.TubeGeometry(ccCurve, 30, 1.8, 10, false),
+        new THREE.MeshBasicMaterial({ color: WHT, transparent: true, opacity: 0.22 })
+    ));
+    // Wireframe overlay on CC
+    root.add(new THREE.Mesh(
+        new THREE.TubeGeometry(ccCurve, 30, 1.9, 10, false),
+        new THREE.MeshBasicMaterial({ color: CYN, transparent: true, opacity: 0.08, wireframe: true })
+    ));
+
+    /* ═══════════════════════════════════════════════════════
+       BRAINSTEM — tapered cylinder dropping below cerebrum
+    ═══════════════════════════════════════════════════════ */
+    const bsGroup = new THREE.Group();
+    bsGroup.position.set(0, -22, 8);
+    root.add(bsGroup);
+
+    // Pons (top)
+    const ponsMesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(5.5, 6, 8, 16),
+        new THREE.MeshBasicMaterial({ color: VIO, transparent: true, opacity: 0.30 })
+    );
+    ponsMesh.position.y = -2;
+    bsGroup.add(ponsMesh);
+    bsGroup.add(new THREE.Mesh(
+        new THREE.CylinderGeometry(5.6, 6.1, 8, 16),
+        new THREE.MeshBasicMaterial({ color: PUR, transparent: true, opacity: 0.08, wireframe: true })
+    ));
+
+    // Medulla oblongata (tapering downward)
+    const medGeo = new THREE.CylinderGeometry(3.5, 2.2, 10, 12);
+    const medMesh = new THREE.Mesh(medGeo,
+        new THREE.MeshBasicMaterial({ color: TCYN, transparent: true, opacity: 0.28 }));
+    medMesh.position.y = -11;
+    bsGroup.add(medMesh);
+
+    // Brainstem surface lines
+    for (let i = 0; i < 8; i++) {
+        const theta = (i / 8) * Math.PI * 2;
+        const bsLinePts = [
+            new THREE.Vector3(5.2 * Math.cos(theta), 2, 5.2 * Math.sin(theta)),
+            new THREE.Vector3(4.5 * Math.cos(theta), -6, 4.5 * Math.sin(theta)),
+            new THREE.Vector3(3.2 * Math.cos(theta), -16, 3.2 * Math.sin(theta)),
+        ];
+        bsGroup.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(bsLinePts),
+            new THREE.LineBasicMaterial({ color: CYN, transparent: true, opacity: 0.20 })
+        ));
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CEREBELLUM — posterior, two lobes of folded mini-ridges
+    ═══════════════════════════════════════════════════════ */
+    const cbGroup = new THREE.Group();
+    cbGroup.position.set(0, -18, -18);
+    root.add(cbGroup);
+
+    // Two cerebellar hemispheres
+    [-9, 9].forEach((ox, side) => {
+        const cbGeo = new THREE.SphereGeometry(1, 28, 20);
+        cbGeo.scale(9, 7, 8);
+        cbGroup.add(new THREE.Mesh(cbGeo,
+            new THREE.MeshBasicMaterial({ color: VIO, transparent: true, opacity: 0.22 })));
+        cbGroup.children[cbGroup.children.length - 1].position.x = ox;
+
+        // Tight horizontal folia lines
+        for (let f = 0; f < 9; f++) {
+            const phi = 0.5 + f * 0.22;
+            const foliaPts = [];
+            const tRange = side === 0
+                ? [0.05, Math.PI - 0.05]
+                : [Math.PI + 0.05, Math.PI * 2 - 0.05];
+            for (let k = 0; k <= 20; k++) {
+                const theta = tRange[0] + (k / 20) * (tRange[1] - tRange[0]);
+                foliaPts.push(new THREE.Vector3(
+                    9 * Math.sin(phi) * Math.cos(theta) + ox,
+                    7 * Math.cos(phi),
+                    8 * Math.sin(phi) * Math.sin(theta)
+                ));
+            }
+            cbGroup.add(new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints(foliaPts),
+                new THREE.LineBasicMaterial({ color: side === 0 ? CYN : PUR, transparent: true, opacity: 0.28 })
+            ));
+        }
+    });
+
+    /* ═══════════════════════════════════════════════════════
+       NEURAL PATHWAYS — long fibre tracts as graceful tubes
+       connecting cortex → brainstem like white matter tracts
+    ═══════════════════════════════════════════════════════ */
+    const tractDefs = [
+        // Corticospinal — left and right
+        { pts: [[-10, -2, 12], [-8, -8, 8], [-5, -15, 6], [-2, -22, 8]],  color: CYN,  r: 0.55, op: 0.45 },
+        { pts: [[ 10, -2, 12], [ 8, -8, 8], [ 5, -15, 6], [ 2, -22, 8]],  color: PUR,  r: 0.55, op: 0.45 },
+        // Corpus callosum fibres fanning out
+        { pts: [[-18, -4, 0], [-10, 2, 5],  [-2, 5, 8],   [ 2, 5, 8]],    color: WHT,  r: 0.40, op: 0.20 },
+        { pts: [[ 18, -4, 0], [ 10, 2, 5],  [ 2, 5, 8],   [-2, 5, 8]],    color: WHT,  r: 0.40, op: 0.20 },
+        // Optic radiation
+        { pts: [[-12, 0, -14], [-6, -4, -8], [0, -8, -4], [4, -14, 4]],   color: EMR,  r: 0.38, op: 0.38 },
+        { pts: [[ 12, 0, -14], [ 6, -4, -8], [0, -8, -4], [-4, -14, 4]],  color: EMR,  r: 0.38, op: 0.38 },
+        // Arcuate fasciculus — arching language tract
+        { pts: [[-20, 10, 5], [-14, 18, 0], [-8, 14, -8], [-6, 4, -12]],  color: CYN,  r: 0.45, op: 0.32 },
+        { pts: [[ 20, 10, 5], [ 14, 18, 0], [ 8, 14, -8], [ 6, 4, -12]],  color: PUR,  r: 0.45, op: 0.32 },
+        // Fornix arching over corpus callosum
+        { pts: [[-8, 8, -2], [-4, 12, 0], [0, 14, 2], [4, 12, 0], [8, 8, -2]], color: VIO, r: 0.50, op: 0.28 },
+    ];
+
+    tractDefs.forEach(td => {
+        const cv  = new THREE.CatmullRomCurve3(td.pts.map(p => new THREE.Vector3(...p)));
+        root.add(new THREE.Mesh(
+            new THREE.TubeGeometry(cv, 24, td.r, 7, false),
+            new THREE.MeshBasicMaterial({ color: td.color, transparent: true, opacity: td.op })
+        ));
+    });
+
+    /* ═══════════════════════════════════════════════════════
+       SYNAPTIC FIRE PARTICLES
+       300 bright dots randomly distributed across cortex surface,
+       they flicker on/off simulating neural firing
+    ═══════════════════════════════════════════════════════ */
+    const SYN_N  = 340;
+    const synPos = new Float32Array(SYN_N * 3);
+    const synPhi = new Float32Array(SYN_N);
+    const synTht = new Float32Array(SYN_N);
+    const synSide= new Uint8Array(SYN_N);  // 0=left, 1=right
+    const synLife= new Float32Array(SYN_N);
+
+    for (let i = 0; i < SYN_N; i++) {
+        synSide[i] = i % 2;
+        synPhi[i]  = 0.2 + Math.random() * (Math.PI - 0.4);
+        synTht[i]  = synSide[i] === 0
+            ? 0.05 + Math.random() * (Math.PI - 0.1)
+            : Math.PI + 0.05 + Math.random() * (Math.PI - 0.1);
+        synLife[i] = Math.random();
+        const a = synSide[i] === 0 ? LA : RA;
+        const b = synSide[i] === 0 ? LB : RB;
+        const c = synSide[i] === 0 ? LC : RC;
+        const ox = synSide[i] === 0 ? LOFF : ROFF;
+        const p = ellipsoidPt(a, b, c, synPhi[i], synTht[i]);
+        synPos[i*3] = p.x + ox; synPos[i*3+1] = p.y; synPos[i*3+2] = p.z;
+    }
+
+    const synGeo = new THREE.BufferGeometry();
+    synGeo.setAttribute('position', new THREE.BufferAttribute(synPos, 3));
+    const synMat = new THREE.PointsMaterial({
+        color: WHT, size: 1.8, transparent: true, opacity: 0.80,
+        sizeAttenuation: true, depthWrite: false,
+    });
+    root.add(new THREE.Points(synGeo, synMat));
+
+    /* ═══════════════════════════════════════════════════════
+       TRAVELLING SIGNAL DOTS along tracts
+    ═══════════════════════════════════════════════════════ */
+    const SIG_N   = 120;
+    const sigPos  = new Float32Array(SIG_N * 3);
+    const sigT    = new Float32Array(SIG_N);
+    const sigCurves = tractDefs.map(td =>
+        new THREE.CatmullRomCurve3(td.pts.map(p => new THREE.Vector3(...p)))
+    );
+    for (let i = 0; i < SIG_N; i++) {
+        sigT[i] = Math.random();
+        const p = sigCurves[i % sigCurves.length].getPoint(sigT[i]);
+        sigPos[i*3] = p.x; sigPos[i*3+1] = p.y; sigPos[i*3+2] = p.z;
+    }
+    const sigGeo = new THREE.BufferGeometry();
+    sigGeo.setAttribute('position', new THREE.BufferAttribute(sigPos, 3));
+    const sigMat = new THREE.PointsMaterial({
+        color: CYN, size: 2.4, transparent: true, opacity: 0.90,
+        sizeAttenuation: true, depthWrite: false,
+    });
+    root.add(new THREE.Points(sigGeo, sigMat));
+
+    /* ═══════════════════════════════════════════════════════
+       MRI SCAN RING — horizontal plane sweeping up/down
+    ═══════════════════════════════════════════════════════ */
+    const scanRing = new THREE.Mesh(
+        new THREE.TorusGeometry(30, 0.18, 8, 100),
+        new THREE.MeshBasicMaterial({ color: CYN, transparent: true, opacity: 0.35 })
+    );
+    scanRing.rotation.x = Math.PI / 2;
+    root.add(scanRing);
+
+    // Second outer ring — static orbit
+    root.add(new THREE.Mesh(
+        new THREE.TorusGeometry(38, 0.12, 6, 120),
+        new THREE.MeshBasicMaterial({ color: PUR, transparent: true, opacity: 0.14 })
+    ));
+
+    /* ═══════════════════════════════════════════════════════
+       DEEP STAR FIELD
+    ═══════════════════════════════════════════════════════ */
+    const STAR_N = 700;
+    const starArr = new Float32Array(STAR_N * 3);
+    for (let i = 0; i < STAR_N; i++) {
+        starArr[i*3]   = (Math.random() - 0.5) * 700;
+        starArr[i*3+1] = (Math.random() - 0.5) * 500;
+        starArr[i*3+2] = -150 - Math.random() * 200;
+    }
+    const starGeo = new THREE.BufferGeometry();
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starArr, 3));
+    scene.add(new THREE.Points(starGeo,
+        new THREE.PointsMaterial({ color: TCYN, size: 0.55, transparent: true, opacity: 0.15, sizeAttenuation: true, depthWrite: false })
+    ));
+
+    /* ═══════════════════════════════════════════════════════
+       ANIMATION LOOP
+    ═══════════════════════════════════════════════════════ */
+    let clock = 0;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        clock += 0.007;
+
+        // Mouse lerp
+        mouse.x += (target.x - mouse.x) * 0.030;
+        mouse.y += (target.y - mouse.y) * 0.030;
+
+        // Camera parallax
+        camera.position.x += (mouse.x * 12 - camera.position.x) * 0.018;
+        camera.position.y += (12 - mouse.y * 8 - camera.position.y) * 0.018;
+        camera.lookAt(0, 4, 0);
+
+        // Slow brain rotation + mouse tilt
+        root.rotation.y += 0.0014;
+        root.rotation.x  = mouse.y * 0.10;
+        root.rotation.z  = mouse.x * 0.05;
+
+        // MRI scan ring sweeps vertically
+        scanRing.position.y      = Math.sin(clock * 0.45) * 22;
+        scanRing.material.opacity = 0.18 + 0.22 * Math.abs(Math.sin(clock * 0.45));
+
+        // Neural pulse — 60 BPM rhythm drives synapse firing
+        const beat    = Math.sin(clock * 1.28);
+        const fire    = Math.max(0, beat);
+
+        // Synaptic particles flicker
+        if (Math.floor(clock * 60) % 3 === 0) {
+            for (let i = 0; i < SYN_N; i++) {
+                synLife[i] += 0.06 + Math.random() * 0.04;
+                if (synLife[i] > 1) synLife[i] = 0;
+            }
+        }
+        synMat.opacity = 0.50 + fire * 0.42;
+        synMat.size    = 1.4 + fire * 0.7;
+
+        // Signal dots travel along tracts
+        const SP = sigGeo.attributes.position;
+        const spd = 0.004 + fire * 0.003;
+        for (let i = 0; i < SIG_N; i++) {
+            sigT[i] += spd * (0.5 + (i % 5) * 0.18);
+            if (sigT[i] > 1) sigT[i] -= 1;
+            const p = sigCurves[i % sigCurves.length].getPoint(Math.min(sigT[i], 0.999));
+            SP.array[i*3] = p.x; SP.array[i*3+1] = p.y; SP.array[i*3+2] = p.z;
+        }
+        SP.needsUpdate = true;
+        sigMat.opacity = 0.60 + fire * 0.35;
+        sigMat.size    = 2.0 + fire * 1.0;
+
+        // Cerebellum gentle sway
+        cbGroup.rotation.z = Math.sin(clock * 0.38) * 0.03;
+
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    window.addEventListener('scroll', () => {
+        const t = window.scrollY / Math.max(1, document.body.scrollHeight - window.innerHeight);
+        root.position.y = -t * 16;
+    });
+
+})();
+
+// ── Modal Functions ──
+function openDonorTracking()    { document.getElementById('donorTrackingModal').style.display = 'flex'; }
+function closeDonorTracking()   { document.getElementById('donorTrackingModal').style.display = 'none'; }
+function openRecipientTracking(){ document.getElementById('recipientTrackingModal').style.display = 'flex'; }
+function closeRecipientTracking(){ document.getElementById('recipientTrackingModal').style.display = 'none'; }
+function searchDonor() {
+    const p = document.getElementById('donorPhone').value;
+    if (!p || p.length < 10) { alert('Please enter a valid 10-digit phone number'); return; }
+    window.location.href = `/donor/track/${p}`;
+}
+function searchRecipient() {
+    const p = document.getElementById('recipientPhone').value;
+    if (!p || p.length < 10) { alert('Please enter a valid 10-digit phone number'); return; }
+    window.location.href = `/recipient/track/${p}`;
+}
+document.addEventListener('click', function(e) {
+    const dm = document.getElementById('donorTrackingModal');
+    const rm = document.getElementById('recipientTrackingModal');
+    if (e.target === dm) closeDonorTracking();
+    if (e.target === rm) closeRecipientTracking();
+});
+</script>
+
+</body>
+</html>

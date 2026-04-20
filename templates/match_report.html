@@ -32,7 +32,7 @@
             .no-print { display: none !important; }
         }
     </style>
-</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='responsive-system.css') }}"/></head>
 <body>
 
     <!-- Print Button (Hidden when printing) -->
@@ -147,5 +147,5 @@
         </div>
     </div>
 
-</body>
+<script src="{{ url_for('static', filename='responsive-menu.js') }}"></script></body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, viewport-fit=cover, maximum-scale=5">
     <title>Track Recipient Status | NeuroBridge</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
         .match-card { background: linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(6,78,59,0.1) 100%); border: 1px solid rgba(16,185,129,0.3); transition: all 0.3s; }
         .match-card:hover { transform: translateX(5px); border-color: rgba(16,185,129,0.6); box-shadow: 0 0 25px rgba(16,185,129,0.2); }
     </style>
-</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='responsive-system.css') }}"/></head>
 <body>
 
 <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
@@ -141,5 +141,5 @@
     </div>
 </div>
 
-</body>
+<script src="{{ url_for('static', filename='responsive-menu.js') }}"></script></body>
 </html>

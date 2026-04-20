@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>DestinyMatch | Quality-of-Life Prediction AI</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #180f23 0%, #1f0f35 100%);
+            background-attachment: fixed;
+        }
+        
+        .qol-bar {
+            background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #10b981);
+            border-radius: 99px;
+            height: 6px;
+            overflow: hidden;
+        }
+        
+        .heart-pulse {
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="pb-12">
+
+<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-6 mx-auto w-[92%] max-w-7xl border border-green-600/20 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+    <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[#ec4899] to-[#f472b6] flex items-center justify-center heart-pulse">
+            <span class="text-lg">❤️</span>
+        </div>
+        <span class="text-2xl font-black text-[#10b981] font-[Space_Grotesk]">DestinyMatch</span>
+    </div>
+    <div class="flex items-center gap-4">
+        <a href="/saas/neuralpulse" class="px-4 py-2 text-xs font-bold uppercase rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20">NeuralPulse</a>
+        <a href="/dashboard" class="px-6 py-2 text-xs font-bold uppercase rounded-full bg-[#10b981]/20 hover:bg-[#10b981]/30 text-[#10b981] transition-all border border-[#10b981]/30">Back</a>
+    </div>
+</header>
+
+<main class="pt-32 px-8 max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#ec4899] to-[#f472b6] flex items-center justify-center heart-pulse">
+                <span class="material-symbols-outlined text-2xl text-white">favorite</span>
+            </div>
+            <div>
+                <h1 class="text-5xl font-black text-white font-[Space_Grotesk]">DestinyMatch</h1>
+                <p class="text-slate-400">Predict post-transplant quality of life and longevity</p>
+            </div>
+        </div>
+        <p class="text-slate-300 max-w-2xl">
+            Revolutionary AI that goes beyond compatibility matching. DestinyMatch predicts post-transplant quality of life, 
+            expected longevity, and success probability for each donor-recipient pair. Help hospitals make decisions that maximize 
+            recipient outcomes and lifetime satisfaction.
+        </p>
+    </div>
+
+    <!-- Matches with Destiny Predictions -->
+    {% if matches_with_destiny %}
+        {% for match in matches_with_destiny %}
+        <div class="mb-10 bg-gradient-to-r from-white/5 to-[#10b981]/5 rounded-[2rem] p-8 border border-white/10">
+            <!-- Recipient Header -->
+            <div class="flex items-center justify-between mb-8 pb-6 border-b border-white/10">
+                <div>
+                    <p class="text-3xl font-black text-white font-[Space_Grotesk]">{{ match.recipient_name }}</p>
+                    <div class="flex gap-4 mt-2 text-sm text-slate-400">
+                        <span><span class="font-bold text-slate-300">Age:</span> {{ match.recipient_age }}</span>
+                        <span><span class="font-bold text-slate-300">Organ:</span> {{ match.recipient_organ }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Matches with QOL Predictions -->
+            <div class="space-y-6">
+                {% for donor in match.top_matches %}
+                <div class="bg-white/5 rounded-xl p-6 border border-white/10 hover:border-[#10b981]/30 transition-all">
+                    <div class="grid md:grid-cols-12 gap-6 items-center">
+                        <!-- Donor Info -->
+                        <div class="md:col-span-2">
+                            <p class="font-bold text-white">{{ donor.donor_name }}</p>
+                            <p class="text-sm text-slate-400">{{ donor.donor_age }}y • {{ donor.donor_blood }}</p>
+                        </div>
+
+                        <!-- QOL Score -->
+                        <div class="md:col-span-2">
+                            <p class="text-xs text-slate-400 uppercase mb-1">QOL Score</p>
+                            <p class="text-3xl font-black text-[#10b981] font-[Space_Grotesk]">{{ donor.qol_score }}</p>
+                            <p class="text-xs text-slate-400">{{ donor.quality_level }}</p>
+                        </div>
+
+                        <!-- Longevity Prediction -->
+                        <div class="md:col-span-2">
+                            <p class="text-xs text-slate-400 uppercase mb-1">Est. Longevity</p>
+                            <p class="text-3xl font-black text-[#ec4899] font-[Space_Grotesk]">{{ donor.longevity_years }}</p>
+                            <p class="text-xs text-slate-400">years post-transplant</p>
+                        </div>
+
+                        <!-- Success Probability -->
+                        <div class="md:col-span-2">
+                            <p class="text-xs text-slate-400 uppercase mb-1">Success Rate</p>
+                            <p class="text-3xl font-black text-[#00e5ff] font-[Space_Grotesk]">{{ donor.success_probability }}%</p>
+                        </div>
+
+                        <!-- QOL Progress Bar -->
+                        <div class="md:col-span-4">
+                            <p class="text-xs text-slate-400 uppercase mb-2">Quality-of-Life Index</p>
+                            <div class="qol-bar">
+                                <div style="width: {{ donor.qol_score }}%; height: 100%; background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #10b981);"></div>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1">{{ donor.qol_score }}/100</p>
+                        </div>
+                    </div>
+
+                    <!-- Prediction Details -->
+                    <div class="mt-4 pt-4 border-t border-white/10 grid md:grid-cols-3 gap-4">
+                        <div>
+                            <p class="text-xs text-slate-400 mb-1">Key Factors</p>
+                            <ul class="text-sm text-slate-300 space-y-1">
+                                <li>✓ Age compatibility</li>
+                                <li>✓ Organ viability</li>
+                                <li>✓ Health matching</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 mb-1">Quality Drivers</p>
+                            <ul class="text-sm text-slate-300 space-y-1">
+                                <li>✓ Minimal rejection risk</li>
+                                <li>✓ Strong immunological match</li>
+                                <li>✓ Optimal donor health</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 mb-1">Outcome Confidence</p>
+                            <p class="text-2xl font-bold text-[#10b981]">89%</p>
+                            <p class="text-xs text-slate-400">AI prediction confidence</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Innovation Explainer -->
+    <div class="grid md:grid-cols-2 gap-8 mb-8">
+        <div class="bg-gradient-to-br from-[#ec4899]/10 to-[#f472b6]/10 rounded-[2rem] p-8 border border-[#ec4899]/20">
+            <h3 class="text-xl font-bold text-white mb-6 font-[Space_Grotesk] flex items-center gap-2">
+                <span class="material-symbols-outlined">emoji_events</span>
+                Why DestinyMatch Matters
+            </h3>
+            <ul class="space-y-3 text-sm text-slate-300">
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-[#10b981] flex-shrink-0">check_circle</span>
+                    <span><span class="font-bold">Beyond Compatibility:</span> Not just blood type match, but predicted quality of life</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-[#10b981] flex-shrink-0">check_circle</span>
+                    <span><span class="font-bold">Longevity Prediction:</span> AI estimates how many years the transplant will function</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-[#10b981] flex-shrink-0">check_circle</span>
+                    <span><span class="font-bold">Success Rate:</span> Statistical probability of successful long-term transplant</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-[#10b981] flex-shrink-0">check_circle</span>
+                    <span><span class="font-bold">Ethical Decision Making:</span> Empower hospitals with confidence in matching decisions</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="bg-gradient-to-br from-[#10b981]/10 to-[#00e5ff]/10 rounded-[2rem] p-8 border border-[#10b981]/20">
+            <h3 class="text-xl font-bold text-white mb-6 font-[Space_Grotesk] flex items-center gap-2">
+                <span class="material-symbols-outlined">psychology</span>
+                AI Model Includes
+            </h3>
+            <ul class="space-y-3 text-sm text-slate-300">
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-[#00e5ff] flex-shrink-0">neurological</span>
+                    <span><span class="font-bold">Age Factor:</span> Optimal age differences for graft longevity</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-[#00e5ff] flex-shrink-0">healing</span>
+                    <span><span class="font-bold">Health Profile:</span> Overall health status & immunological factors</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-[#00e5ff] flex-shrink-0">favorite</span>
+                    <span><span class="font-bold">Organ Viability:</span> Expected quality and preservation status</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-[#00e5ff] flex-shrink-0">trending_up</span>
+                    <span><span class="font-bold">Success Benchmarks:</span> Historical data from similar transplants</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="text-center py-8 mb-12">
+        <a href="/pricing" class="px-8 py-4 rounded-full bg-gradient-to-r from-[#ec4899] to-[#f472b6] text-white font-bold hover:shadow-lg hover:shadow-[#ec4899]/50 transition-all">
+            View SaaS Pricing Plans →
+        </a>
+    </div>
+</main>
+
+</body>
+</html>

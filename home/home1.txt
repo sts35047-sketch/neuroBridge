@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroBridge</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: #180f23;
+    color: #ecddf9;
+    overflow-x: hidden;
+}
+
+/* 3D Canvas — fixed behind everything */
+#neural-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* All content sits above canvas */
+header, section, footer, .above-canvas {
+    position: relative;
+    z-index: 1;
+}
+
+/* Subtle depth vignette over canvas */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(0,229,255,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse at 0% 100%, rgba(16,185,129,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 100% 50%, rgba(195,245,255,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(24,15,35,0.55) 0%, rgba(24,15,35,0.0) 100%);
+    pointer-events: none;
+}
+
+.glass {
+    background: rgba(24,15,35,0.45);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(0,229,255,0.18);
+}
+
+.glow-btn {
+    background: #10b981;
+    color: #064e3b;
+    box-shadow: 0 0 28px rgba(0,229,255,0.35), 0 0 8px rgba(16,185,129,0.5);
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.glow-btn:hover {
+    transform: scale(1.06) translateY(-2px);
+    box-shadow: 0 0 45px rgba(0,229,255,0.55), 0 0 16px rgba(16,185,129,0.6);
+}
+
+.holo-border {
+    border: 1px solid transparent;
+    background: linear-gradient(rgba(24,15,35,0.6), rgba(24,15,35,0.6)) padding-box,
+                linear-gradient(135deg, #10b981, #00e5ff, #6ee7b7, #10b981) border-box;
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), box-shadow 0.4s;
+}
+.holo-border:hover {
+    transform: scale(1.04) translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0,229,255,0.15), 0 0 30px rgba(16,185,129,0.12);
+}
+
+/* Animated scanning line on feature cards */
+.holo-border::after {
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px; right: -1px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00e5ff, transparent);
+    border-radius: 999px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.holo-border:hover::after { opacity: 1; }
+
+/* Glitch text effect on hero */
+@keyframes glitch-shift {
+    0%, 92%, 100% { clip-path: none; transform: none; opacity: 1; }
+    93%  { clip-path: inset(20% 0 60% 0); transform: translateX(-3px); opacity: 0.9; }
+    95%  { clip-path: inset(60% 0 10% 0); transform: translateX(3px); opacity: 0.9; }
+    97%  { clip-path: inset(40% 0 40% 0); transform: translateX(-2px); opacity: 0.95; }
+}
+.glitch-text {
+    animation: glitch-shift 8s infinite;
+}
+
+/* Pulse ring on CTA */
+@keyframes ring-pulse {
+    0%   { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.7); opacity: 0; }
+}
+.ring-pulse {
+    position: absolute;
+    inset: -4px;
+    border-radius: 9999px;
+    border: 2px solid rgba(0,229,255,0.5);
+    animation: ring-pulse 2s ease-out infinite;
+    pointer-events: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #180f23; }
+::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.25); border-radius: 10px; }
+
+/* Floating orb decoration */
+@keyframes float-orb {
+    0%, 100% { transform: translateY(0px) translateX(0px); }
+    33%  { transform: translateY(-18px) translateX(8px); }
+    66%  { transform: translateY(10px) translateX(-6px); }
+}
+.orb { animation: float-orb 9s ease-in-out infinite; }
+</style>
+</head>
+
+<body class="font-[Inter]">
+
+<!-- THREE.JS CANVAS — fixed behind all content -->
+<canvas id="neural-canvas"></canvas>
+
+<!-- ==================== NAVBAR ==================== -->
+<header class="flex justify-between items-center px-8 py-4 glass m-6 rounded-full">
+    <div class="flex items-center gap-3">
+        <!-- Replace with your logo img tag for Flask: -->
+        <!-- <img src="{{ url_for('static', filename='logo.jpeg') }}" alt="NeuroBridge Logo" class="h-10 w-10 rounded-lg object-cover border border-[#10b981]/30"> -->
+        <div class="h-10 w-10 rounded-lg bg-emerald-900/60 border border-[#10b981]/40 flex items-center justify-center font-black text-[#10b981] text-lg">N</div>
+        <h1 class="text-2xl font-black text-[#10b981] font-[Space_Grotesk]">NeuroBridge</h1>
+    </div>
+    <div class="flex gap-4 flex-wrap">
+        <a href="/login" class="px-6 py-2 rounded-full bg-white/10 hover:bg-white/20 transition text-sm sm:text-base">Hospital Login</a>
+        <a href="/register" class="px-6 py-2 rounded-full glow-btn font-bold text-sm sm:text-base">Register Hospital</a>
+        <a href="#track-section" class="px-6 py-2 rounded-full border border-green-500/50 hover:bg-green-500/10 transition text-sm sm:text-base">Track Status</a>
+    </div>
+</header>
+
+<!-- ==================== HERO ==================== -->
+<section class="text-center mt-24 px-6 relative">
+
+    <!-- Decorative floating orbs -->
+    <div class="orb absolute left-[8%] top-[-40px] w-40 h-40 rounded-full bg-[#00e5ff]/5 blur-3xl pointer-events-none"></div>
+    <div class="orb absolute right-[10%] top-[20px] w-52 h-52 rounded-full bg-[#10b981]/6 blur-3xl pointer-events-none" style="animation-delay: -3s;"></div>
+
+    <!-- Eyebrow badge -->
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-[#00e5ff]/30 text-xs uppercase tracking-[0.2em] text-[#00e5ff] mb-8 font-[Space_Grotesk] font-bold">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#00e5ff] animate-pulse"></span>
+        Bionic OS — Neural Grid v2.0
+    </div>
+
+    <h1 class="text-5xl md:text-7xl font-black font-[Space_Grotesk] mb-6 leading-none tracking-tight glitch-text">
+        The Future of <span class="text-[#10b981]">Organ Networks</span>
+    </h1>
+    <p class="text-slate-400 max-w-xl mx-auto mb-10 text-lg leading-relaxed">
+        AI-powered organ allocation, real-time tracking, and seamless hospital connectivity.
+    </p>
+
+    <div class="flex justify-center gap-4 flex-wrap">
+        <div class="relative inline-block">
+            <div class="ring-pulse"></div>
+            <a href="/login" class="relative px-8 py-4 rounded-full glow-btn font-bold inline-block">Hospital Login</a>
+        </div>
+        <a href="/register" class="px-8 py-4 rounded-full border border-white/20 hover:bg-white/10 transition">Get Started</a>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="mt-20 flex flex-col items-center gap-2 text-slate-600 text-xs tracking-widest uppercase">
+        <span>Scroll to explore</span>
+        <div class="w-px h-10 bg-gradient-to-b from-slate-600 to-transparent animate-pulse"></div>
+    </div>
+</section>
+
+<!-- ==================== FEATURES ==================== -->
+<section class="grid md:grid-cols-3 gap-8 px-10 mt-24 relative">
+    <div class="glass holo-border p-8 rounded-3xl relative overflow-hidden cursor-default">
+        <div class="w-10 h-10 rounded-xl bg-[#10b981]/20 flex items-center justify-center mb-5">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3 text-[#10b981] font-[Space_Grotesk]">Secure Registry</h3>
+        <p class="text-slate-400 leading-relaxed">
+            Encrypted donor-recipient database with real-time updates.
+        </p>
+    </div>
+
+    <div class="glass holo-border p-8 rounded-3xl relative overflow-hidden cursor-default">
+        <div class="w-10 h-10 rounded-xl bg-[#00e5ff]/15 flex items-center justify-center mb-5">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3 text-[#10b981] font-[Space_Grotesk]">AI Matching</h3>
+        <p class="text-slate-400 leading-relaxed">
+            Smart neural algorithms for instant compatibility detection.
+        </p>
+    </div>
+
+    <div class="glass holo-border p-8 rounded-3xl relative overflow-hidden cursor-default">
+        <div class="w-10 h-10 rounded-xl bg-[#6ee7b7]/15 flex items-center justify-center mb-5">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3 text-[#10b981] font-[Space_Grotesk]">Live Tracking</h3>
+        <p class="text-slate-400 leading-relaxed">
+            Real-time organ transport & viability monitoring system.
+        </p>
+    </div>
+</section>
+
+<!-- ==================== STATS BAR ==================== -->
+<section class="px-10 mt-20">
+    <div class="glass rounded-3xl px-8 py-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div>
+            <p class="text-3xl font-black font-[Space_Grotesk] text-[#10b981]">1,200+</p>
+            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Hospitals Connected</p>
+        </div>
+        <div>
+            <p class="text-3xl font-black font-[Space_Grotesk] text-[#00e5ff]">98.7%</p>
+            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Match Accuracy</p>
+        </div>
+        <div>
+            <p class="text-3xl font-black font-[Space_Grotesk] text-[#6ee7b7]">4.2 min</p>
+            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Avg. Match Time</p>
+        </div>
+        <div>
+            <p class="text-3xl font-black font-[Space_Grotesk] text-[#10b981]">8,400+</p>
+            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Lives Saved</p>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== CTA ==================== -->
+<section class="text-center mt-28 pb-8 relative">
+    <div class="orb absolute left-1/2 -translate-x-1/2 top-0 w-96 h-40 rounded-full bg-[#10b981]/8 blur-3xl pointer-events-none"></div>
+    <h2 class="text-3xl md:text-5xl font-black mb-4 font-[Space_Grotesk] tracking-tight relative">
+        Ready to Save Lives?
+    </h2>
+    <p class="text-slate-400 mb-10 relative">Join the network. Every second matters.</p>
+    <div class="relative inline-block">
+        <div class="ring-pulse" style="animation-delay: 0.5s;"></div>
+        <a href="/register" class="relative px-10 py-4 rounded-full glow-btn font-bold inline-block">
+            Join NeuroBridge
+        </a>
+    </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="text-center mt-20 pb-10 text-slate-500 relative">
+    <div class="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8"></div>
+    © 2026 NeuroBridge • Built with Tech &amp; Empathy <br>
+    <a href="/admin/login"
+       class="text-[#10b981] text-sm mt-2 inline-block hover:underline font-bold">
+       Staff &amp; Admin Login
+    </a>
+</footer>
+
+<<<<<<< HEAD
+<!-- ==================== THREE.JS NEURAL NETWORK ==================== -->
+<script>
+(function () {
+    const canvas = document.getElementById('neural-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera.position.set(0, 0, 140);
+
+    /* ── Mouse tracking ── */
+    const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
+    document.addEventListener('mousemove', e => {
+        mouse.tx = (e.clientX / window.innerWidth  - 0.5) * 2;
+        mouse.ty = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
+
+    /* ── GLOBE SPHERE (wireframe latitude/longitude lines) ── */
+    const globeGroup = new THREE.Group();
+    scene.add(globeGroup);
+
+    function addLatLng(radius, segments, color, opacity, axis) {
+        const count = axis === 'lat' ? 9 : 12;
+        for (let i = 0; i < count; i++) {
+            let geo;
+            if (axis === 'lat') {
+                const phi = (i / (count - 1)) * Math.PI;
+                const r = radius * Math.sin(phi);
+                const y = radius * Math.cos(phi);
+                const pts = [];
+                for (let j = 0; j <= segments; j++) {
+                    const theta = (j / segments) * Math.PI * 2;
+                    pts.push(new THREE.Vector3(r * Math.cos(theta), y, r * Math.sin(theta)));
+                }
+                geo = new THREE.BufferGeometry().setFromPoints(pts);
+            } else {
+                const theta = (i / count) * Math.PI * 2;
+                const pts = [];
+                for (let j = 0; j <= segments; j++) {
+                    const phi = (j / segments) * Math.PI;
+                    pts.push(new THREE.Vector3(
+                        radius * Math.sin(phi) * Math.cos(theta),
+                        radius * Math.cos(phi),
+                        radius * Math.sin(phi) * Math.sin(theta)
+                    ));
+                }
+                geo = new THREE.BufferGeometry().setFromPoints(pts);
+            }
+            const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity });
+            globeGroup.add(new THREE.Line(geo, mat));
+        }
+    }
+
+    addLatLng(52, 80, 0x00e5ff, 0.07, 'lat');
+    addLatLng(52, 80, 0x00e5ff, 0.07, 'lng');
+
+    /* ── GLOBE NODE DOTS ── */
+    const NODE_COUNT = 55;
+    const nodePositions = [];
+    const nodeVelocities = [];
+    const nodeMeshes = [];
+    const nodeGeo = new THREE.SphereGeometry(0.55, 8, 8);
+
+    for (let i = 0; i < NODE_COUNT; i++) {
+        const phi   = Math.acos(2 * Math.random() - 1);
+        const theta = Math.random() * Math.PI * 2;
+        const r = 50 + Math.random() * 8;
+        const p = new THREE.Vector3(
+            r * Math.sin(phi) * Math.cos(theta),
+            r * Math.cos(phi),
+            r * Math.sin(phi) * Math.sin(theta)
+        );
+        nodePositions.push(p);
+        nodeVelocities.push(new THREE.Vector3(
+            (Math.random() - 0.5) * 0.006,
+            (Math.random() - 0.5) * 0.006,
+            (Math.random() - 0.5) * 0.006
+        ));
+        const isHot = Math.random() < 0.25;
+        const mesh = new THREE.Mesh(nodeGeo, new THREE.MeshBasicMaterial({
+            color: isHot ? 0x00e5ff : 0x10b981,
+            transparent: true,
+            opacity: 0.7 + Math.random() * 0.3
+        }));
+        mesh.position.copy(p);
+        mesh.scale.setScalar(0.5 + Math.random() * 1.4);
+        globeGroup.add(mesh);
+        nodeMeshes.push(mesh);
+    }
+
+    /* ── GLOBE EDGE CONNECTIONS ── */
+    const edgePool = [];
+    const EDGE_DIST = 28;
+
+    function rebuildEdges() {
+        edgePool.forEach(l => globeGroup.remove(l));
+        edgePool.length = 0;
+        for (let i = 0; i < NODE_COUNT; i++) {
+            for (let j = i + 1; j < NODE_COUNT; j++) {
+                const d = nodePositions[i].distanceTo(nodePositions[j]);
+                if (d < EDGE_DIST) {
+                    const alpha = (1 - d / EDGE_DIST) * 0.45;
+                    const geo = new THREE.BufferGeometry().setFromPoints([
+                        nodePositions[i].clone(), nodePositions[j].clone()
+                    ]);
+                    const mat = new THREE.LineBasicMaterial({
+                        color: 0x00e5ff, transparent: true, opacity: alpha
+                    });
+                    const line = new THREE.Line(geo, mat);
+                    globeGroup.add(line);
+                    edgePool.push(line);
+                }
+            }
+        }
+    }
+
+    /* ── FLOATING PARTICLES (deep field) ── */
+    const PARTICLE_COUNT = 320;
+    const pPositions = new Float32Array(PARTICLE_COUNT * 3);
+    const pSpeeds    = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+        pPositions[i * 3]     = (Math.random() - 0.5) * 400;
+        pPositions[i * 3 + 1] = (Math.random() - 0.5) * 300;
+        pPositions[i * 3 + 2] = (Math.random() - 0.5) * 200;
+        pSpeeds.push({
+            x: (Math.random() - 0.5) * 0.04,
+            y: (Math.random() - 0.5) * 0.04,
+            z: (Math.random() - 0.5) * 0.02
+        });
+    }
+    const pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+    const pMat = new THREE.PointsMaterial({ color: 0x10b981, size: 0.7, transparent: true, opacity: 0.45 });
+    const particles = new THREE.Points(pGeo, pMat);
+    scene.add(particles);
+
+    /* ── OUTER RING HALOS ── */
+    function addRing(radius, tube, color, opacity, rx, ry) {
+        const geo = new THREE.TorusGeometry(radius, tube, 8, 100);
+        const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity, wireframe: false });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.rotation.x = rx;
+        mesh.rotation.y = ry;
+        scene.add(mesh);
+        return mesh;
+    }
+    const ring1 = addRing(75, 0.25, 0x00e5ff, 0.06, Math.PI / 2.5, 0.3);
+    const ring2 = addRing(90, 0.18, 0x10b981, 0.04, Math.PI / 4,   1.2);
+    const ring3 = addRing(110, 0.12, 0x6ee7b7, 0.03, Math.PI / 3,  2.1);
+
+    /* ── ICOSAHEDRA (far decorative) ── */
+    function addIco(x, y, z, size, color, opacity) {
+        const m = new THREE.Mesh(
+            new THREE.IcosahedronGeometry(size, 1),
+            new THREE.MeshBasicMaterial({ color, wireframe: true, transparent: true, opacity })
+        );
+        m.position.set(x, y, z);
+        scene.add(m);
+        return m;
+    }
+    const ico1 = addIco(-110,  55, -60, 18, 0x10b981, 0.07);
+    const ico2 = addIco( 120, -45, -40, 13, 0x00e5ff, 0.06);
+    const ico3 = addIco(  30,  90, -80,  9, 0x6ee7b7, 0.08);
+
+    /* ── DATA PULSE STREAMS (vertical scanlines) ── */
+    for (let i = 0; i < 6; i++) {
+        const pts = [];
+        const x = (Math.random() - 0.5) * 280;
+        const z = -40 - Math.random() * 60;
+        for (let y = -160; y <= 160; y += 5) pts.push(new THREE.Vector3(x, y, z));
+        const geo = new THREE.BufferGeometry().setFromPoints(pts);
+        const mat = new THREE.LineBasicMaterial({
+            color: 0x00e5ff, transparent: true, opacity: 0.025 + Math.random() * 0.025
+        });
+        scene.add(new THREE.Line(geo, mat));
+    }
+
+    /* ── ANIMATE ── */
+    let frame = 0;
+    let edgeTimer = 0;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        frame++;
+        edgeTimer++;
+
+        /* Smooth mouse parallax */
+        mouse.x += (mouse.tx - mouse.x) * 0.04;
+        mouse.y += (mouse.ty - mouse.y) * 0.04;
+
+        /* Globe slow auto-rotate + mouse tilt */
+        globeGroup.rotation.y += 0.0018;
+        globeGroup.rotation.x  = mouse.y * 0.18;
+        globeGroup.rotation.z  = mouse.x * 0.08;
+
+        /* Camera gentle parallax drift */
+        camera.position.x += (mouse.x * 18 - camera.position.x) * 0.025;
+        camera.position.y += (-mouse.y * 12 - camera.position.y) * 0.025;
+        camera.lookAt(scene.position);
+
+        /* Node drift */
+        for (let i = 0; i < NODE_COUNT; i++) {
+            nodePositions[i].add(nodeVelocities[i]);
+            const len = nodePositions[i].length();
+            if (len < 45 || len > 62) nodeVelocities[i].negate();
+            nodeMeshes[i].position.copy(nodePositions[i]);
+        }
+
+        /* Rebuild edges every 35 frames */
+        if (edgeTimer > 35) { rebuildEdges(); edgeTimer = 0; }
+
+        /* Float particles */
+        const pos = pGeo.attributes.position.array;
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            pos[i*3]   += pSpeeds[i].x;
+            pos[i*3+1] += pSpeeds[i].y;
+            pos[i*3+2] += pSpeeds[i].z;
+            if (Math.abs(pos[i*3])   > 200) pSpeeds[i].x *= -1;
+            if (Math.abs(pos[i*3+1]) > 150) pSpeeds[i].y *= -1;
+            if (Math.abs(pos[i*3+2]) > 100) pSpeeds[i].z *= -1;
+        }
+        pGeo.attributes.position.needsUpdate = true;
+
+        /* Rings slow drift */
+        ring1.rotation.z += 0.0022;
+        ring2.rotation.z -= 0.0015;
+        ring3.rotation.x += 0.0010;
+
+        /* Ico spin */
+        ico1.rotation.x += 0.005; ico1.rotation.y += 0.004;
+        ico2.rotation.y += 0.006; ico2.rotation.z -= 0.003;
+        ico3.rotation.x -= 0.004; ico3.rotation.z += 0.005;
+
+        /* Node pulse opacity flicker */
+        if (frame % 3 === 0) {
+            nodeMeshes.forEach((m, i) => {
+                if (Math.random() < 0.04) {
+                    m.material.opacity = 0.4 + Math.random() * 0.6;
+                }
+            });
+        }
+
+        renderer.render(scene, camera);
+    }
+
+    rebuildEdges();
+    animate();
+
+    /* ── RESIZE ── */
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    /* ── SCROLL PARALLAX: gently pull globe back as user scrolls ── */
+    window.addEventListener('scroll', () => {
+        const t = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+        globeGroup.position.y = -t * 30;
+    });
+})();
+</script>
+
+=======
+>>>>>>> 5378a5c1e17157cbd69bc9cca1c0f7f7f19d43e5
+</body>
+</html>

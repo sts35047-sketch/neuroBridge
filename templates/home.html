@@ -1,650 +1,572 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NeuroBridge</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>NeuroBridge — Organ Donation Network</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<!-- FIX 1: removed the backslash-escape from <\/script> which broke HTML parsing -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-    background-color: #180f23;
-    color: #ecddf9;
-    overflow-x: hidden;
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#04060f;--accent:#10e596;--blue:#3d9eff;--purple:#a855f7;
+  --red:#ff4d6d;--amber:#ffb830;--text:#eeeaf6;--muted:rgba(238,234,246,.45);
+  --border:rgba(255,255,255,.06);--g:clamp(1.2rem,5vw,3rem);
 }
-
-/* 3D Canvas — fixed behind everything */
-#neural-canvas {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: 0;
-    pointer-events: none;
-}
-
-/* All content sits above canvas */
-header, section, footer, .above-canvas {
-    position: relative;
-    z-index: 1;
-}
-
-/* Subtle depth vignette over canvas */
-body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    background:
-        radial-gradient(ellipse at 50% 0%, rgba(0,229,255,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse at 0% 100%, rgba(16,185,129,0.06) 0%, transparent 50%),
-        radial-gradient(ellipse at 100% 50%, rgba(195,245,255,0.04) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 50%, rgba(24,15,35,0.55) 0%, rgba(24,15,35,0.0) 100%);
-    pointer-events: none;
-}
-
-.glass {
-    background: rgba(24,15,35,0.45);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(0,229,255,0.18);
-}
-
-.glow-btn {
-    background: #10b981;
-    color: #064e3b;
-    box-shadow: 0 0 28px rgba(0,229,255,0.35), 0 0 8px rgba(16,185,129,0.5);
-    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-}
-.glow-btn:hover {
-    transform: scale(1.06) translateY(-2px);
-    box-shadow: 0 0 45px rgba(0,229,255,0.55), 0 0 16px rgba(16,185,129,0.6);
-}
-
-.holo-border {
-    border: 1px solid transparent;
-    background: linear-gradient(rgba(24,15,35,0.6), rgba(24,15,35,0.6)) padding-box,
-                linear-gradient(135deg, #10b981, #00e5ff, #6ee7b7, #10b981) border-box;
-    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), box-shadow 0.4s;
-}
-.holo-border:hover {
-    transform: scale(1.04) translateY(-6px);
-    box-shadow: 0 20px 60px rgba(0,229,255,0.15), 0 0 30px rgba(16,185,129,0.12);
-}
-
-/* Animated scanning line on feature cards */
-.holo-border::after {
-    content: '';
-    position: absolute;
-    top: -1px; left: -1px; right: -1px;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #00e5ff, transparent);
-    border-radius: 999px;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-.holo-border:hover::after { opacity: 1; }
-
-/* Glitch text effect on hero */
-@keyframes glitch-shift {
-    0%, 92%, 100% { clip-path: none; transform: none; opacity: 1; }
-    93%  { clip-path: inset(20% 0 60% 0); transform: translateX(-3px); opacity: 0.9; }
-    95%  { clip-path: inset(60% 0 10% 0); transform: translateX(3px); opacity: 0.9; }
-    97%  { clip-path: inset(40% 0 40% 0); transform: translateX(-2px); opacity: 0.95; }
-}
-.glitch-text {
-    animation: glitch-shift 8s infinite;
-}
-
-/* Pulse ring on CTA */
-@keyframes ring-pulse {
-    0%   { transform: scale(1); opacity: 0.6; }
-    100% { transform: scale(1.7); opacity: 0; }
-}
-.ring-pulse {
-    position: absolute;
-    inset: -4px;
-    border-radius: 9999px;
-    border: 2px solid rgba(0,229,255,0.5);
-    animation: ring-pulse 2s ease-out infinite;
-    pointer-events: none;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: #180f23; }
-::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.25); border-radius: 10px; }
-
-/* Floating orb decoration */
-@keyframes float-orb {
-    0%, 100% { transform: translateY(0px) translateX(0px); }
-    33%  { transform: translateY(-18px) translateX(8px); }
-    66%  { transform: translateY(10px) translateX(-6px); }
-}
-.orb { animation: float-orb 9s ease-in-out infinite; }
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:2px}::-webkit-scrollbar-thumb{background:rgba(16,229,150,.3)}
+#bgc{position:fixed;inset:0;z-index:0;pointer-events:none}
+.amb{position:fixed;border-radius:50%;pointer-events:none;z-index:1;filter:blur(120px)}
+.amb-a{width:70vw;height:60vw;max-width:900px;max-height:800px;top:-20%;left:-20%;background:radial-gradient(circle,rgba(61,158,255,.055),transparent 65%)}
+.amb-b{width:60vw;height:60vw;max-width:800px;max-height:800px;bottom:-20%;right:-15%;background:radial-gradient(circle,rgba(168,85,247,.045),transparent 65%)}
+.amb-c{width:50vw;height:40vw;max-width:600px;max-height:500px;top:40%;left:30%;background:radial-gradient(circle,rgba(16,229,150,.035),transparent 65%)}
+body::after{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.025) 0px,rgba(0,0,0,.025) 1px,transparent 1px,transparent 3px);opacity:.5}
+header,main,footer{position:relative;z-index:3}
+nav{position:fixed;top:0;inset-x:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:.7rem var(--g);background:rgba(4,6,15,.78);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:.55rem;text-decoration:none}
+.logo-ico{width:34px;height:34px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,var(--accent),var(--blue));display:grid;place-items:center;box-shadow:0 0 16px rgba(16,229,150,.28)}
+.logo-txt{font-family:'Syne',sans-serif;font-weight:900;font-size:.95rem;color:var(--text)}
+.logo-txt span{color:var(--accent)}
+.nav-r{display:flex;align-items:center;gap:.45rem}
+.nb{text-decoration:none;font-size:.8rem;font-weight:500;padding:.38rem .85rem;border-radius:9999px;transition:all .22s}
+.nb-ghost{color:var(--muted);border:1px solid transparent}.nb-ghost:hover{color:var(--text);background:rgba(255,255,255,.05);border-color:var(--border)}
+.nb-fill{background:var(--accent);color:#031a13;font-weight:700;box-shadow:0 0 18px rgba(16,229,150,.22)}.nb-fill:hover{box-shadow:0 0 30px rgba(16,229,150,.42);transform:translateY(-1px)}
+.nb-out{border:1px solid rgba(16,229,150,.28);color:var(--accent)}.nb-out:hover{background:rgba(16,229,150,.07)}
+.ham{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:8px}
+.ham span{width:21px;height:1.5px;background:var(--text);border-radius:2px;transition:all .25s;display:block}
+.ham.o span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}.ham.o span:nth-child(2){opacity:0}.ham.o span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+#mob{display:none;position:fixed;inset:0;z-index:49;background:rgba(4,6,15,.96);backdrop-filter:blur(24px);flex-direction:column;align-items:center;justify-content:center;gap:2rem}
+#mob.o{display:flex}
+#mob a{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--text);text-decoration:none;transition:color .2s}
+#mob a:hover{color:var(--accent)}
+@media(max-width:640px){.nav-r{display:none!important}.ham{display:flex}}
+.hero{min-height:100svh;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:clamp(2rem,4vw,4rem);padding:calc(70px + clamp(2rem,5vw,4rem)) var(--g) clamp(3rem,6vw,5rem);max-width:1280px;margin:0 auto}
+@media(max-width:860px){.hero{grid-template-columns:1fr;text-align:center}}
+.hero-left{display:flex;flex-direction:column;align-items:flex-start}
+@media(max-width:860px){.hero-left{align-items:center}}
+.badge{display:inline-flex;align-items:center;gap:.45rem;padding:.32rem .85rem;border-radius:9999px;margin-bottom:1.6rem;background:rgba(16,229,150,.07);border:1px solid rgba(16,229,150,.22);font-size:.68rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.badge-dot{width:.42rem;height:.42rem;border-radius:50%;background:var(--accent);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 0 3px rgba(16,229,150,.2)}50%{opacity:.3;box-shadow:none}}
+h1{font-family:'Syne',sans-serif;font-weight:900;font-size:clamp(2.6rem,6.5vw,5.2rem);line-height:.96;letter-spacing:-.035em;margin-bottom:1.4rem}
+.grad{background:linear-gradient(120deg,var(--accent),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{max-width:420px;color:var(--muted);line-height:1.75;font-size:clamp(.9rem,2vw,1.05rem);font-weight:300;margin-bottom:2.2rem}
+@media(max-width:860px){.hero-sub{max-width:100%;text-align:center}}
+.btns{display:flex;flex-wrap:wrap;gap:.7rem;margin-bottom:2.8rem}
+@media(max-width:860px){.btns{justify-content:center}}
+.btn-p{display:inline-flex;align-items:center;gap:.45rem;text-decoration:none;background:var(--accent);color:#031a13;font-weight:700;font-size:.88rem;padding:.72rem 1.7rem;border-radius:9999px;box-shadow:0 0 24px rgba(16,229,150,.28);transition:all .25s}
+.btn-p:hover{box-shadow:0 0 42px rgba(16,229,150,.5);transform:translateY(-2px)}
+.btn-s{display:inline-flex;align-items:center;gap:.4rem;text-decoration:none;background:transparent;color:var(--text);font-size:.88rem;font-weight:500;padding:.72rem 1.7rem;border-radius:9999px;border:1px solid var(--border);transition:all .25s}
+.btn-s:hover{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.04)}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.02);backdrop-filter:blur(12px);max-width:500px}
+@media(max-width:860px){.stats-row{max-width:100%;grid-template-columns:repeat(2,1fr)}}
+.stat{padding:1.1rem .8rem;text-align:center;border-right:1px solid var(--border)}
+.stat:last-child{border-right:none}
+@media(max-width:860px){.stat:nth-child(2){border-right:none}.stat:nth-child(3){border-top:1px solid var(--border)}.stat:nth-child(4){border-top:1px solid var(--border);border-right:none}}
+.stat-v{font-family:'Syne',sans-serif;font-weight:900;font-size:clamp(1.3rem,3.5vw,1.9rem);line-height:1;margin-bottom:.25rem;letter-spacing:-.03em}
+.stat-l{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.brain-stage{width:100%;aspect-ratio:1/1;max-width:500px;position:relative;margin:0 auto}
+#brain-c{width:100%;height:100%;display:block}
+.otag{position:absolute;display:flex;align-items:center;gap:.4rem;font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;pointer-events:none;white-space:nowrap;opacity:0;animation:fi .5s ease forwards}
+.otag::before{content:'';width:20px;height:1px;background:currentColor;opacity:.6;flex-shrink:0}
+@keyframes fi{to{opacity:1}}
+section.padded{padding:clamp(4rem,8vw,6rem) var(--g)}
+.center{text-align:center}
+.eyebrow{font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:.75rem}
+.sec-title{font-family:'Syne',sans-serif;font-weight:900;font-size:clamp(1.85rem,5vw,3.2rem);letter-spacing:-.03em;line-height:1.0;margin-bottom:1rem}
+.sec-sub{color:var(--muted);max-width:520px;line-height:1.72;font-size:clamp(.88rem,2vw,1rem);font-weight:300;margin:0 auto}
+.body-sec{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,4vw,5rem);align-items:center;max-width:1100px;margin:3.5rem auto 0}
+@media(max-width:800px){.body-sec{grid-template-columns:1fr}}
+.body-wrap{width:100%;max-width:340px;margin:0 auto;position:relative}
+#body-c{width:100%;display:block}
+.olist{display:flex;flex-direction:column;gap:.85rem}
+.oitem{display:flex;align-items:center;gap:.9rem;padding:.9rem 1.1rem;background:rgba(255,255,255,.028);border:1px solid var(--border);border-radius:12px;transition:all .25s;position:relative;overflow:hidden}
+.oitem::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;background:currentColor;opacity:.7}
+.oitem:hover{background:rgba(255,255,255,.05);transform:translateX(4px)}
+.oi-dot{width:34px;height:34px;border-radius:8px;flex-shrink:0;display:grid;place-items:center;border:1px solid rgba(255,255,255,.07)}
+.oi-info h4{font-size:.86rem;font-weight:700;margin-bottom:.15rem}
+.oi-info p{font-size:.73rem;color:var(--muted);line-height:1.5;font-weight:300}
+.oi-stat{margin-left:auto;text-align:right;flex-shrink:0}
+.oi-stat span{font-family:'Syne',sans-serif;font-weight:900;font-size:1rem}
+.oi-stat small{display:block;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:1px;border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:3rem}
+.feat{padding:clamp(1.4rem,3vw,2rem);background:rgba(255,255,255,.02);transition:background .25s;position:relative;overflow:hidden}
+.feat:hover{background:rgba(255,255,255,.04)}
+.feat::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--lc,rgba(16,229,150,.3)),transparent);opacity:0;transition:opacity .3s}
+.feat:hover::after{opacity:1}
+.feat-ico{width:2.4rem;height:2.4rem;border-radius:9px;display:grid;place-items:center;margin-bottom:1rem;border:1px solid rgba(255,255,255,.06)}
+.feat h3{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:800;margin-bottom:.5rem}
+.feat p{font-size:.82rem;color:var(--muted);line-height:1.7;font-weight:300}
+.track-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,4vw,4rem);align-items:center;max-width:960px;margin:3rem auto 0}
+@media(max-width:680px){.track-grid{grid-template-columns:1fr}}
+.tcard{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:16px;padding:clamp(1.5rem,3vw,2.2rem)}
+.tlabel{display:block;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;font-weight:600}
+.tinput{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:.68rem .95rem;font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
+.tinput:focus{border-color:rgba(61,158,255,.45)}
+.tinput::placeholder{color:rgba(255,255,255,.2)}
+.tbtn{width:100%;margin-top:1.1rem;background:var(--blue);color:#fff;font-weight:700;font-size:.88rem;border:none;border-radius:8px;padding:.76rem;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 0 18px rgba(61,158,255,.2);transition:all .22s}
+.tbtn:hover{box-shadow:0 0 30px rgba(61,158,255,.38);transform:translateY(-1px)}
+.steps{display:flex;flex-direction:column}
+.step{display:flex;gap:.9rem;padding:1rem 0;position:relative}
+.step:not(:last-child)::after{content:'';position:absolute;left:.9rem;top:2.4rem;bottom:-1rem;width:1px;background:var(--border)}
+.step-n{width:1.8rem;height:1.8rem;border-radius:50%;flex-shrink:0;display:grid;place-items:center;font-size:.7rem;font-weight:700;position:relative;z-index:1}
+.step-t h4{font-size:.88rem;font-weight:700;margin-bottom:.2rem}
+.step-t p{font-size:.78rem;color:var(--muted);line-height:1.55;font-weight:300}
+.cta-box{max-width:680px;margin:0 auto;padding:clamp(3rem,6vw,4.5rem) clamp(2rem,5vw,4rem);text-align:center;border-radius:24px;background:linear-gradient(135deg,rgba(16,229,150,.07),rgba(61,158,255,.04),rgba(168,85,247,.04));border:1px solid rgba(16,229,150,.1);position:relative;overflow:hidden}
+.cta-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(16,229,150,.08),transparent);pointer-events:none}
+footer{padding:1.5rem var(--g);border-top:1px solid var(--border);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem}
+footer p{font-size:.78rem;color:var(--muted)}
+footer a{font-size:.78rem;color:var(--accent);text-decoration:none;font-weight:700}
+@keyframes fu{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.fu{opacity:0;animation:fu .65s ease forwards}
+.d1{animation-delay:.1s}.d2{animation-delay:.22s}.d3{animation-delay:.34s}.d4{animation-delay:.46s}.d5{animation-delay:.58s}
 </style>
 </head>
-
-<body class="font-[Inter]">
-
-<!-- THREE.JS CANVAS — fixed behind all content -->
-<canvas id="neural-canvas"></canvas>
-
-<!-- ==================== NAVBAR ==================== -->
-<header class="flex justify-between items-center px-8 py-4 glass m-6 rounded-full">
-    <div class="flex items-center gap-3">
-        <!-- Replace with your logo img tag for Flask: -->
-        <!-- <img src="{{ url_for('static', filename='logo.jpeg') }}" alt="NeuroBridge Logo" class="h-10 w-10 rounded-lg object-cover border border-[#10b981]/30"> -->
-        <div class="h-10 w-10 rounded-lg bg-emerald-900/60 border border-[#10b981]/40 flex items-center justify-center font-black text-[#10b981] text-lg">N</div>
-        <h1 class="text-2xl font-black text-[#10b981] font-[Space_Grotesk]">NeuroBridge</h1>
-    </div>
-    <div class="flex gap-4 flex-wrap">
-        <a href="/login" class="px-6 py-2 rounded-full bg-white/10 hover:bg-white/20 transition text-sm sm:text-base">Hospital Login</a>
-        <a href="/register" class="px-6 py-2 rounded-full glow-btn font-bold text-sm sm:text-base">Register Hospital</a>
-        <a href="#track-section" class="px-6 py-2 rounded-full border border-green-500/50 hover:bg-green-500/10 transition text-sm sm:text-base">Track Status</a>
-    </div>
-</header>
-
-<!-- ==================== HERO ==================== -->
-<section class="text-center mt-24 px-6 relative">
-
-    <!-- Decorative floating orbs -->
-    <div class="orb absolute left-[8%] top-[-40px] w-40 h-40 rounded-full bg-[#00e5ff]/5 blur-3xl pointer-events-none"></div>
-    <div class="orb absolute right-[10%] top-[20px] w-52 h-52 rounded-full bg-[#10b981]/6 blur-3xl pointer-events-none" style="animation-delay: -3s;"></div>
-
-    <!-- Eyebrow badge -->
-    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-[#00e5ff]/30 text-xs uppercase tracking-[0.2em] text-[#00e5ff] mb-8 font-[Space_Grotesk] font-bold">
-        <span class="w-1.5 h-1.5 rounded-full bg-[#00e5ff] animate-pulse"></span>
-        Bionic OS — Neural Grid v2.0
-    </div>
-
-    <h1 class="text-5xl md:text-7xl font-black font-[Space_Grotesk] mb-6 leading-none tracking-tight glitch-text">
-        The Future of <span class="text-[#10b981]">Organ Networks</span>
-    </h1>
-    <p class="text-slate-400 max-w-xl mx-auto mb-10 text-lg leading-relaxed">
-        AI-powered organ allocation, real-time tracking, and seamless hospital connectivity.
-    </p>
-
-    <div class="flex justify-center gap-4 flex-wrap">
-        <div class="relative inline-block">
-            <div class="ring-pulse"></div>
-            <a href="/login" class="relative px-8 py-4 rounded-full glow-btn font-bold inline-block">Hospital Login</a>
-        </div>
-        <a href="/register" class="px-8 py-4 rounded-full border border-white/20 hover:bg-white/10 transition">Get Started</a>
-    </div>
-
-    <!-- Scroll indicator -->
-    <div class="mt-20 flex flex-col items-center gap-2 text-slate-600 text-xs tracking-widest uppercase">
-        <span>Scroll to explore</span>
-        <div class="w-px h-10 bg-gradient-to-b from-slate-600 to-transparent animate-pulse"></div>
-    </div>
-</section>
-
-<!-- ==================== FEATURES ==================== -->
-<section class="grid md:grid-cols-3 gap-8 px-10 mt-24 relative">
-    <div class="glass holo-border p-8 rounded-3xl relative overflow-hidden cursor-default">
-        <div class="w-10 h-10 rounded-xl bg-[#10b981]/20 flex items-center justify-center mb-5">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        </div>
-        <h3 class="text-xl font-bold mb-3 text-[#10b981] font-[Space_Grotesk]">Secure Registry</h3>
-        <p class="text-slate-400 leading-relaxed">
-            Encrypted donor-recipient database with real-time updates.
-        </p>
-    </div>
-
-    <div class="glass holo-border p-8 rounded-3xl relative overflow-hidden cursor-default">
-        <div class="w-10 h-10 rounded-xl bg-[#00e5ff]/15 flex items-center justify-center mb-5">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
-        </div>
-        <h3 class="text-xl font-bold mb-3 text-[#10b981] font-[Space_Grotesk]">AI Matching</h3>
-        <p class="text-slate-400 leading-relaxed">
-            Smart neural algorithms for instant compatibility detection.
-        </p>
-    </div>
-
-    <div class="glass holo-border p-8 rounded-3xl relative overflow-hidden cursor-default">
-        <div class="w-10 h-10 rounded-xl bg-[#6ee7b7]/15 flex items-center justify-center mb-5">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <h3 class="text-xl font-bold mb-3 text-[#10b981] font-[Space_Grotesk]">Live Tracking</h3>
-        <p class="text-slate-400 leading-relaxed">
-            Real-time organ transport & viability monitoring system.
-        </p>
-    </div>
-</section>
-
-<!-- ==================== STATUS TRACKING SECTION ==================== -->
-<section class="px-10 mt-24 relative">
-    <h2 class="text-3xl md:text-4xl font-black text-center mb-12 font-[Space_Grotesk]">
-        Track Your <span class="text-[#10b981]">Status</span>
-    </h2>
-    
-    <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        <!-- Donor Status Card -->
-        <div class="glass holo-border p-12 rounded-3xl text-center hover:scale-105 transition-transform relative overflow-hidden cursor-default group">
-            <div class="absolute inset-0 bg-gradient-to-b from-[#10b981]/0 to-[#10b981]/5 opacity-0 group-hover:opacity-100 transition"></div>
-            <div class="relative">
-                <div class="w-16 h-16 rounded-full bg-[#10b981]/20 border border-[#10b981]/40 flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-8 h-8 text-[#10b981]" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                    </svg>
-                </div>
-                <h3 class="text-2xl font-bold mb-3 text-white font-[Space_Grotesk]">I'm a Donor</h3>
-                <p class="text-slate-400 mb-6">Check your profile, organ viability status, and matching progress in real-time.</p>
-                <button onclick="openDonorTracking()" class="w-full px-6 py-3 rounded-full glow-btn font-bold transition-all hover:shadow-lg">
-                    <span class="material-symbols-outlined align-middle mr-2" style="font-size: 20px;">search</span>
-                    Check Donor Status
-                </button>
-            </div>
-        </div>
-
-        <!-- Recipient Status Card -->
-        <div class="glass holo-border p-12 rounded-3xl text-center hover:scale-105 transition-transform relative overflow-hidden cursor-default group">
-            <div class="absolute inset-0 bg-gradient-to-b from-[#00e5ff]/0 to-[#00e5ff]/5 opacity-0 group-hover:opacity-100 transition"></div>
-            <div class="relative">
-                <div class="w-16 h-16 rounded-full bg-[#00e5ff]/20 border border-[#00e5ff]/40 flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-8 h-8 text-[#00e5ff]" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
-                    </svg>
-                </div>
-                <h3 class="text-2xl font-bold mb-3 text-white font-[Space_Grotesk]">I'm a Recipient</h3>
-                <p class="text-slate-400 mb-6">View your waitlist position, find matching donors, and track transplant progress.</p>
-                <button onclick="openRecipientTracking()" class="w-full px-6 py-3 rounded-full border border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 font-bold transition-all">
-                    <span class="material-symbols-outlined align-middle mr-2" style="font-size: 20px;">query_stats</span>
-                    Check Recipient Status
-                </button>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Status Tracking Modal for Donor -->
-<div id="donorTrackingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-    <div class="glass rounded-3xl p-8 max-w-md w-full relative border border-[#10b981]/30">
-        <button onclick="closeDonorTracking()" class="absolute top-4 right-4 text-white/50 hover:text-white"><span class="material-symbols-outlined">close</span></button>
-        <h3 class="text-2xl font-bold mb-4 text-white font-[Space_Grotesk]">Track Donor Status</h3>
-        <p class="text-slate-400 mb-6">Enter your phone number to find your profile:</p>
-        <div class="space-y-4">
-            <input type="tel" id="donorPhone" placeholder="Your 10-digit phone number" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:border-[#10b981] focus:outline-none transition">
-            <button onclick="searchDonor()" class="w-full px-6 py-3 rounded-full glow-btn font-bold transition-all">Search Profile</button>
-        </div>
-    </div>
+<body>
+<div class="amb amb-a"></div><div class="amb amb-b"></div><div class="amb amb-c"></div>
+<canvas id="bgc"></canvas>
+<div id="mob">
+  <button onclick="cM()" style="position:absolute;top:1.2rem;right:1.2rem;background:none;border:none;color:var(--text);cursor:pointer;padding:8px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  <a href="#" onclick="cM()">Hospital Login</a>
+  <a href="#" onclick="cM()" style="color:var(--accent)">Register</a>
+  <a href="#track" onclick="cM()" style="color:var(--blue)">Track Status</a>
+  <a href="#organs" onclick="cM()" style="color:var(--purple)">Organs</a>
+  <a href="#" onclick="cM()" style="color:var(--muted);font-size:1rem">Staff & Admin</a>
 </div>
-
-<!-- Status Tracking Modal for Recipient -->
-<div id="recipientTrackingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-    <div class="glass rounded-3xl p-8 max-w-md w-full relative border border-[#00e5ff]/30">
-        <button onclick="closeRecipientTracking()" class="absolute top-4 right-4 text-white/50 hover:text-white"><span class="material-symbols-outlined">close</span></button>
-        <h3 class="text-2xl font-bold mb-4 text-white font-[Space_Grotesk]">Track Recipient Status</h3>
-        <p class="text-slate-400 mb-6">Enter your phone number to view your progress:</p>
-        <div class="space-y-4">
-            <input type="tel" id="recipientPhone" placeholder="Your 10-digit phone number" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:border-[#00e5ff] focus:outline-none transition">
-            <button onclick="searchRecipient()" class="w-full px-6 py-3 rounded-full border border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 font-bold transition-all">View Status</button>
-        </div>
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-ico"><img src="/static/logo.svg" alt="NeuroBridge Logo" width="34" height="34"></div>
+    <span class="logo-txt">Neuro<span>Bridge</span></span>
+  </a>
+  <div class="nav-r">
+    <a href="#" class="nb nb-ghost">Hospital Login</a>
+    <a href="#track" class="nb nb-ghost">Track Status</a>
+    <a href="#organs" class="nb nb-ghost">Organs</a>
+    <a href="#" class="nb nb-fill">Register →</a>
+  </div>
+  <button class="ham" id="ham" onclick="tM()"><span></span><span></span><span></span></button>
+</nav>
+<main>
+<div style="max-width:1280px;margin:0 auto;padding:0 var(--g)">
+<div class="hero" style="padding-left:0;padding-right:0">
+  <div class="hero-left">
+    <div class="badge fu d1"><span class="badge-dot"></span>Live Network · v2.0</div>
+    <h1 class="fu d2">Bridging<br>Life Through<br><span class="grad">Organ Networks</span></h1>
+    <p class="hero-sub fu d3">AI-powered organ allocation, real-time harvest-to-implant tracking, and seamless hospital connectivity — every second is a life.</p>
+    <div class="btns fu d4">
+      <a href="/login" class="btn-p"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>Hospital Login</a>
+      <a href="/register" class="btn-s">Get Started →</a>
     </div>
+    <div class="stats-row fu d5">
+      <div class="stat"><div class="stat-v" style="color:var(--accent)">1,200+</div><div class="stat-l">Hospitals</div></div>
+      <div class="stat"><div class="stat-v" style="color:var(--blue)">98.7%</div><div class="stat-l">Accuracy</div></div>
+      <div class="stat"><div class="stat-v" style="color:var(--purple)">4.2m</div><div class="stat-l">Match Time</div></div>
+      <div class="stat"><div class="stat-v" style="color:var(--accent)">8,400+</div><div class="stat-l">Lives Saved</div></div>
+    </div>
+  </div>
+  <div class="brain-stage fu d3">
+    <canvas id="brain-c"></canvas>
+    <div class="otag" style="top:10%;right:0;color:var(--accent);animation-delay:.9s">Brain</div>
+    <div class="otag" style="top:33%;right:0;color:var(--red);animation-delay:1.1s">Heart</div>
+    <div class="otag" style="top:50%;right:0;color:var(--blue);animation-delay:1.3s">Lungs</div>
+    <div class="otag" style="top:65%;right:0;color:var(--amber);animation-delay:1.5s">Liver</div>
+    <div class="otag" style="top:79%;right:0;color:var(--purple);animation-delay:1.7s">Kidneys</div>
+  </div>
 </div>
-
-<!-- ==================== STATS BAR ==================== -->
-<section class="px-10 mt-20">
-    <div class="glass rounded-3xl px-8 py-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-        <div>
-            <p class="text-3xl font-black font-[Space_Grotesk] text-[#10b981]">1,200+</p>
-            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Hospitals Connected</p>
-        </div>
-        <div>
-            <p class="text-3xl font-black font-[Space_Grotesk] text-[#00e5ff]">98.7%</p>
-            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Match Accuracy</p>
-        </div>
-        <div>
-            <p class="text-3xl font-black font-[Space_Grotesk] text-[#6ee7b7]">4.2 min</p>
-            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Avg. Match Time</p>
-        </div>
-        <div>
-            <p class="text-3xl font-black font-[Space_Grotesk] text-[#10b981]">8,400+</p>
-            <p class="text-slate-400 text-sm mt-1 uppercase tracking-widest">Lives Saved</p>
-        </div>
+</div>
+<section class="padded" id="organs" style="background:rgba(255,255,255,.012);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="center">
+    <div class="eyebrow">Transplantable Organs</div>
+    <div class="sec-title">Every organ. Every match.<br>Every second counts.</div>
+    <p class="sec-sub">NeuroBridge manages the complete lifecycle of 8 transplantable organs. See the live nerve-organ network below.</p>
+  </div>
+  <div class="body-sec">
+    <div class="body-wrap"><canvas id="body-c"></canvas></div>
+    <div class="olist">
+      <div class="oitem" style="color:var(--red)"><div class="oi-dot" style="background:rgba(255,77,109,.1)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div><div class="oi-info"><h4>Heart</h4><p>4–6 hr viability. Highest priority matching.</p></div><div class="oi-stat"><span style="color:var(--red)">4–6h</span><small>Viable</small></div></div>
+      <div class="oitem" style="color:var(--blue)"><div class="oi-dot" style="background:rgba(61,158,255,.1)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8"><path d="M12 2c-4 0-7 3.5-7 7.5C5 16 12 22 12 22s7-6 7-12.5C19 5.5 16 2 12 2z"/></svg></div><div class="oi-info"><h4>Lungs</h4><p>6–8 hr window. Cold ischaemia critical.</p></div><div class="oi-stat"><span style="color:var(--blue)">6–8h</span><small>Viable</small></div></div>
+      <div class="oitem" style="color:var(--amber)"><div class="oi-dot" style="background:rgba(255,184,48,.1)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8"><path d="M3 7h18v13a2 2 0 01-2 2H5a2 2 0 01-2-2V7zM3 7l2-4h14l2 4"/></svg></div><div class="oi-info"><h4>Liver</h4><p>12–24 hr viability. Split transplants possible.</p></div><div class="oi-stat"><span style="color:var(--amber)">12–24h</span><small>Viable</small></div></div>
+      <div class="oitem" style="color:var(--purple)"><div class="oi-dot" style="background:rgba(168,85,247,.1)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8"><ellipse cx="12" cy="12" rx="5" ry="8"/></svg></div><div class="oi-info"><h4>Kidneys</h4><p>24–36 hr window. Bilateral matching.</p></div><div class="oi-stat"><span style="color:var(--purple)">24–36h</span><small>Viable</small></div></div>
+      <div class="oitem" style="color:var(--accent)"><div class="oi-dot" style="background:rgba(16,229,150,.1)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg></div><div class="oi-info"><h4>Pancreas</h4><p>12–18 hr viability. Islet cell support.</p></div><div class="oi-stat"><span style="color:var(--accent)">12–18h</span><small>Viable</small></div></div>
+      <div class="oitem" style="color:#60e0ff"><div class="oi-dot" style="background:rgba(96,224,255,.08)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#60e0ff" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div><div class="oi-info"><h4>Corneas</h4><p>Up to 14 days with proper preservation.</p></div><div class="oi-stat"><span style="color:#60e0ff">14d</span><small>Viable</small></div></div>
     </div>
+  </div>
 </section>
-
-<!-- ==================== CTA ==================== -->
-<section class="text-center mt-28 pb-8 relative">
-    <div class="orb absolute left-1/2 -translate-x-1/2 top-0 w-96 h-40 rounded-full bg-[#10b981]/8 blur-3xl pointer-events-none"></div>
-    <h2 class="text-3xl md:text-5xl font-black mb-4 font-[Space_Grotesk] tracking-tight relative">
-        Ready to Save Lives?
-    </h2>
-    <p class="text-slate-400 mb-10 relative">Join the network. Every second matters.</p>
-    <div class="relative inline-block">
-        <div class="ring-pulse" style="animation-delay: 0.5s;"></div>
-        <a href="/register" class="relative px-10 py-4 rounded-full glow-btn font-bold inline-block">
-            Join NeuroBridge
-        </a>
+<section class="padded">
+  <div style="max-width:960px;margin:0 auto">
+    <div class="eyebrow">Platform</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1.5rem">
+      <div class="sec-title" style="margin:0">Built for speed.<br>Designed for precision.</div>
+      <p class="sec-sub" style="margin:0;max-width:340px">Every feature engineered to reduce time-to-transplant.</p>
     </div>
+    <div class="feat-grid">
+      <div class="feat" style="--lc:rgba(16,229,150,.4)"><div class="feat-ico" style="background:rgba(16,229,150,.08)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><h3>Secure Registry</h3><p>End-to-end encrypted donor-recipient database across 1,200+ hospital nodes with quantum-resistant infrastructure.</p></div>
+      <div class="feat" style="--lc:rgba(61,158,255,.4)"><div class="feat-ico" style="background:rgba(61,158,255,.08)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72"/></svg></div><h3>AI Matching</h3><p>Transformer-based algorithms processing 400+ compatibility vectors — blood type, HLA, tissue — in milliseconds.</p></div>
+      <div class="feat" style="--lc:rgba(168,85,247,.4)"><div class="feat-ico" style="background:rgba(168,85,247,.08)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><h3>Live Tracking</h3><p>Sub-second GPS telemetry with predictive viability decay. Harvest to implant, tracked in real time.</p></div>
+      <div class="feat" style="--lc:rgba(255,77,109,.3)"><div class="feat-ico" style="background:rgba(255,77,109,.08)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><h3>Vitals Dashboard</h3><p>Real-time organ viability scoring, temperature monitoring, and transport telemetry for all care teams.</p></div>
+      <div class="feat" style="--lc:rgba(16,229,150,.3)"><div class="feat-ico" style="background:rgba(16,229,150,.07)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div><h3>Multi-Hospital</h3><p>Federated sharing across regional networks with automated escalation and national waitlist integration.</p></div>
+      <div class="feat" style="--lc:rgba(255,184,48,.3)"><div class="feat-ico" style="background:rgba(255,184,48,.08)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h3>Compliance</h3><p>HIPAA, ISO 27001 and NMC compliant by default. Full audit trail and consent management.</p></div>
+    </div>
+  </div>
 </section>
-
-<!-- ==================== FOOTER ==================== -->
-<footer class="text-center mt-20 pb-10 text-slate-500 relative">
-    <div class="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8"></div>
-    © 2026 NeuroBridge • Built with Tech &amp; Empathy <br>
-    <a href="/admin/login"
-       class="text-[#10b981] text-sm mt-2 inline-block hover:underline font-bold">
-       Staff &amp; Admin Login
-    </a>
-</footer>
-
-<!-- ==================== THREE.JS NEURAL NETWORK ==================== -->
+<section class="padded" id="track" style="background:rgba(255,255,255,.012);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div style="max-width:960px;margin:0 auto;text-align:center">
+    <div class="eyebrow">Status Portal</div>
+    <div class="sec-title">Track any organ request</div>
+    <p class="sec-sub">Real-time status for coordinators and families with a secure reference code.</p>
+    <div class="track-grid">
+      <div class="steps">
+        <div class="step"><div class="step-n" style="background:rgba(16,229,150,.1);color:var(--accent);border:1px solid rgba(16,229,150,.22)">1</div><div class="step-t"><h4>Donor Assessment</h4><p>120+ medical eligibility parameters verified in real time.</p></div></div>
+        <div class="step"><div class="step-n" style="background:rgba(61,158,255,.1);color:var(--blue);border:1px solid rgba(61,158,255,.22)">2</div><div class="step-t"><h4>AI Matching</h4><p>Optimal recipient identified from national waitlist in seconds.</p></div></div>
+        <div class="step"><div class="step-n" style="background:rgba(168,85,247,.1);color:var(--purple);border:1px solid rgba(168,85,247,.22)">3</div><div class="step-t"><h4>Live Transport</h4><p>GPS-tracked handoff with viability countdown and routing.</p></div></div>
+        <div class="step"><div class="step-n" style="background:rgba(16,229,150,.1);color:var(--accent);border:1px solid rgba(16,229,150,.22)">4</div><div class="step-t"><h4>Transplant Confirmed</h4><p>Outcome recorded. Chain-of-custody sealed.</p></div></div>
+      </div>
+      <div class="tcard">
+        <div style="margin-bottom:1.4rem"><div style="font-size:.88rem;font-weight:700;margin-bottom:.22rem">Track Organ Status</div><div style="font-size:.78rem;color:var(--muted)">Enter your secure reference code.</div></div>
+        <label class="tlabel">Reference Code</label><input class="tinput" type="text" placeholder="NB-2026-XXXXX">
+        <div style="margin-top:.9rem"><label class="tlabel">Hospital PIN</label><input class="tinput" type="password" placeholder="4-digit PIN"></div>
+        <button class="tbtn">Check Status →</button>
+        <p style="text-align:center;margin-top:.9rem;font-size:.73rem;color:var(--muted)">Need a code? Contact your transplant coordinator.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="padded">
+  <div class="cta-box">
+    <div class="eyebrow" style="color:var(--blue)">Every second matters</div>
+    <div class="sec-title">Ready to Save Lives?</div>
+    <p style="color:var(--muted);line-height:1.72;max-width:380px;margin:0 auto 2.5rem;font-size:.95rem;font-weight:300">Join the network transforming organ allocation across India and beyond.</p>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:.75rem">
+      <a href="/register" class="btn-p"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Join NeuroBridge</a>
+      <a href="/login" class="btn-s">Hospital Login</a>
+    </div>
+  </div>
+</section>
+</main>
+<footer><p>© 2026 NeuroBridge · Built with technology and empathy</p><a href="/admin/login">Staff & Admin Login →</a></footer>
 <script>
-(function () {
-    const canvas = document.getElementById('neural-canvas');
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000, 0);
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 2000);
-    camera.position.set(0, 0, 140);
-
-    /* ── Mouse tracking ── */
-    const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
-    document.addEventListener('mousemove', e => {
-        mouse.tx = (e.clientX / window.innerWidth  - 0.5) * 2;
-        mouse.ty = (e.clientY / window.innerHeight - 0.5) * 2;
-    });
-
-    /* ── GLOBE SPHERE (wireframe latitude/longitude lines) ── */
-    const globeGroup = new THREE.Group();
-    scene.add(globeGroup);
-
-    function addLatLng(radius, segments, color, opacity, axis) {
-        const count = axis === 'lat' ? 9 : 12;
-        for (let i = 0; i < count; i++) {
-            let geo;
-            if (axis === 'lat') {
-                const phi = (i / (count - 1)) * Math.PI;
-                const r = radius * Math.sin(phi);
-                const y = radius * Math.cos(phi);
-                const pts = [];
-                for (let j = 0; j <= segments; j++) {
-                    const theta = (j / segments) * Math.PI * 2;
-                    pts.push(new THREE.Vector3(r * Math.cos(theta), y, r * Math.sin(theta)));
-                }
-                geo = new THREE.BufferGeometry().setFromPoints(pts);
-            } else {
-                const theta = (i / count) * Math.PI * 2;
-                const pts = [];
-                for (let j = 0; j <= segments; j++) {
-                    const phi = (j / segments) * Math.PI;
-                    pts.push(new THREE.Vector3(
-                        radius * Math.sin(phi) * Math.cos(theta),
-                        radius * Math.cos(phi),
-                        radius * Math.sin(phi) * Math.sin(theta)
-                    ));
-                }
-                geo = new THREE.BufferGeometry().setFromPoints(pts);
-            }
-            const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity });
-            globeGroup.add(new THREE.Line(geo, mat));
-        }
-    }
-
-    addLatLng(52, 80, 0x00e5ff, 0.07, 'lat');
-    addLatLng(52, 80, 0x00e5ff, 0.07, 'lng');
-
-    /* ── GLOBE NODE DOTS ── */
-    const NODE_COUNT = 55;
-    const nodePositions = [];
-    const nodeVelocities = [];
-    const nodeMeshes = [];
-    const nodeGeo = new THREE.SphereGeometry(0.55, 8, 8);
-
-    for (let i = 0; i < NODE_COUNT; i++) {
-        const phi   = Math.acos(2 * Math.random() - 1);
-        const theta = Math.random() * Math.PI * 2;
-        const r = 50 + Math.random() * 8;
-        const p = new THREE.Vector3(
-            r * Math.sin(phi) * Math.cos(theta),
-            r * Math.cos(phi),
-            r * Math.sin(phi) * Math.sin(theta)
-        );
-        nodePositions.push(p);
-        nodeVelocities.push(new THREE.Vector3(
-            (Math.random() - 0.5) * 0.006,
-            (Math.random() - 0.5) * 0.006,
-            (Math.random() - 0.5) * 0.006
-        ));
-        const isHot = Math.random() < 0.25;
-        const mesh = new THREE.Mesh(nodeGeo, new THREE.MeshBasicMaterial({
-            color: isHot ? 0x00e5ff : 0x10b981,
-            transparent: true,
-            opacity: 0.7 + Math.random() * 0.3
-        }));
-        mesh.position.copy(p);
-        mesh.scale.setScalar(0.5 + Math.random() * 1.4);
-        globeGroup.add(mesh);
-        nodeMeshes.push(mesh);
-    }
-
-    /* ── GLOBE EDGE CONNECTIONS ── */
-    const edgePool = [];
-    const EDGE_DIST = 28;
-
-    function rebuildEdges() {
-        edgePool.forEach(l => globeGroup.remove(l));
-        edgePool.length = 0;
-        for (let i = 0; i < NODE_COUNT; i++) {
-            for (let j = i + 1; j < NODE_COUNT; j++) {
-                const d = nodePositions[i].distanceTo(nodePositions[j]);
-                if (d < EDGE_DIST) {
-                    const alpha = (1 - d / EDGE_DIST) * 0.45;
-                    const geo = new THREE.BufferGeometry().setFromPoints([
-                        nodePositions[i].clone(), nodePositions[j].clone()
-                    ]);
-                    const mat = new THREE.LineBasicMaterial({
-                        color: 0x00e5ff, transparent: true, opacity: alpha
-                    });
-                    const line = new THREE.Line(geo, mat);
-                    globeGroup.add(line);
-                    edgePool.push(line);
-                }
-            }
-        }
-    }
-
-    /* ── FLOATING PARTICLES (deep field) ── */
-    const PARTICLE_COUNT = 320;
-    const pPositions = new Float32Array(PARTICLE_COUNT * 3);
-    const pSpeeds    = [];
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-        pPositions[i * 3]     = (Math.random() - 0.5) * 400;
-        pPositions[i * 3 + 1] = (Math.random() - 0.5) * 300;
-        pPositions[i * 3 + 2] = (Math.random() - 0.5) * 200;
-        pSpeeds.push({
-            x: (Math.random() - 0.5) * 0.04,
-            y: (Math.random() - 0.5) * 0.04,
-            z: (Math.random() - 0.5) * 0.02
-        });
-    }
-    const pGeo = new THREE.BufferGeometry();
-    pGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
-    const pMat = new THREE.PointsMaterial({ color: 0x10b981, size: 0.7, transparent: true, opacity: 0.45 });
-    const particles = new THREE.Points(pGeo, pMat);
-    scene.add(particles);
-
-    /* ── OUTER RING HALOS ── */
-    function addRing(radius, tube, color, opacity, rx, ry) {
-        const geo = new THREE.TorusGeometry(radius, tube, 8, 100);
-        const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity, wireframe: false });
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.rotation.x = rx;
-        mesh.rotation.y = ry;
-        scene.add(mesh);
-        return mesh;
-    }
-    const ring1 = addRing(75, 0.25, 0x00e5ff, 0.06, Math.PI / 2.5, 0.3);
-    const ring2 = addRing(90, 0.18, 0x10b981, 0.04, Math.PI / 4,   1.2);
-    const ring3 = addRing(110, 0.12, 0x6ee7b7, 0.03, Math.PI / 3,  2.1);
-
-    /* ── ICOSAHEDRA (far decorative) ── */
-    function addIco(x, y, z, size, color, opacity) {
-        const m = new THREE.Mesh(
-            new THREE.IcosahedronGeometry(size, 1),
-            new THREE.MeshBasicMaterial({ color, wireframe: true, transparent: true, opacity })
-        );
-        m.position.set(x, y, z);
-        scene.add(m);
-        return m;
-    }
-    const ico1 = addIco(-110,  55, -60, 18, 0x10b981, 0.07);
-    const ico2 = addIco( 120, -45, -40, 13, 0x00e5ff, 0.06);
-    const ico3 = addIco(  30,  90, -80,  9, 0x6ee7b7, 0.08);
-
-    /* ── DATA PULSE STREAMS (vertical scanlines) ── */
-    for (let i = 0; i < 6; i++) {
-        const pts = [];
-        const x = (Math.random() - 0.5) * 280;
-        const z = -40 - Math.random() * 60;
-        for (let y = -160; y <= 160; y += 5) pts.push(new THREE.Vector3(x, y, z));
-        const geo = new THREE.BufferGeometry().setFromPoints(pts);
-        const mat = new THREE.LineBasicMaterial({
-            color: 0x00e5ff, transparent: true, opacity: 0.025 + Math.random() * 0.025
-        });
-        scene.add(new THREE.Line(geo, mat));
-    }
-
-    /* ── ANIMATE ── */
-    let frame = 0;
-    let edgeTimer = 0;
-
-    function animate() {
-        requestAnimationFrame(animate);
-        frame++;
-        edgeTimer++;
-
-        /* Smooth mouse parallax */
-        mouse.x += (mouse.tx - mouse.x) * 0.04;
-        mouse.y += (mouse.ty - mouse.y) * 0.04;
-
-        /* Globe slow auto-rotate + mouse tilt */
-        globeGroup.rotation.y += 0.0018;
-        globeGroup.rotation.x  = mouse.y * 0.18;
-        globeGroup.rotation.z  = mouse.x * 0.08;
-
-        /* Camera gentle parallax drift */
-        camera.position.x += (mouse.x * 18 - camera.position.x) * 0.025;
-        camera.position.y += (-mouse.y * 12 - camera.position.y) * 0.025;
-        camera.lookAt(scene.position);
-
-        /* Node drift */
-        for (let i = 0; i < NODE_COUNT; i++) {
-            nodePositions[i].add(nodeVelocities[i]);
-            const len = nodePositions[i].length();
-            if (len < 45 || len > 62) nodeVelocities[i].negate();
-            nodeMeshes[i].position.copy(nodePositions[i]);
-        }
-
-        /* Rebuild edges every 35 frames */
-        if (edgeTimer > 35) { rebuildEdges(); edgeTimer = 0; }
-
-        /* Float particles */
-        const pos = pGeo.attributes.position.array;
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-            pos[i*3]   += pSpeeds[i].x;
-            pos[i*3+1] += pSpeeds[i].y;
-            pos[i*3+2] += pSpeeds[i].z;
-            if (Math.abs(pos[i*3])   > 200) pSpeeds[i].x *= -1;
-            if (Math.abs(pos[i*3+1]) > 150) pSpeeds[i].y *= -1;
-            if (Math.abs(pos[i*3+2]) > 100) pSpeeds[i].z *= -1;
-        }
-        pGeo.attributes.position.needsUpdate = true;
-
-        /* Rings slow drift */
-        ring1.rotation.z += 0.0022;
-        ring2.rotation.z -= 0.0015;
-        ring3.rotation.x += 0.0010;
-
-        /* Ico spin */
-        ico1.rotation.x += 0.005; ico1.rotation.y += 0.004;
-        ico2.rotation.y += 0.006; ico2.rotation.z -= 0.003;
-        ico3.rotation.x -= 0.004; ico3.rotation.z += 0.005;
-
-        /* Node pulse opacity flicker */
-        if (frame % 3 === 0) {
-            nodeMeshes.forEach((m, i) => {
-                if (Math.random() < 0.04) {
-                    m.material.opacity = 0.4 + Math.random() * 0.6;
-                }
-            });
-        }
-
-        renderer.render(scene, camera);
-    }
-
-    rebuildEdges();
-    animate();
-
-    /* ── RESIZE ── */
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    /* ── SCROLL PARALLAX: gently pull globe back as user scrolls ── */
-    window.addEventListener('scroll', () => {
-        const t = window.scrollY / (document.body.scrollHeight - window.innerHeight);
-        globeGroup.position.y = -t * 30;
-    });
+/* ── BG NEURAL NETWORK ── */
+(function(){
+  var cvs=document.getElementById('bgc');
+  var R=new THREE.WebGLRenderer({canvas:cvs,antialias:false,alpha:true});
+  R.setPixelRatio(Math.min(devicePixelRatio,1.5));
+  R.setSize(innerWidth,innerHeight);R.setClearColor(0,0);
+  var S=new THREE.Scene();
+  var CAM=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,1,3000);
+  CAM.position.z=500;
+  var mobCheck=function(){return innerWidth<768};
+  var N=mobCheck()?180:420;
+  var nodes=[],nPos=new Float32Array(N*3);
+  for(var i=0;i<N;i++){var x=(Math.random()-.5)*1400,y=(Math.random()-.5)*1100,z=(Math.random()-.5)*600-200;nodes.push({x:x,y:y,z:z});nPos[i*3]=x;nPos[i*3+1]=y;nPos[i*3+2]=z;}
+  var nG=new THREE.BufferGeometry();nG.setAttribute('position',new THREE.BufferAttribute(nPos,3));
+  S.add(new THREE.Points(nG,new THREE.PointsMaterial({color:0x0d5566,size:1.4,transparent:true,opacity:.35,sizeAttenuation:true,depthWrite:false})));
+  var hi=[];for(var i=0;i<N;i++)if(Math.random()<.18)hi.push(i);
+  var hPos=new Float32Array(hi.length*3);
+  hi.forEach(function(idx,j){hPos[j*3]=nodes[idx].x;hPos[j*3+1]=nodes[idx].y;hPos[j*3+2]=nodes[idx].z;});
+  var hG=new THREE.BufferGeometry();hG.setAttribute('position',new THREE.BufferAttribute(hPos,3));
+  S.add(new THREE.Points(hG,new THREE.PointsMaterial({color:0x10e596,size:2.5,transparent:true,opacity:.48,sizeAttenuation:true,depthWrite:false})));
+  var bi=[];for(var i=0;i<N;i++)if(Math.random()<.10)bi.push(i);
+  var bPos=new Float32Array(bi.length*3);
+  bi.forEach(function(idx,j){bPos[j*3]=nodes[idx].x;bPos[j*3+1]=nodes[idx].y;bPos[j*3+2]=nodes[idx].z;});
+  var bG=new THREE.BufferGeometry();bG.setAttribute('position',new THREE.BufferAttribute(bPos,3));
+  S.add(new THREE.Points(bG,new THREE.PointsMaterial({color:0x3d9eff,size:2.2,transparent:true,opacity:.40,sizeAttenuation:true,depthWrite:false})));
+  var rbi=[];for(var i=0;i<N;i++)if(Math.random()<.06)rbi.push(i);
+  var rbPos=new Float32Array(rbi.length*3);
+  rbi.forEach(function(idx,j){rbPos[j*3]=nodes[idx].x;rbPos[j*3+1]=nodes[idx].y;rbPos[j*3+2]=nodes[idx].z;});
+  var rbG=new THREE.BufferGeometry();rbG.setAttribute('position',new THREE.BufferAttribute(rbPos,3));
+  S.add(new THREE.Points(rbG,new THREE.PointsMaterial({color:0xff4d6d,size:2.0,transparent:true,opacity:.35,sizeAttenuation:true,depthWrite:false})));
+  var eP=[];
+  for(var i=0;i<N;i++)for(var j=i+1;j<N;j++){var dx=nodes[i].x-nodes[j].x,dy=nodes[i].y-nodes[j].y,dz=nodes[i].z-nodes[j].z;if(dx*dx+dy*dy+dz*dz<18000){eP.push(nodes[i].x,nodes[i].y,nodes[i].z,nodes[j].x,nodes[j].y,nodes[j].z);}}
+  var eG=new THREE.BufferGeometry();eG.setAttribute('position',new THREE.BufferAttribute(new Float32Array(eP),3));
+  S.add(new THREE.LineSegments(eG,new THREE.LineBasicMaterial({color:0x0d5566,transparent:true,opacity:.065})));
+  var beP=[];
+  for(var a=0;a<hi.length;a++)for(var b=a+1;b<hi.length;b++){var ia=hi[a],ib=hi[b];var dx=nodes[ia].x-nodes[ib].x,dy=nodes[ia].y-nodes[ib].y,dz=nodes[ia].z-nodes[ib].z;if(dx*dx+dy*dy+dz*dz<38000){beP.push(nodes[ia].x,nodes[ia].y,nodes[ia].z,nodes[ib].x,nodes[ib].y,nodes[ib].z);}}
+  var beG=new THREE.BufferGeometry();beG.setAttribute('position',new THREE.BufferAttribute(new Float32Array(beP),3));
+  S.add(new THREE.LineSegments(beG,new THREE.LineBasicMaterial({color:0x10e596,transparent:true,opacity:.12})));
+  var sigN=mobCheck()?55:130;
+  var sigCurves=[];
+  for(var i=0;i<sigN;i++){var a=hi[Math.floor(Math.random()*hi.length)];var b=hi[Math.floor(Math.random()*hi.length)];while(b===a)b=hi[Math.floor(Math.random()*hi.length)];var mid=new THREE.Vector3((nodes[a].x+nodes[b].x)/2+(Math.random()-.5)*80,(nodes[a].y+nodes[b].y)/2+(Math.random()-.5)*80,(nodes[a].z+nodes[b].z)/2+(Math.random()-.5)*40);sigCurves.push(new THREE.QuadraticBezierCurve3(new THREE.Vector3(nodes[a].x,nodes[a].y,nodes[a].z),mid,new THREE.Vector3(nodes[b].x,nodes[b].y,nodes[b].z)));}
+  var sigT=new Float32Array(sigN);for(var i=0;i<sigN;i++)sigT[i]=Math.random();
+  var sigP=new Float32Array(sigN*3);
+  var sigGeo=new THREE.BufferGeometry();sigGeo.setAttribute('position',new THREE.BufferAttribute(sigP,3));
+  var sigMesh=new THREE.Points(sigGeo,new THREE.PointsMaterial({color:0x10e596,size:3.0,transparent:true,opacity:.72,sizeAttenuation:true,depthWrite:false}));
+  S.add(sigMesh);
+  var bsigN=mobCheck()?28:65;
+  var bsigCurves=[];
+  for(var i=0;i<bsigN;i++){var a=bi[Math.floor(Math.random()*bi.length)]||hi[0];var b=hi[Math.floor(Math.random()*hi.length)];while(b===a)b=hi[Math.floor(Math.random()*hi.length)];var mid=new THREE.Vector3((nodes[a].x+nodes[b].x)/2+(Math.random()-.5)*100,(nodes[a].y+nodes[b].y)/2+(Math.random()-.5)*100,(nodes[a].z+nodes[b].z)/2);bsigCurves.push(new THREE.QuadraticBezierCurve3(new THREE.Vector3(nodes[a].x,nodes[a].y,nodes[a].z),mid,new THREE.Vector3(nodes[b].x,nodes[b].y,nodes[b].z)));}
+  var bsigT=new Float32Array(bsigN);for(var i=0;i<bsigN;i++)bsigT[i]=Math.random();
+  var bsigP=new Float32Array(bsigN*3);
+  var bsigGeo=new THREE.BufferGeometry();bsigGeo.setAttribute('position',new THREE.BufferAttribute(bsigP,3));
+  S.add(new THREE.Points(bsigGeo,new THREE.PointsMaterial({color:0x3d9eff,size:2.6,transparent:true,opacity:.62,sizeAttenuation:true,depthWrite:false})));
+  var rsigN=mobCheck()?15:35;
+  var rsigCurves=[];
+  for(var i=0;i<rsigN;i++){var a=rbi[Math.floor(Math.random()*rbi.length)]||hi[0];var b=hi[Math.floor(Math.random()*hi.length)];while(b===a)b=hi[Math.floor(Math.random()*hi.length)];var mid=new THREE.Vector3((nodes[a].x+nodes[b].x)/2+(Math.random()-.5)*60,(nodes[a].y+nodes[b].y)/2+(Math.random()-.5)*60,(nodes[a].z+nodes[b].z)/2);rsigCurves.push(new THREE.QuadraticBezierCurve3(new THREE.Vector3(nodes[a].x,nodes[a].y,nodes[a].z),mid,new THREE.Vector3(nodes[b].x,nodes[b].y,nodes[b].z)));}
+  var rsigT=new Float32Array(rsigN);for(var i=0;i<rsigN;i++)rsigT[i]=Math.random();
+  var rsigP=new Float32Array(rsigN*3);
+  var rsigGeo=new THREE.BufferGeometry();rsigGeo.setAttribute('position',new THREE.BufferAttribute(rsigP,3));
+  S.add(new THREE.Points(rsigGeo,new THREE.PointsMaterial({color:0xff4d6d,size:2.4,transparent:true,opacity:.65,sizeAttenuation:true,depthWrite:false})));
+  var FN=mobCheck()?100:240;
+  var fP=new Float32Array(FN*3),fV=new Float32Array(FN*3);
+  for(var i=0;i<FN;i++){fP[i*3]=(Math.random()-.5)*1400;fP[i*3+1]=(Math.random()-.5)*1100;fP[i*3+2]=(Math.random()-.5)*400-200;fV[i*3]=(Math.random()-.5)*.28;fV[i*3+1]=(Math.random()-.5)*.18+.12;fV[i*3+2]=(Math.random()-.5)*.18;}
+  var fGeo=new THREE.BufferGeometry();fGeo.setAttribute('position',new THREE.BufferAttribute(fP,3));
+  S.add(new THREE.Points(fGeo,new THREE.PointsMaterial({color:0x224466,size:.9,transparent:true,opacity:.20,sizeAttenuation:true,depthWrite:false})));
+  var clk=0,mx=0,my=0,tmx=0,tmy=0;
+  document.addEventListener('mousemove',function(e){tmx=(e.clientX/innerWidth-.5)*.14;tmy=(e.clientY/innerHeight-.5)*.09;});
+  function animBG(){
+    requestAnimationFrame(animBG);clk+=.007;
+    mx+=(tmx-mx)*.03;my+=(tmy-my)*.03;
+    S.rotation.y=clk*.04+mx;S.rotation.x=my*.5;
+    var beat=Math.sin(clk*1.3);
+    var sp=sigGeo.attributes.position;
+    for(var i=0;i<sigN;i++){sigT[i]+=.0035+Math.max(0,beat)*.002;if(sigT[i]>1)sigT[i]-=1;var p=sigCurves[i].getPoint(Math.min(sigT[i],.999));sp.array[i*3]=p.x;sp.array[i*3+1]=p.y;sp.array[i*3+2]=p.z;}
+    sp.needsUpdate=true;
+    var bsp=bsigGeo.attributes.position;
+    for(var i=0;i<bsigN;i++){bsigT[i]+=.0028;if(bsigT[i]>1)bsigT[i]-=1;var p=bsigCurves[i].getPoint(Math.min(bsigT[i],.999));bsp.array[i*3]=p.x;bsp.array[i*3+1]=p.y;bsp.array[i*3+2]=p.z;}
+    bsp.needsUpdate=true;
+    var rsp=rsigGeo.attributes.position;
+    for(var i=0;i<rsigN;i++){rsigT[i]+=.0025;if(rsigT[i]>1)rsigT[i]-=1;var p=rsigCurves[i].getPoint(Math.min(rsigT[i],.999));rsp.array[i*3]=p.x;rsp.array[i*3+1]=p.y;rsp.array[i*3+2]=p.z;}
+    rsp.needsUpdate=true;
+    var fa=fGeo.attributes.position;
+    for(var i=0;i<FN;i++){fa.array[i*3]+=fV[i*3];fa.array[i*3+1]+=fV[i*3+1];fa.array[i*3+2]+=fV[i*3+2];if(fa.array[i*3+1]>560){fa.array[i*3+1]=-560;fa.array[i*3]=(Math.random()-.5)*1400;}}
+    fa.needsUpdate=true;
+    sigMesh.material.opacity=.55+Math.max(0,beat)*.2;
+    R.render(S,CAM);
+  }
+  animBG();
+  window.addEventListener('resize',function(){CAM.aspect=innerWidth/innerHeight;CAM.updateProjectionMatrix();R.setSize(innerWidth,innerHeight);});
 })();
 
-// Modal Functions for Status Tracking
-function openDonorTracking() {
-    document.getElementById('donorTrackingModal').style.display = 'flex';
-}
+/* ── BRAIN 3D ── */
+(function(){
+  var cvs=document.getElementById('brain-c');
+  var pw=cvs.parentElement.offsetWidth||500; /* FIX 2: fallback if offsetWidth is 0 */
+  var R=new THREE.WebGLRenderer({canvas:cvs,antialias:true,alpha:true});
+  R.setPixelRatio(Math.min(devicePixelRatio,2));R.setSize(pw,pw);R.setClearColor(0,0);
+  var S=new THREE.Scene();
+  var CAM=new THREE.PerspectiveCamera(44,1,.1,600);CAM.position.set(0,5,95);
+  var root=new THREE.Group();S.add(root);
+  function v3(x,y,z){return new THREE.Vector3(x,y,z);}
+  function sp(phi,theta,rx,ry,rz){return v3(rx*Math.sin(phi)*Math.cos(theta),ry*Math.cos(phi),rz*Math.sin(phi)*Math.sin(theta));}
+  /* FIX 3: renamed inner isMob to avoid duplicate declaration clash */
+  function isMobBrain(){return innerWidth<768;}
 
-function closeDonorTracking() {
-    document.getElementById('donorTrackingModal').style.display = 'none';
-}
+  function makeHemi(flip){
+    var g=new THREE.Group();
+    var tA=flip?Math.PI:0,tB=flip?2*Math.PI:Math.PI;
+    var RX=20,RY=17,RZ=22;
+    var geo=new THREE.SphereGeometry(1,48,36,tA,Math.PI);geo.scale(RX,RY,RZ);
+    var pos=geo.attributes.position;
+    for(var i=0;i<pos.count;i++){var y=pos.getY(i)/RY,z=pos.getZ(i)/RZ;if(z>0)pos.setZ(i,pos.getZ(i)*(1+z*.1));if(z<-.5)pos.setZ(i,pos.getZ(i)*.88);if(y>0.4)pos.setY(i,pos.getY(i)*(1+y*.08));if(y<-.2&&Math.abs(pos.getX(i)/RX)>0.3)pos.setX(i,pos.getX(i)*(1+Math.abs(y)*.14));}
+    pos.needsUpdate=true;geo.computeVertexNormals();
+    g.add(new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0x040110,transparent:true,opacity:.92})));
+    var GC=[0x10e596,0x3d9eff,0xa855f7,0x6effd4,0x44ccff,0xff6ba8,0xffb830];
+    var bands=[.40,.54,.68,.82,.96,1.10,1.24,1.38,1.52,1.66,1.80,1.94,2.08,2.24,2.42];
+    bands.forEach(function(phi,idx){
+      var pts=[];var segs=50;
+      for(var s=0;s<=segs;s++){var t=s/segs,theta=tA+.04+t*(tB-tA-.08);var wPhi=phi+Math.sin(t*Math.PI*4.5+phi*2)*.075+Math.sin(t*Math.PI*9)*.025;pts.push(sp(wPhi,theta,RX*1.008,RY*1.008,RZ*1.008));}
+      var r=idx%3===0?.52:idx%3===1?.30:.20;var op=idx%3===0?.30:idx%3===1?.19:.13;
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),segs,r,6,false),new THREE.MeshBasicMaterial({color:GC[idx%GC.length],transparent:true,opacity:op})));
+    });
+    var sbands=[.47,.61,.75,.89,1.03,1.17,1.31,1.45,1.59,1.73,1.87,2.01,2.17,2.36];
+    sbands.forEach(function(phi,idx){
+      var pts=[];var segs=42;
+      for(var s=0;s<=segs;s++){var t=s/segs,theta=tA+.07+t*(tB-tA-.14);var wPhi=phi+Math.sin(t*Math.PI*5+phi)*.055;pts.push(sp(wPhi,theta,RX*.985,RY*.985,RZ*.985));}
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),segs,.14,5,false),new THREE.MeshBasicMaterial({color:GC[(idx+3)%GC.length],transparent:true,opacity:.13})));
+    });
+    var lons=[.18,.36,.54,.72,.90,1.08,1.26,1.44,1.62,1.80,1.98,2.16,2.34,2.52,2.70,2.88];
+    lons.forEach(function(theta,idx){
+      var pts=[];var segs=34;
+      for(var s=0;s<=segs;s++){var t=s/segs,phi=.28+t*(Math.PI-.56);var wTheta=theta+Math.sin(t*Math.PI*3.5+theta)*.11;pts.push(sp(phi,tA+wTheta*(tB-tA)/Math.PI,RX*1.006,RY*1.006,RZ*1.006));}
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),segs,.17,4,false),new THREE.MeshBasicMaterial({color:GC[(idx+1)%GC.length],transparent:true,opacity:.15})));
+    });
+    [.52,.88,1.22,1.58,1.95,2.28].forEach(function(phi,idx){
+      var pts=[];var segs=52;
+      for(var s=0;s<=segs;s++){var t=s/segs,theta=tA+.03+t*(tB-tA-.06);var wPhi=phi+Math.sin(t*Math.PI*3.5+phi)*.055;pts.push(sp(wPhi,theta,RX*1.014,RY*1.014,RZ*1.014));}
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),segs,.15,4,false),new THREE.MeshBasicMaterial({color:idx%2===0?0x00ffdd:0x9999ff,transparent:true,opacity:.12})));
+    });
+    var SN=75,sP=new Float32Array(SN*3);
+    for(var i=0;i<SN;i++){var phi=.28+Math.random()*(Math.PI-.56),theta=tA+.05+Math.random()*(tB-tA-.10);var pt=sp(phi,theta,RX*1.015,RY*1.015,RZ*1.015);sP[i*3]=pt.x;sP[i*3+1]=pt.y;sP[i*3+2]=pt.z;}
+    var sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.BufferAttribute(sP,3));
+    g.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0x00ffcc,size:1.7,transparent:true,opacity:.60,sizeAttenuation:true,depthWrite:false})));
+    var wg=new THREE.SphereGeometry(1,18,12,tA,Math.PI);wg.scale(RX,RY,RZ);
+    g.add(new THREE.Mesh(wg,new THREE.MeshBasicMaterial({color:flip?0xa855f7:0x10e596,transparent:true,opacity:.022,wireframe:true})));
+    return g;
+  }
 
-function openRecipientTracking() {
-    document.getElementById('recipientTrackingModal').style.display = 'flex';
-}
+  var lh=makeHemi(false);lh.position.x=-2;root.add(lh);
+  var rh=makeHemi(true);rh.position.x=2;root.add(rh);
 
-function closeRecipientTracking() {
-    document.getElementById('recipientTrackingModal').style.display = 'none';
-}
+  var ccP=[];for(var i=0;i<=26;i++){var t=i/26*Math.PI;ccP.push(v3(Math.cos(t)*17,-1.5+Math.sin(t)*5.5+Math.sin(t*3)*.7,Math.sin(t*.4)*2));}
+  root.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(ccP),30,2,10,false),new THREE.MeshBasicMaterial({color:0xccbbff,transparent:true,opacity:.18})));
 
-function searchDonor() {
-    const phone = document.getElementById('donorPhone').value;
-    if(!phone || phone.length < 10) {
-        alert('Please enter a valid 10-digit phone number');
-        return;
+  var tG=new THREE.SphereGeometry(1,20,14);tG.scale(7,5.5,6);
+  var thal=new THREE.Mesh(tG,new THREE.MeshBasicMaterial({color:0x3311aa,transparent:true,opacity:.52}));
+  thal.position.set(0,-4,0);root.add(thal);
+
+  [-9,9].forEach(function(ox){var hp=[];for(var i=0;i<=20;i++){var t=i/20;hp.push(v3(ox+Math.sin(t*Math.PI)*4*Math.sign(ox),-14+t*7-Math.sin(t*Math.PI*2)*1.8,-2+Math.cos(t*Math.PI)*4.5));}root.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(hp),16,1.3,7,false),new THREE.MeshBasicMaterial({color:0x6622cc,transparent:true,opacity:.35})));});
+
+  var bs=new THREE.Group();bs.position.set(0,-22,8);root.add(bs);
+  bs.add(new THREE.Mesh(new THREE.CylinderGeometry(5.5,6.2,8,16),new THREE.MeshBasicMaterial({color:0x3344aa,transparent:true,opacity:.28})));
+  var med=new THREE.Mesh(new THREE.CylinderGeometry(3.5,2.4,10,12),new THREE.MeshBasicMaterial({color:0x223366,transparent:true,opacity:.24}));med.position.y=-10;bs.add(med);
+  var pb=new THREE.SphereGeometry(1,14,10);pb.scale(6,3.2,4.8);
+  bs.add(new THREE.Mesh(pb,new THREE.MeshBasicMaterial({color:0x220055,transparent:true,opacity:.38})));
+
+  var cb=new THREE.Group();cb.position.set(0,-18,-18);root.add(cb);
+  [-10,10].forEach(function(ox,si){
+    var cbg=new THREE.SphereGeometry(1,26,18);cbg.scale(10,6.8,8.5);
+    cb.add(new THREE.Mesh(cbg,new THREE.MeshBasicMaterial({color:0x130033,transparent:true,opacity:.25})));
+    for(var f=0;f<11;f++){var phi=.38+f*.2;var fpts=[];var tr=si===0?[.04,Math.PI-.04]:[Math.PI+.04,2*Math.PI-.04];for(var k=0;k<=22;k++){var th=tr[0]+(k/22)*(tr[1]-tr[0]);fpts.push(v3(10*Math.sin(phi)*Math.cos(th)+ox,6.8*Math.cos(phi),8.5*Math.sin(phi)*Math.sin(th)));}cb.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(fpts),new THREE.LineBasicMaterial({color:si===0?0x10e596:0xa855f7,transparent:true,opacity:.13+f*.007})));}
+  });
+
+  var tracts=[{p:[[-13,0,10],[-9,-7,7],[-4,-14,6],[-1,-22,8]],c:0x10e596,r:.6,o:.38},{p:[[13,0,10],[9,-7,7],[4,-14,6],[1,-22,8]],c:0xa855f7,r:.6,o:.38},{p:[[-22,-2,0],[-14,4,5],[-4,7,8],[4,7,8]],c:0xffffff,r:.3,o:.13},{p:[[22,-2,0],[14,4,5],[4,7,8],[-4,7,8]],c:0xffffff,r:.3,o:.13},{p:[[-14,0,-14],[-7,-3,-8],[0,-7,-3],[4,-14,5]],c:0x3d9eff,r:.34,o:.30},{p:[[14,0,-14],[7,-3,-8],[0,-7,-3],[-4,-14,5]],c:0x3d9eff,r:.34,o:.30}];
+  var tractCurves=tracts.map(function(td){var cv=new THREE.CatmullRomCurve3(td.p.map(function(p){return v3(p[0],p[1],p[2]);}));root.add(new THREE.Mesh(new THREE.TubeGeometry(cv,24,td.r,6,false),new THREE.MeshBasicMaterial({color:td.c,transparent:true,opacity:td.o})));return cv;});
+
+  var TS=isMobBrain()?55:110;
+  var tsP=new Float32Array(TS*3),tsT=new Float32Array(TS);
+  for(var i=0;i<TS;i++)tsT[i]=Math.random();
+  var tsG=new THREE.BufferGeometry();tsG.setAttribute('position',new THREE.BufferAttribute(tsP,3));
+  root.add(new THREE.Points(tsG,new THREE.PointsMaterial({color:0x10e596,size:2.3,transparent:true,opacity:.78,sizeAttenuation:true,depthWrite:false})));
+
+  var sr=new THREE.Mesh(new THREE.TorusGeometry(30,.18,8,100),new THREE.MeshBasicMaterial({color:0x10e596,transparent:true,opacity:.22}));
+  sr.rotation.x=Math.PI/2;root.add(sr);
+  root.add(new THREE.Mesh(new THREE.TorusGeometry(36,.1,6,130),new THREE.MeshBasicMaterial({color:0xa855f7,transparent:true,opacity:.08})));
+
+  var BN=isMobBrain()?70:140,bnP=new Float32Array(BN*3),bnNodes=[];
+  for(var i=0;i<BN;i++){var ga=Math.PI*(3-Math.sqrt(5)),yy=1-(i/(BN-1))*2,rr=Math.sqrt(1-yy*yy),th=ga*i;var rad=55+Math.random()*90;var nx=rr*Math.cos(th)*rad,ny=yy*rad*.65+6,nz=rr*Math.sin(th)*rad-20;bnNodes.push({x:nx,y:ny,z:nz});bnP[i*3]=nx;bnP[i*3+1]=ny;bnP[i*3+2]=nz;}
+  var bnGeo=new THREE.BufferGeometry();bnGeo.setAttribute('position',new THREE.BufferAttribute(bnP,3));
+  root.add(new THREE.Points(bnGeo,new THREE.PointsMaterial({color:0x0d5566,size:1.2,transparent:true,opacity:.30,sizeAttenuation:true,depthWrite:false})));
+  var bnE=[];for(var i=0;i<BN;i++)for(var j=i+1;j<BN;j++){var dx=bnNodes[i].x-bnNodes[j].x,dy=bnNodes[i].y-bnNodes[j].y,dz=bnNodes[i].z-bnNodes[j].z;if(dx*dx+dy*dy+dz*dz<2400){bnE.push(bnNodes[i].x,bnNodes[i].y,bnNodes[i].z,bnNodes[j].x,bnNodes[j].y,bnNodes[j].z);}}
+  var bnEG=new THREE.BufferGeometry();bnEG.setAttribute('position',new THREE.BufferAttribute(new Float32Array(bnE),3));
+  root.add(new THREE.LineSegments(bnEG,new THREE.LineBasicMaterial({color:0x10e596,transparent:true,opacity:.09})));
+
+  function bScale(){var w=cvs.parentElement.offsetWidth;if(w<280)return.5;if(w<360)return.62;if(w<460)return.74;if(w<560)return.87;return 1;}
+  function applyS(){var s=bScale();root.scale.set(s,s,s);}
+  applyS();
+
+  var clk2=0,mx2=0,my2=0,tmx2=0,tmy2=0;
+  cvs.addEventListener('mousemove',function(e){var rc=cvs.getBoundingClientRect();tmx2=(e.clientX-rc.left)/rc.width-.5;tmy2=(e.clientY-rc.top)/rc.height-.5;});
+
+  function animBrain(){
+    requestAnimationFrame(animBrain);clk2+=.007;
+    mx2+=(tmx2-mx2)*.04;my2+=(tmy2-my2)*.04;
+    root.rotation.y+=.006;root.rotation.x=my2*.08;root.rotation.z=mx2*.04;
+    cb.rotation.z=Math.sin(clk2*.4)*.022;
+    var beat=Math.sin(clk2*1.3);
+    thal.material.opacity=.38+Math.max(0,beat)*.16;
+    sr.position.y=Math.sin(clk2*.45)*20;
+    sr.material.opacity=.12+.14*Math.abs(Math.sin(clk2*.45));
+    var sp=tsG.attributes.position,spd=.004+Math.max(0,beat)*.002;
+    for(var i=0;i<TS;i++){tsT[i]+=spd*(0.4+(i%6)*.12);if(tsT[i]>1)tsT[i]-=1;var p=tractCurves[i%tractCurves.length].getPoint(Math.min(tsT[i],.999));sp.array[i*3]=p.x;sp.array[i*3+1]=p.y;sp.array[i*3+2]=p.z;}
+    sp.needsUpdate=true;
+    R.render(S,CAM);
+  }
+  animBrain();
+  window.addEventListener('resize',function(){var nw=cvs.parentElement.offsetWidth||500;R.setSize(nw,nw);applyS();});
+})();
+
+/* ── BODY CANVAS ── */
+(function(){
+  var cvs=document.getElementById('body-c');
+  /* FIX 4: use parent width with fallback; set canvas size after layout */
+  var W=cvs.parentElement.offsetWidth||300,H=500;
+  cvs.width=W*Math.min(devicePixelRatio,2);cvs.height=H*Math.min(devicePixelRatio,2);
+  cvs.style.width=W+'px';cvs.style.height=H+'px';
+  var ctx=cvs.getContext('2d');ctx.scale(Math.min(devicePixelRatio,2),Math.min(devicePixelRatio,2));
+  var cx=W/2;
+
+  var ORGANS=[
+    {n:'Brain',    x:cx,     y:50,  rx:35,ry:26, c:'#10e596',pulse:0.0,type:'brain'},
+    {n:'Heart',    x:cx-16,  y:165, rx:20,ry:22, c:'#ff4d6d',pulse:0.4,type:'heart'},
+    {n:'L.Lung',   x:cx-48,  y:170, rx:16,ry:26, c:'#3d9eff', pulse:0.2,type:'lung'},
+    {n:'R.Lung',   x:cx+48,  y:170, rx:16,ry:26, c:'#3d9eff', pulse:0.6,type:'lung2'},
+    {n:'Liver',    x:cx+10,  y:245, rx:30,ry:20, c:'#ffb830', pulse:0.8,type:'liver'},
+    {n:'Stomach',  x:cx-22,  y:250, rx:16,ry:15, c:'#a855f7', pulse:1.0,type:'ellipse'},
+    {n:'Pancreas', x:cx+8,   y:283, rx:22,ry:9,  c:'#10e596', pulse:0.3,type:'ellipse'},
+    {n:'L.Kidney', x:cx-44,  y:302, rx:13,ry:18, c:'#a855f7', pulse:0.5,type:'kidney'},
+    {n:'R.Kidney', x:cx+44,  y:302, rx:13,ry:18, c:'#a855f7', pulse:0.9,type:'kidney2'},
+    {n:'Bladder',  x:cx,     y:370, rx:15,ry:13, c:'#60e0ff', pulse:0.7,type:'ellipse'},
+  ];
+  var CONNS=[[0,1],[0,2],[0,3],[1,4],[1,5],[2,4],[3,4],[4,7],[4,8],[5,7],[5,8],[7,9],[8,9],[4,6],[6,7],[6,8]];
+  var sigs=CONNS.map(function(c){return{from:c[0],to:c[1],t:Math.random(),spd:.004+Math.random()*.003};});
+
+  function hex2rgb(hex,a){if(!hex.startsWith('#'))return hex;var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return 'rgba('+r+','+g+','+b+','+a+')';}
+
+  var t=0;
+  function drawOrgan(o,beat){
+    var px=o.x+Math.sin(beat+t*1.4)*.8,py=o.y+Math.sin(beat+t*1.4)*.5;
+    var ps=1+Math.sin(beat+t*1.3)*.02;
+    ctx.save();ctx.translate(px,py);ctx.scale(ps,ps);
+    var rx=o.rx,ry=o.ry,c=o.c,type=o.type;
+    if(type==='heart'){
+      ctx.beginPath();ctx.moveTo(0,ry*.38);ctx.bezierCurveTo(-rx,-ry*.08,-rx,-ry*.88,0,-ry*.48);ctx.bezierCurveTo(rx,-ry*.88,rx,-ry*.08,0,ry*.38);
+      ctx.fillStyle=hex2rgb(c,.14);ctx.fill();ctx.strokeStyle=hex2rgb(c,.72);ctx.lineWidth=1.5;ctx.stroke();
+      for(var k=1;k<=2;k++){ctx.beginPath();var s=1.22+k*.18;ctx.moveTo(0,ry*.38*s);ctx.bezierCurveTo(-rx*s,-ry*.08*s,-rx*s,-ry*.88*s,0,-ry*.48*s);ctx.bezierCurveTo(rx*s,-ry*.88*s,rx*s,-ry*.08*s,0,ry*.38*s);ctx.strokeStyle=hex2rgb(c,.1-k*.03);ctx.lineWidth=.8;ctx.stroke();}
+    } else if(type==='brain'){
+      ctx.beginPath();ctx.ellipse(-rx*.2,0,rx*.5,ry,0,0,Math.PI*2);ctx.fillStyle=hex2rgb(c,.1);ctx.fill();ctx.strokeStyle=hex2rgb(c,.6);ctx.lineWidth=1.4;ctx.stroke();
+      ctx.beginPath();ctx.ellipse(rx*.2,0,rx*.5,ry,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+      for(var k=0;k<5;k++){ctx.beginPath();ctx.ellipse(-rx*.2,k*7-14,rx*.42,2.5,0,0,Math.PI);ctx.strokeStyle=hex2rgb(c,.25);ctx.lineWidth=.8;ctx.stroke();}
+      for(var k=0;k<5;k++){ctx.beginPath();ctx.ellipse(rx*.2,k*7-14,rx*.42,2.5,0,Math.PI,0);ctx.strokeStyle=hex2rgb(c,.25);ctx.lineWidth=.8;ctx.stroke();}
+      ctx.beginPath();ctx.moveTo(0,-ry);ctx.lineTo(0,ry);ctx.strokeStyle=hex2rgb(c,.35);ctx.lineWidth=1;ctx.stroke();
+    } else if(type==='lung'||type==='lung2'){
+      var f=type==='lung'?1:-1;
+      ctx.beginPath();ctx.moveTo(0,ry);ctx.bezierCurveTo(-rx*f*1.1,ry*.5,-rx*f*1.2,-ry*.4,-rx*f*.2,-ry);ctx.bezierCurveTo(-rx*f*.1,-ry*.5,rx*f*.1,-ry*.5,0,-ry);ctx.bezierCurveTo(0,-ry*.3,0,ry*.5,0,ry);
+      ctx.fillStyle=hex2rgb(c,.12);ctx.fill();ctx.strokeStyle=hex2rgb(c,.6);ctx.lineWidth=1.4;ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,ry*.5);ctx.lineTo(0,-ry*.3);ctx.moveTo(0,-ry*.1);ctx.lineTo(-rx*f*.6,-ry*.5);ctx.moveTo(0,0);ctx.lineTo(-rx*f*.4,ry*.1);ctx.strokeStyle=hex2rgb(c,.28);ctx.lineWidth=.8;ctx.stroke();
+    } else if(type==='liver'){
+      ctx.beginPath();ctx.moveTo(-rx,0);ctx.bezierCurveTo(-rx,-ry,rx,-ry,rx,-ry*.3);ctx.bezierCurveTo(rx,ry,0,ry,-rx,ry*.2);ctx.closePath();
+      ctx.fillStyle=hex2rgb(c,.13);ctx.fill();ctx.strokeStyle=hex2rgb(c,.62);ctx.lineWidth=1.4;ctx.stroke();
+    } else if(type==='kidney'||type==='kidney2'){
+      ctx.beginPath();ctx.moveTo(0,-ry);ctx.bezierCurveTo(rx,-ry,rx,ry,0,ry);ctx.bezierCurveTo(-rx*.3,ry*.5,-rx*.4,0,-rx*.3,-ry*.4);ctx.bezierCurveTo(-rx*.2,-ry*.7,0,-ry,0,-ry);
+      ctx.fillStyle=hex2rgb(c,.15);ctx.fill();ctx.strokeStyle=hex2rgb(c,.65);ctx.lineWidth=1.4;ctx.stroke();
+    } else {
+      ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,Math.PI*2);ctx.fillStyle=hex2rgb(c,.12);ctx.fill();ctx.strokeStyle=hex2rgb(c,.55);ctx.lineWidth=1.3;ctx.stroke();
     }
-    window.location.href = `/donor/track/${phone}`;
-}
+    var grd=ctx.createRadialGradient(0,0,0,0,0,Math.max(rx,ry)*1.5);grd.addColorStop(0,hex2rgb(c,.10));grd.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.beginPath();ctx.ellipse(0,0,Math.max(rx,ry)*1.5,Math.max(rx,ry)*1.5,0,0,Math.PI*2);ctx.fillStyle=grd;ctx.fill();
+    ctx.restore();
+  }
 
-function searchRecipient() {
-    const phone = document.getElementById('recipientPhone').value;
-    if(!phone || phone.length < 10) {
-        alert('Please enter a valid 10-digit phone number');
-        return;
-    }
-    window.location.href = `/recipient/track/${phone}`;
-}
+  function drawConn(f,to){var a=ORGANS[f],b=ORGANS[to];var mx=(a.x+b.x)/2+(b.y-a.y)*.06,my=(a.y+b.y)/2-(b.x-a.x)*.06;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.quadraticCurveTo(mx,my,b.x,b.y);ctx.strokeStyle='rgba(61,158,255,.07)';ctx.lineWidth=.7;ctx.stroke();}
 
-// Close modals when clicking outside
-document.addEventListener('click', function(e) {
-    const donorModal = document.getElementById('donorTrackingModal');
-    const recipientModal = document.getElementById('recipientTrackingModal');
-    
-    if(e.target === donorModal) closeDonorTracking();
-    if(e.target === recipientModal) closeRecipientTracking();
-});
+  function drawSig(sig){
+    var a=ORGANS[sig.from],b=ORGANS[sig.to];var mx=(a.x+b.x)/2+(b.y-a.y)*.06,my=(a.y+b.y)/2-(b.x-a.x)*.06;var tt=sig.t;
+    var px=Math.pow(1-tt,2)*a.x+2*(1-tt)*tt*mx+tt*tt*b.x;var py=Math.pow(1-tt,2)*a.y+2*(1-tt)*tt*my+tt*tt*b.y;
+    ctx.beginPath();ctx.arc(px,py,2.4,0,Math.PI*2);
+    ctx.fillStyle=sig.from===0||sig.to===0?'rgba(16,229,150,.88)':'rgba(61,158,255,.78)';ctx.fill();
+    ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fillStyle=sig.from===0||sig.to===0?'rgba(16,229,150,.12)':'rgba(61,158,255,.1)';ctx.fill();
+  }
+
+  function drawSilhouette(){
+    ctx.save();ctx.strokeStyle='rgba(255,255,255,.055)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.ellipse(cx,38,23,28,0,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-9,64);ctx.lineTo(cx-11,86);ctx.moveTo(cx+9,64);ctx.lineTo(cx+11,86);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-11,86);ctx.bezierCurveTo(cx-42,92,cx-48,128,cx-46,195);ctx.bezierCurveTo(cx-44,258,cx-38,298,cx-34,355);ctx.stroke(); /* FIX 5: ctx-38 → cx-38 */
+    ctx.beginPath();ctx.moveTo(cx+11,86);ctx.bezierCurveTo(cx+42,92,cx+48,128,cx+46,195);ctx.bezierCurveTo(cx+44,258,cx+38,298,cx+34,355);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-11,90);ctx.bezierCurveTo(cx-50,96,cx-68,120,cx-66,162);ctx.moveTo(cx+11,90);ctx.bezierCurveTo(cx+50,96,cx+68,120,cx+66,162);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-66,162);ctx.bezierCurveTo(cx-68,215,cx-64,272,cx-60,332);ctx.moveTo(cx+66,162);ctx.bezierCurveTo(cx+68,215,cx+64,272,cx+60,332);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-34,355);ctx.bezierCurveTo(cx-36,374,cx-28,395,cx-20,416);ctx.bezierCurveTo(cx-16,436,cx-16,458,cx-16,478);ctx.moveTo(cx+34,355);ctx.bezierCurveTo(cx+36,374,cx+28,395,cx+20,416);ctx.bezierCurveTo(cx+16,436,cx+16,458,cx+16,478);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-34,355);ctx.bezierCurveTo(cx-8,368,cx+8,368,cx+34,355);ctx.stroke();
+    ctx.beginPath();for(var i=0;i<12;i++){var sy=100+i*20;ctx.moveTo(cx,sy);ctx.lineTo(cx+2,sy+8);}ctx.strokeStyle='rgba(100,100,200,.12)';ctx.lineWidth=2.5;ctx.stroke();
+    ctx.restore();
+  }
+
+  function renderBody(){
+    ctx.clearRect(0,0,W,H);t+=.012;
+    drawSilhouette();
+    CONNS.forEach(function(c){drawConn(c[0],c[1]);});
+    sigs.forEach(function(sig){sig.t+=sig.spd;if(sig.t>1)sig.t=0;drawSig(sig);});
+    ORGANS.forEach(function(o){drawOrgan(o,o.pulse);});
+    var labeled=['Brain','Heart','Liver','L.Kidney','R.Kidney','L.Lung'];
+    ORGANS.forEach(function(o){if(labeled.indexOf(o.n)!==-1){ctx.save();ctx.font='600 8.5px DM Sans,sans-serif';ctx.fillStyle=hex2rgb(o.c,.62);ctx.textAlign='center';ctx.fillText(o.n,o.x,o.y+Math.max(o.rx,o.ry)+12);ctx.restore();}});
+    requestAnimationFrame(renderBody);
+  }
+  renderBody();
+})();
+
+function tM(){var m=document.getElementById('mob'),h=document.getElementById('ham');var o=m.classList.toggle('o');h.classList.toggle('o',o);document.body.style.overflow=o?'hidden':'';}
+function cM(){document.getElementById('mob').classList.remove('o');document.getElementById('ham').classList.remove('o');document.body.style.overflow='';}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')cM();});
 </script>
-
 </body>
 </html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>NeuralPulse | Predictive Crisis Prevention</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #180f23 0%, #1a0f2e 100%);
+            background-attachment: fixed;
+        }
+        
+        .neural-bg {
+            background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.1), transparent);
+            pointer-events: none;
+        }
+        
+        .crisis-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .crisis-critical { border-left: 4px solid #ef4444; }
+        .crisis-warning { border-left: 4px solid #eab308; }
+        .crisis-info { border-left: 4px solid #00e5ff; }
+        .crisis-good { border-left: 4px solid #10b981; }
+    </style>
+</head>
+<body class="pb-12">
+
+<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-6 mx-auto w-[92%] max-w-7xl border border-green-600/20 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+    <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[#10b981] to-[#00e5ff] flex items-center justify-center">
+            <span class="text-lg font-black text-white">⚡</span>
+        </div>
+        <span class="text-2xl font-black text-[#10b981] font-[Space_Grotesk]">NeuralPulse</span>
+    </div>
+    <div class="flex items-center gap-4">
+        <a href="/destiny-match" class="px-4 py-2 text-xs font-bold uppercase rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20">DestinyMatch</a>
+        <a href="/dashboard" class="px-6 py-2 text-xs font-bold uppercase rounded-full bg-[#10b981]/20 hover:bg-[#10b981]/30 text-[#10b981] transition-all border border-[#10b981]/30">Back</a>
+    </div>
+</header>
+
+<main class="pt-32 px-8 max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#ef4444] to-[#dc2626] flex items-center justify-center crisis-pulse">
+                <span class="material-symbols-outlined text-2xl text-white">warning</span>
+            </div>
+            <div>
+                <h1 class="text-5xl font-black text-white font-[Space_Grotesk]">NeuralPulse</h1>
+                <p class="text-slate-400">AI-powered organ shortage prediction system</p>
+            </div>
+        </div>
+        <p class="text-slate-300 max-w-2xl">
+            Predictive analytics that forecasts regional organ shortages 7-14 days in advance with 89% accuracy. 
+            Gives hospitals time to activate proactive donor recruitment campaigns.
+        </p>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="grid md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-gradient-to-br from-[#ef4444]/10 to-[#dc2626]/10 rounded-[2rem] p-6 border border-[#ef4444]/20">
+            <p class="text-xs text-slate-400 uppercase tracking-widest mb-2">Critical Regions</p>
+            <p class="text-4xl font-black text-[#ef4444] font-[Space_Grotesk]">{{ critical_regions }}</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-[#eab308]/10 to-[#ca8a04]/10 rounded-[2rem] p-6 border border-[#eab308]/20">
+            <p class="text-xs text-slate-400 uppercase tracking-widest mb-2">Organs at Risk</p>
+            <p class="text-4xl font-black text-[#eab308] font-[Space_Grotesk]">{{ total_organs_at_risk }}</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-[#10b981]/10 to-[#059669]/10 rounded-[2rem] p-6 border border-[#10b981]/20">
+            <p class="text-xs text-slate-400 uppercase tracking-widest mb-2">Prediction Accuracy</p>
+            <p class="text-4xl font-black text-[#10b981] font-[Space_Grotesk]">{{ prediction_accuracy }}%</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-[#00e5ff]/10 to-[#0891b2]/10 rounded-[2rem] p-6 border border-[#00e5ff]/20">
+            <p class="text-xs text-slate-400 uppercase tracking-widest mb-2">Forecast Period</p>
+            <p class="text-3xl font-black text-[#00e5ff] font-[Space_Grotesk]">7-14 Days</p>
+        </div>
+    </div>
+
+    <!-- Crisis Predictions List -->
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold text-white font-[Space_Grotesk] mb-6">Regional Crisis Forecasts</h2>
+        
+        {% if crisis_predictions %}
+            <div class="space-y-4">
+                {% for prediction in crisis_predictions[:15] %}
+                <div class="bg-white/5 rounded-[2rem] p-6 border crisis-{{ prediction.color.lower() }} backdrop-blur-sm hover:bg-white/10 transition-all">
+                    <div class="grid md:grid-cols-12 gap-6 items-center">
+                        <!-- City & Organ -->
+                        <div class="md:col-span-3">
+                            <p class="font-bold text-white text-lg">{{ prediction.city }}</p>
+                            <p class="text-sm text-slate-400 capitalize">{{ prediction.organ }} Shortage</p>
+                        </div>
+
+                        <!-- Crisis Score -->
+                        <div class="md:col-span-2">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-xs text-slate-400">Crisis Score</span>
+                                <span class="px-2 py-1 rounded text-xs font-bold {{ 'bg-red-500/20 text-red-400' if prediction.severity == 'CRITICAL' else 'bg-yellow-500/20 text-yellow-400' if prediction.severity == 'HIGH' else 'bg-blue-500/20 text-blue-400' if prediction.severity == 'MODERATE' else 'bg-green-500/20 text-green-400' }}">{{ prediction.severity }}</span>
+                            </div>
+                            <p class="text-3xl font-black text-white font-[Space_Grotesk]">{{ prediction.crisis_score }}</p>
+                        </div>
+
+                        <!-- Supply vs Demand -->
+                        <div class="md:col-span-2">
+                            <p class="text-xs text-slate-400 mb-2">Current</p>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-2xl font-bold text-[#10b981]">{{ prediction.current_supply }}</span>
+                                <span class="text-slate-500">supply</span>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <p class="text-xs text-slate-400 mb-2">Predicted Demand</p>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-2xl font-bold text-[#ef4444]">{{ prediction.predicted_demand }}</span>
+                                <span class="text-slate-500">needed</span>
+                            </div>
+                        </div>
+
+                        <!-- Days Until Crisis -->
+                        <div class="md:col-span-1">
+                            <p class="text-center">
+                                <span class="text-2xl font-black text-[#00e5ff] font-[Space_Grotesk]">{{ prediction.days_until_crisis }}</span>
+                                <p class="text-xs text-slate-400">days</p>
+                            </p>
+                        </div>
+
+                        <!-- Accuracy -->
+                        <div class="md:col-span-2">
+                            <p class="text-xs text-slate-400 mb-1">ML Confidence</p>
+                            <p class="text-xl font-bold text-[#10b981]">{{ prediction.accuracy }}%</p>
+                        </div>
+                    </div>
+
+                    <!-- Recommendation -->
+                    <div class="mt-4 pt-4 border-t border-white/10">
+                        <p class="text-sm text-slate-300 flex items-start gap-2">
+                            <span class="material-symbols-outlined text-[#10b981] flex-shrink-0">lightbulb</span>
+                            <span>{{ prediction.recommendation }}</span>
+                        </p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <span class="material-symbols-outlined text-6xl text-[#10b981]/30 block mb-4">check_circle</span>
+                <p class="text-slate-300">All regions stable - no crises predicted.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- How It Works -->
+    <div class="bg-gradient-to-r from-[#10b981]/10 to-[#00e5ff]/10 rounded-[2rem] p-8 border border-[#10b981]/20 mb-8">
+        <h3 class="text-xl font-bold text-white mb-6 font-[Space_Grotesk] flex items-center gap-2">
+            <span class="material-symbols-outlined">info</span>
+            How NeuralPulse Works
+        </h3>
+        <div class="grid md:grid-cols-4 gap-6">
+            <div class="text-center">
+                <div class="w-12 h-12 rounded-full bg-[#10b981]/20 flex items-center justify-center mx-auto mb-3">
+                    <span class="font-bold text-[#10b981]">1</span>
+                </div>
+                <p class="font-bold text-white mb-2">Real-Time Data</p>
+                <p class="text-sm text-slate-300">Aggregates donor supply & recipient demand across all regions</p>
+            </div>
+            <div class="text-center">
+                <div class="w-12 h-12 rounded-full bg-[#10b981]/20 flex items-center justify-center mx-auto mb-3">
+                    <span class="font-bold text-[#10b981]">2</span>
+                </div>
+                <p class="font-bold text-white mb-2">ML Analysis</p>
+                <p class="text-sm text-slate-300">Advanced algorithms detect patterns and trend trajectories</p>
+            </div>
+            <div class="text-center">
+                <div class="w-12 h-12 rounded-full bg-[#10b981]/20 flex items-center justify-center mx-auto mb-3">
+                    <span class="font-bold text-[#10b981]">3</span>
+                </div>
+                <p class="font-bold text-white mb-2">Crisis Forecasting</p>
+                <p class="text-sm text-slate-300">Predicts shortages 7-14 days in advance with 89% accuracy</p>
+            </div>
+            <div class="text-center">
+                <div class="w-12 h-12 rounded-full bg-[#10b981]/20 flex items-center justify-center mx-auto mb-3">
+                    <span class="font-bold text-[#10b981]">4</span>
+                </div>
+                <p class="font-bold text-white mb-2">Proactive Action</p>
+                <p class="text-sm text-slate-300">Alerts give hospitals time for targeted donor campaigns</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Features -->
+    <div class="grid md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white/5 rounded-[2rem] p-6 border border-white/10">
+            <h4 class="font-bold text-white mb-2 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#10b981]">trending_up</span>
+                Trend Analysis
+            </h4>
+            <p class="text-sm text-slate-300">Analyzes historical demand patterns and seasonal variations</p>
+        </div>
+        <div class="bg-white/5 rounded-[2rem] p-6 border border-white/10">
+            <h4 class="font-bold text-white mb-2 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#00e5ff]">location_on</span>
+                Geographic Modeling
+            </h4>
+            <p class="text-sm text-slate-300">Considers regional factors, population density, and hospital capacity</p>
+        </div>
+        <div class="bg-white/5 rounded-[2rem] p-6 border border-white/10">
+            <h4 class="font-bold text-white mb-2 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#eab308]">auto_awesome</span>
+                Confidence Scoring
+            </h4>
+            <p class="text-sm text-slate-300">Each prediction includes ML confidence level and accuracy metrics</p>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="text-center py-8">
+        <a href="/saas/destiny-match" class="px-8 py-4 rounded-full bg-gradient-to-r from-[#10b981] to-[#06b6d4] text-white font-bold hover:shadow-lg hover:shadow-[#10b981]/50 transition-all">
+            Explore DestinyMatch →
+        </a>
+    </div>
+</main>
+
+</body>
+</html>

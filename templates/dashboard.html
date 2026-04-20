@@ -2,13 +2,14 @@
 <html class="dark" lang="en">
 <head>
     <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5" name="viewport"/>
     <title>NeuroBridge Dashboard | Bionic OS</title>
     
     <!-- Tailwind & Fonts -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='responsive-system.css') }}"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
@@ -97,8 +98,7 @@
 <header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-6 mx-auto w-[92%] max-w-7xl border border-green-600/20 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
     <div class="flex items-center gap-3 group">
         <div class="relative">
-            <!-- Replace with your logo: <img src="logo.jpeg" ...> -->
-            <div class="h-12 w-12 rounded-xl bg-emerald-900 border border-[#10b981]/40 shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center font-bold text-[#10b981] text-lg group-hover:scale-110 transition-all duration-300">N</div>
+            <img src="{{ url_for('static', filename='logo.svg') }}" alt="NeuroBridge Logo" class="h-12 w-12 rounded-xl border border-[#10b981]/40 shadow-[0_0_20px_rgba(16,185,129,0.4)] group-hover:scale-110 transition-all duration-300">
             <div class="absolute inset-0 rounded-xl bg-[#10b981]/20 blur-xl opacity-60 group-hover:opacity-100 transition"></div>
         </div>
         <span class="text-2xl font-black text-[#10b981] tracking-tight font-headline">NeuroBridge</span>
@@ -809,5 +809,6 @@
 })();
 </script>
 
+<script src="{{ url_for('static', filename='responsive-menu.js') }}"></script>
 </body>
 </html>

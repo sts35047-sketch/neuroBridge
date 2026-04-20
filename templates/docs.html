@@ -2,7 +2,7 @@
 <html class="dark" lang="en">
 <head>
     <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, viewport-fit=cover, maximum-scale=5"/>
     <title>NeuroBridge | Operational Manual</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -12,7 +12,7 @@
         .bionic-glass { background: rgba(24, 15, 35, 0.4); backdrop-filter: blur(24px); border: 1px solid rgba(16, 185, 129, 0.2); }
         .font-headline { font-family: 'Space Grotesk', sans-serif; }
     </style>
-</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='responsive-system.css') }}"/></head>
 <body class="pb-12">
 
 <header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-5 md:px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-4 md:mt-6 mx-auto w-[95%] max-w-7xl border border-green-600/20 shadow-[0_0_40px_rgba(0,229,255,0.15)]">
@@ -70,5 +70,5 @@
 
     </div>
 </main>
-</body>
+<script src="{{ url_for('static', filename='responsive-menu.js') }}"></script></body>
 </html>

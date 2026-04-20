@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, viewport-fit=cover, maximum-scale=5">
     <title>NeuroBridge - Hospital Details</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,7 +27,7 @@
             border: 1px solid rgba(16,185,129,0.2);
         }
     </style>
-</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='responsive-system.css') }}"/></head>
 <body class="font-body text-slate-200">
 
     <!-- TOP NAVBAR -->
@@ -89,5 +89,5 @@
         </div>
     </main>
 
-</body>
+<script src="{{ url_for('static', filename='responsive-menu.js') }}"></script></body>
 </html>

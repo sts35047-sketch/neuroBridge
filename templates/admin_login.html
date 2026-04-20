@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, viewport-fit=cover, maximum-scale=5">
 <title>NeuroBridge Admin</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -43,7 +43,7 @@ body {
                 linear-gradient(45deg,#10b981,#6ee7b7) border-box;
 }
 </style>
-</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='responsive-system.css') }}"/></head>
 
 <body class="font-[Inter] flex items-center justify-center min-h-screen">
 
@@ -92,5 +92,5 @@ body {
 
 </div>
 
-</body>
+<script src="{{ url_for('static', filename='responsive-menu.js') }}"></script></body>
 </html>
