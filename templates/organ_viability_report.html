@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>NeuroBridge | Organ Viability Report</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+    <style>
+        body {
+            background-color: #180f23;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(195, 245, 255, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(26, 11, 46, 1) 0px, transparent 80%);
+            min-height: 100vh;
+            color: #ecddf9;
+        }
+        
+        .bionic-glass {
+            background: rgba(24, 15, 35, 0.4);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .quality-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-center;
+            background: conic-gradient(#10b981 0%, #10b981 var(--score), rgba(16, 185, 129, 0.2) var(--score), rgba(16, 185, 129, 0.2) 100%);
+        }
+    </style>
+</head>
+<body class="pb-12">
+
+<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-6 mx-auto w-[92%] max-w-7xl border border-green-600/20 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+    <div class="flex items-center gap-3">
+        <span class="text-2xl font-black text-[#10b981] font-[Space_Grotesk]">NeuroBridge</span>
+    </div>
+    <a href="/dashboard" class="px-6 py-2 text-xs font-bold uppercase rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20">Back</a>
+</header>
+
+<main class="pt-32 px-4 md:px-8 max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-12">
+        <h1 class="text-4xl md:text-5xl font-black text-white font-[Space_Grotesk] mb-2">Organ Quality Assessment</h1>
+        <p class="text-slate-400 text-lg">Detailed viability report for {{ report.donor_name }}</p>
+    </div>
+
+    <!-- Main Quality Card -->
+    <div class="bionic-glass rounded-[2rem] p-12 mb-8 border border-[#10b981]/30">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <!-- Quality Score Circle -->
+            <div class="flex justify-center">
+                <div class="quality-circle" style="--score: {{ report.quality_score }}%">
+                    <div class="text-center">
+                        <div class="text-5xl font-black text-white font-[Space_Grotesk]">{{ report.quality_score }}%</div>
+                        <div class="text-sm text-slate-400 mt-2 uppercase tracking-widest">Quality Score</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Details -->
+            <div class="space-y-6">
+                <div>
+                    <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Donor Information</p>
+                    <p class="text-2xl font-bold text-white">{{ report.donor_name }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Organ Type</p>
+                    <p class="text-2xl font-bold text-[#10b981] capitalize">{{ report.organ }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Viability Status</p>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full {{ 'bg-[#10b981]' if report.viability_status == 'EXCELLENT' else 'bg-[#eab308]' if report.viability_status == 'GOOD' else 'bg-[#06b6d4]' }}"></span>
+                        <span class="text-lg font-bold {{ 'text-[#10b981]' if report.viability_status == 'EXCELLENT' else 'text-[#eab308]' if report.viability_status == 'GOOD' else 'text-[#06b6d4]' }}">{{ report.viability_status }}</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Preservation Time</p>
+                    <p class="text-xl font-bold text-white">{{ report.preservation_time_hours }} hours</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="bionic-glass rounded-[2rem] p-6 border border-white/5">
+            <h4 class="font-bold text-white mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#10b981]">people</span>
+                Compatible Recipients
+            </h4>
+            <div class="text-4xl font-black text-[#10b981]">{{ report.compatible_recipients }}</div>
+            <p class="text-sm text-slate-400 mt-2">Recipients with matching blood type and organ</p>
+        </div>
+
+        <div class="bionic-glass rounded-[2rem] p-6 border border-white/5">
+            <h4 class="font-bold text-white mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#00e5ff]">schedule</span>
+                Viability Window
+            </h4>
+            <div class="text-4xl font-black text-[#00e5ff]">{{ report.preservation_time_hours }}h</div>
+            <p class="text-sm text-slate-400 mt-2">Must be transplanted within this timeframe</p>
+        </div>
+    </div>
+
+    <!-- Risk Factors -->
+    <div class="bionic-glass rounded-[2rem] p-8 border border-white/5 mb-8">
+        <h3 class="text-xl font-bold text-white mb-6 font-[Space_Grotesk] flex items-center gap-2">
+            <span class="material-symbols-outlined">warning</span>
+            Risk Factors & Considerations
+        </h3>
+        <div class="space-y-3">
+            {% for risk in report.risk_factors %}
+            <div class="flex items-start gap-3 p-4 bg-white/5 rounded-lg border border-white/10">
+                <span class="material-symbols-outlined text-sm text-slate-400 mt-0.5">info</span>
+                <span class="text-sm text-slate-300">{{ risk }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="bionic-glass holographic-border rounded-[2rem] p-8 border border-[#10b981]/20 mb-8">
+        <h3 class="text-xl font-bold text-white mb-6 font-[Space_Grotesk] flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#10b981]">done_all</span>
+            Recommendations
+        </h3>
+        <ul class="space-y-3 text-sm text-slate-300">
+            <li class="flex items-start gap-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#10b981] mt-2 flex-shrink-0"></span>
+                <span>Prioritize matching with high-urgency recipients matching this blood type</span>
+            </li>
+            <li class="flex items-start gap-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#10b981] mt-2 flex-shrink-0"></span>
+                <span>Coordinate with logistics team to minimize cold ischemia time</span>
+            </li>
+            <li class="flex items-start gap-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#10b981] mt-2 flex-shrink-0"></span>
+                <span>Quality score indicates {{ 'excellent' if report.quality_score > 85 else 'good' }} suitability for transplant</span>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Print Button -->
+    <div class="text-center">
+        <button onclick="window.print()" class="px-8 py-3 rounded-full bg-[#10b981] text-[#064e3b] font-bold hover:shadow-lg transition-all">
+            <span class="material-symbols-outlined align-middle mr-2">print</span>
+            Print Report
+        </button>
+    </div>
+</main>
+
+</body>
+</html>

@@ -25,6 +25,7 @@ from routes.forecast_routes import forecast_bp
 from routes.docs_routes import docs_bp
 from routes.message_routes import message_bp
 from routes.chatbot_routes import chatbot_bp # <--- NEW: Import Chatbot
+from routes.ai_features_routes import success_predictor_bp  # <--- NEW: AI Features
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'neurobridge_secret_key'
@@ -64,6 +65,7 @@ app.register_blueprint(forecast_bp)
 app.register_blueprint(docs_bp)
 app.register_blueprint(message_bp)
 app.register_blueprint(chatbot_bp) # <--- NEW: Register Chatbot
+app.register_blueprint(success_predictor_bp)  # <--- NEW: Register AI Features
 
 # Create tables
 with app.app_context():

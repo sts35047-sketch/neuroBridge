@@ -236,105 +236,61 @@
         <!-- Donors List -->
         <div>
             <div class="flex justify-between items-center mb-6">
-                <h3 class="font-headline text-2xl font-black uppercase tracking-tighter text-white">Active Donors</h3>
+                <h3 class="font-headline text-2xl font-black uppercase tracking-tighter text-white">Active Donors ({{ donors|length }})</h3>
                 <a href="/export/donors" class="text-xs uppercase tracking-widest text-[#10b981] hover:text-white border border-[#10b981]/30 px-3 py-1 rounded-full transition-colors">Export CSV</a>
             </div>
             <div class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                <!-- Sample donor cards (replace with Jinja2 loop in Flask) -->
-                <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-green-600/10 transition-all border border-white/5">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full border border-[#10b981] bg-emerald-900/30 flex items-center justify-center font-bold text-[#10b981]">O+</div>
-                        <div>
-                            <p class="font-headline font-bold text-md text-white">Rahul Sharma</p>
-                            <p class="text-[10px] uppercase tracking-widest text-slate-400">32y • Kidney • Mumbai</p>
+                {% if donors %}
+                    {% for donor in donors %}
+                    <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-green-600/10 transition-all border border-white/5">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full border border-[#10b981] bg-emerald-900/30 flex items-center justify-center font-bold text-[#10b981] text-xs">{{ donor.blood_group }}</div>
+                            <div>
+                                <p class="font-headline font-bold text-md text-white">{{ donor.name }}</p>
+                                <p class="text-[10px] uppercase tracking-widest text-slate-400">{{ donor.age }}y • {{ donor.organ }} • {{ donor.city }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <a href="/id_card?donor_id={{ donor.id }}" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
+                            <a href="/manage/delete/donor/{{ donor.id }}" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
+                            <a href="/manage/edit/donor/{{ donor.id }}" class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" title="Edit"><span class="material-symbols-outlined text-sm">edit</span></a>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <a href="#" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
-                        <a href="#" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
-                        <a href="#" class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" title="Edit"><span class="material-symbols-outlined text-sm">edit</span></a>
-                    </div>
-                </div>
-                <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-green-600/10 transition-all border border-white/5">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full border border-[#10b981] bg-emerald-900/30 flex items-center justify-center font-bold text-[#10b981]">B+</div>
-                        <div>
-                            <p class="font-headline font-bold text-md text-white">Priya Nair</p>
-                            <p class="text-[10px] uppercase tracking-widest text-slate-400">28y • Liver • Chennai</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <a href="#" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
-                        <a href="#" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
-                        <a href="#" class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" title="Edit"><span class="material-symbols-outlined text-sm">edit</span></a>
-                    </div>
-                </div>
-                <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-green-600/10 transition-all border border-white/5">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full border border-[#10b981] bg-emerald-900/30 flex items-center justify-center font-bold text-[#10b981]">A-</div>
-                        <div>
-                            <p class="font-headline font-bold text-md text-white">Arjun Mehta</p>
-                            <p class="text-[10px] uppercase tracking-widest text-slate-400">45y • Heart • Delhi</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <a href="#" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
-                        <a href="#" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
-                        <a href="#" class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" title="Edit"><span class="material-symbols-outlined text-sm">edit</span></a>
-                    </div>
-                </div>
+                    {% endfor %}
+                {% else %}
+                <div class="text-center text-slate-400 py-6">No donors registered yet.</div>
+                {% endif %}
             </div>
         </div>
 
         <!-- Recipients List -->
         <div>
             <div class="flex justify-between items-center mb-6">
-                <h3 class="font-headline text-2xl font-black uppercase tracking-tighter text-white">Waitlist Nodes</h3>
+                <h3 class="font-headline text-2xl font-black uppercase tracking-tighter text-white">Waitlist Nodes ({{ recipients|length }})</h3>
                 <a href="/export/recipients" class="text-xs uppercase tracking-widest text-[#10b981] hover:text-white border border-[#10b981]/30 px-3 py-1 rounded-full transition-colors">Export CSV</a>
             </div>
             <div class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-green-600/10 transition-all border border-white/5">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full border border-red-500 text-red-400 bg-[#180f23] flex items-center justify-center font-bold">O+</div>
-                        <div>
-                            <p class="font-headline font-bold text-md text-white">Sneha Kapoor</p>
-                            <p class="text-[10px] uppercase tracking-widest text-slate-400">Needs Kidney • High Urgency</p>
+                {% if recipients %}
+                    {% for recipient in recipients %}
+                    {% set urgency_color = 'border-red-500 text-red-400' if recipient.urgency == 'High' else 'border-yellow-500 text-yellow-400' if recipient.urgency == 'Medium' else 'border-blue-500 text-blue-400' %}
+                    <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-green-600/10 transition-all border border-white/5">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full border {{ urgency_color }} bg-[#180f23] flex items-center justify-center font-bold text-xs">{{ recipient.blood_group }}</div>
+                            <div>
+                                <p class="font-headline font-bold text-md text-white">{{ recipient.name }}</p>
+                                <p class="text-[10px] uppercase tracking-widest text-slate-400">Needs {{ recipient.organ }} • {{ recipient.urgency }} Urgency</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <a href="/id_card?recipient_id={{ recipient.id }}" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
+                            <a href="/manage/delete/recipient/{{ recipient.id }}" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
+                            <a href="/manage/edit/recipient/{{ recipient.id }}" class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" title="Edit"><span class="material-symbols-outlined text-sm">edit</span></a>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <a href="#" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
-                        <a href="#" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
-                        <a href="#" class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" title="Edit"><span class="material-symbols-outlined text-sm">edit</span></a>
-                    </div>
-                </div>
-                <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-green-600/10 transition-all border border-white/5">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full border border-yellow-500 text-yellow-400 bg-[#180f23] flex items-center justify-center font-bold">AB+</div>
-                        <div>
-                            <p class="font-headline font-bold text-md text-white">Vijay Reddy</p>
-                            <p class="text-[10px] uppercase tracking-widest text-slate-400">Needs Liver • Medium Urgency</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <a href="#" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
-                        <a href="#" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
-                        <a href="#" class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" title="Edit"><span class="material-symbols-outlined text-sm">edit</span></a>
-                    </div>
-                </div>
-                <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-green-600/10 transition-all border border-white/5">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full border border-red-500 text-red-400 bg-[#180f23] flex items-center justify-center font-bold">B-</div>
-                        <div>
-                            <p class="font-headline font-bold text-md text-white">Anita Joshi</p>
-                            <p class="text-[10px] uppercase tracking-widest text-slate-400">Needs Heart • High Urgency</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <a href="#" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
-                        <a href="#" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
-                        <a href="#" class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" title="Edit"><span class="material-symbols-outlined text-sm">edit</span></a>
-                    </div>
-                </div>
+                    {% endfor %}
+                {% else %}
+                <div class="text-center text-slate-400 py-6">No recipients on waitlist yet.</div>
+                {% endif %}
             </div>
         </div>
     </div>

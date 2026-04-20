@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>NeuroBridge | AI Match Analysis</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+    <style>
+        body {
+            background-color: #180f23;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(195, 245, 255, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(26, 11, 46, 1) 0px, transparent 80%);
+            min-height: 100vh;
+            color: #ecddf9;
+        }
+        
+        .bionic-glass {
+            background: rgba(24, 15, 35, 0.4);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .success-bar {
+            height: 8px;
+            background: linear-gradient(90deg, #ef4444, #eab308, #10b981);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .match-card {
+            transition: all 0.3s;
+        }
+        
+        .match-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 50px rgba(16, 185, 129, 0.2);
+        }
+    </style>
+</head>
+<body class="pb-12">
+
+<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-6 mx-auto w-[92%] max-w-7xl border border-green-600/20 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+    <div class="flex items-center gap-3">
+        <span class="text-2xl font-black text-[#10b981] font-[Space_Grotesk]">NeuroBridge</span>
+    </div>
+    <a href="/dashboard" class="px-6 py-2 text-xs font-bold uppercase rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20">Back</a>
+</header>
+
+<main class="pt-32 px-4 md:px-8 max-w-7xl mx-auto">
+    <div class="mb-10">
+        <div class="flex items-center gap-3 mb-3">
+            <span class="material-symbols-outlined text-4xl text-[#10b981]">auto_awesome</span>
+            <h1 class="text-4xl md:text-5xl font-black text-white font-[Space_Grotesk] tracking-tighter">
+                AI Match <span class="text-[#10b981]">Analysis</span>
+            </h1>
+        </div>
+        <p class="text-slate-400 text-lg">Intelligent donor-recipient matching with transplant success prediction.</p>
+    </div>
+
+    {% if message %}
+    <div class="bionic-glass rounded-[2rem] p-8 text-center mb-10 border border-[#10b981]/30">
+        <p class="text-slate-300">{{ message }}</p>
+    </div>
+    {% endif %}
+
+    {% if matches %}
+        {% for match in matches %}
+        <div class="mb-8 bionic-glass match-card rounded-[2rem] p-8 border border-white/5 hover:border-[#10b981]/30 transition">
+            <!-- Recipient Header -->
+            <div class="flex items-center justify-between mb-8 pb-6 border-b border-white/10">
+                <div>
+                    <h3 class="text-2xl font-bold text-white font-[Space_Grotesk]">{{ match.recipient_name }}</h3>
+                    <div class="flex gap-4 mt-2 text-sm text-slate-400">
+                        <span><span class="font-bold">Age:</span> {{ match.recipient_age }}</span>
+                        <span><span class="font-bold">Blood:</span> {{ match.recipient_blood }}</span>
+                        <span><span class="font-bold">Organ:</span> {{ match.organ_needed }}</span>
+                        <span class="px-3 py-1 rounded-full {{ 'bg-red-500/20 text-red-400' if match.urgency == 'High' else 'bg-yellow-500/20 text-yellow-400' if match.urgency == 'Medium' else 'bg-blue-500/20 text-blue-400' }}">{{ match.urgency }} Urgency</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Best Match -->
+            <div class="bg-gradient-to-r from-[#10b981]/10 to-[#00e5ff]/10 border border-[#10b981]/30 rounded-xl p-6 mb-6">
+                <h4 class="text-lg font-bold text-[#10b981] mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined">recommend</span>
+                    Top Recommended Match
+                </h4>
+                
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase mb-1">Donor</p>
+                        <p class="font-bold text-white">{{ match.top_donor.donor_name }}</p>
+                        <p class="text-sm text-slate-400">{{ match.top_donor.donor_age }}y</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase mb-1">Blood Type</p>
+                        <p class="font-bold text-white text-lg">{{ match.top_donor.donor_blood }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase mb-1">Success Rate</p>
+                        <p class="font-bold text-[#10b981] text-lg">{{ match.top_donor.success_probability }}%</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase mb-1">HLA Compat</p>
+                        <p class="font-bold text-[#00e5ff] text-lg">{{ match.top_donor.hla_compatibility }}%</p>
+                    </div>
+                </div>
+
+                <!-- Success Probability Bar -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-bold text-white">Transplant Success Probability</span>
+                        <span class="text-xs font-bold {{ 'text-[#10b981]' if match.top_donor.success_probability > 85 else 'text-[#eab308]' }}">{{ match.top_donor.recommendation }}</span>
+                    </div>
+                    <div class="success-bar" style="width: 100%;">
+                        <div style="width: {{ match.top_donor.success_probability }}%; height: 100%; background: linear-gradient(90deg, #ef4444, #eab308, #10b981);"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alternative Matches -->
+            {% if match.all_matches|length > 1 %}
+            <div class="mt-6">
+                <h5 class="font-bold text-white mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">list_alt</span>
+                    Alternative Matches
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for alt_match in match.all_matches[1:] %}
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                        <p class="font-bold text-white">{{ alt_match.donor_name }}</p>
+                        <p class="text-xs text-slate-400">{{ alt_match.donor_age }}y • {{ alt_match.donor_blood }}</p>
+                        <div class="flex justify-between items-center mt-3">
+                            <div class="text-xs">
+                                <span class="text-slate-400">Success:</span>
+                                <span class="font-bold text-[#10b981]">{{ alt_match.success_probability }}%</span>
+                            </div>
+                            <div class="text-xs">
+                                <span class="text-slate-400">HLA:</span>
+                                <span class="font-bold text-[#00e5ff]">{{ alt_match.hla_compatibility }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Info Box -->
+    <div class="bionic-glass rounded-[2rem] p-6 border border-[#10b981]/20">
+        <h4 class="font-bold text-white mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#10b981]">info</span>
+            About This Analysis
+        </h4>
+        <p class="text-sm text-slate-300">
+            This AI analysis uses machine learning models trained on transplant outcomes data to predict:
+            <br/>• <span class="font-bold">Success Probability:</span> Estimated likelihood of successful transplant
+            <br/>• <span class="font-bold">HLA Compatibility:</span> Tissue typing compatibility score
+            <br/>• <span class="font-bold">Recommendation:</span> Suitability level based on all factors
+        </p>
+    </div>
+</main>
+
+</body>
+</html>

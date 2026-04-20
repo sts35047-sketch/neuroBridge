@@ -218,6 +218,77 @@ body::before {
     </div>
 </section>
 
+<!-- ==================== STATUS TRACKING SECTION ==================== -->
+<section class="px-10 mt-24 relative">
+    <h2 class="text-3xl md:text-4xl font-black text-center mb-12 font-[Space_Grotesk]">
+        Track Your <span class="text-[#10b981]">Status</span>
+    </h2>
+    
+    <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <!-- Donor Status Card -->
+        <div class="glass holo-border p-12 rounded-3xl text-center hover:scale-105 transition-transform relative overflow-hidden cursor-default group">
+            <div class="absolute inset-0 bg-gradient-to-b from-[#10b981]/0 to-[#10b981]/5 opacity-0 group-hover:opacity-100 transition"></div>
+            <div class="relative">
+                <div class="w-16 h-16 rounded-full bg-[#10b981]/20 border border-[#10b981]/40 flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-[#10b981]" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-3 text-white font-[Space_Grotesk]">I'm a Donor</h3>
+                <p class="text-slate-400 mb-6">Check your profile, organ viability status, and matching progress in real-time.</p>
+                <button onclick="openDonorTracking()" class="w-full px-6 py-3 rounded-full glow-btn font-bold transition-all hover:shadow-lg">
+                    <span class="material-symbols-outlined align-middle mr-2" style="font-size: 20px;">search</span>
+                    Check Donor Status
+                </button>
+            </div>
+        </div>
+
+        <!-- Recipient Status Card -->
+        <div class="glass holo-border p-12 rounded-3xl text-center hover:scale-105 transition-transform relative overflow-hidden cursor-default group">
+            <div class="absolute inset-0 bg-gradient-to-b from-[#00e5ff]/0 to-[#00e5ff]/5 opacity-0 group-hover:opacity-100 transition"></div>
+            <div class="relative">
+                <div class="w-16 h-16 rounded-full bg-[#00e5ff]/20 border border-[#00e5ff]/40 flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-[#00e5ff]" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-3 text-white font-[Space_Grotesk]">I'm a Recipient</h3>
+                <p class="text-slate-400 mb-6">View your waitlist position, find matching donors, and track transplant progress.</p>
+                <button onclick="openRecipientTracking()" class="w-full px-6 py-3 rounded-full border border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 font-bold transition-all">
+                    <span class="material-symbols-outlined align-middle mr-2" style="font-size: 20px;">query_stats</span>
+                    Check Recipient Status
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Status Tracking Modal for Donor -->
+<div id="donorTrackingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="glass rounded-3xl p-8 max-w-md w-full relative border border-[#10b981]/30">
+        <button onclick="closeDonorTracking()" class="absolute top-4 right-4 text-white/50 hover:text-white"><span class="material-symbols-outlined">close</span></button>
+        <h3 class="text-2xl font-bold mb-4 text-white font-[Space_Grotesk]">Track Donor Status</h3>
+        <p class="text-slate-400 mb-6">Enter your phone number to find your profile:</p>
+        <div class="space-y-4">
+            <input type="tel" id="donorPhone" placeholder="Your 10-digit phone number" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:border-[#10b981] focus:outline-none transition">
+            <button onclick="searchDonor()" class="w-full px-6 py-3 rounded-full glow-btn font-bold transition-all">Search Profile</button>
+        </div>
+    </div>
+</div>
+
+<!-- Status Tracking Modal for Recipient -->
+<div id="recipientTrackingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="glass rounded-3xl p-8 max-w-md w-full relative border border-[#00e5ff]/30">
+        <button onclick="closeRecipientTracking()" class="absolute top-4 right-4 text-white/50 hover:text-white"><span class="material-symbols-outlined">close</span></button>
+        <h3 class="text-2xl font-bold mb-4 text-white font-[Space_Grotesk]">Track Recipient Status</h3>
+        <p class="text-slate-400 mb-6">Enter your phone number to view your progress:</p>
+        <div class="space-y-4">
+            <input type="tel" id="recipientPhone" placeholder="Your 10-digit phone number" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 focus:border-[#00e5ff] focus:outline-none transition">
+            <button onclick="searchRecipient()" class="w-full px-6 py-3 rounded-full border border-[#00e5ff]/40 hover:bg-[#00e5ff]/10 font-bold transition-all">View Status</button>
+        </div>
+    </div>
+</div>
+
 <!-- ==================== STATS BAR ==================== -->
 <section class="px-10 mt-20">
     <div class="glass rounded-3xl px-8 py-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
@@ -529,6 +600,50 @@ body::before {
         globeGroup.position.y = -t * 30;
     });
 })();
+
+// Modal Functions for Status Tracking
+function openDonorTracking() {
+    document.getElementById('donorTrackingModal').style.display = 'flex';
+}
+
+function closeDonorTracking() {
+    document.getElementById('donorTrackingModal').style.display = 'none';
+}
+
+function openRecipientTracking() {
+    document.getElementById('recipientTrackingModal').style.display = 'flex';
+}
+
+function closeRecipientTracking() {
+    document.getElementById('recipientTrackingModal').style.display = 'none';
+}
+
+function searchDonor() {
+    const phone = document.getElementById('donorPhone').value;
+    if(!phone || phone.length < 10) {
+        alert('Please enter a valid 10-digit phone number');
+        return;
+    }
+    window.location.href = `/donor/track/${phone}`;
+}
+
+function searchRecipient() {
+    const phone = document.getElementById('recipientPhone').value;
+    if(!phone || phone.length < 10) {
+        alert('Please enter a valid 10-digit phone number');
+        return;
+    }
+    window.location.href = `/recipient/track/${phone}`;
+}
+
+// Close modals when clicking outside
+document.addEventListener('click', function(e) {
+    const donorModal = document.getElementById('donorTrackingModal');
+    const recipientModal = document.getElementById('recipientTrackingModal');
+    
+    if(e.target === donorModal) closeDonorTracking();
+    if(e.target === recipientModal) closeRecipientTracking();
+});
 </script>
 
 </body>

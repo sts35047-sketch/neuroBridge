@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Forecast</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
+        .chart-box { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .insight-card { border-left: 5px solid; background: white; padding: 15px; margin-bottom: 15px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .insight-card.danger { border-color: #dc3545; }
+        .insight-card.warning { border-color: #ffc107; }
+        .insight-card.success { border-color: #198754; }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark"><i class="fas fa-robot me-2"></i> AI Demand Prediction</h2>
+            <p class="text-muted">Machine learning projection for upcoming organ requirements.</p>
+        </div>
+        <a href="/dashboard" class="btn btn-secondary rounded-pill px-4">Back to Dashboard</a>
+    </div>
+
+    <div class="row">
+        <!-- Main Chart -->
+        <div class="col-lg-8">
+            <div class="chart-box">
+                <h5 class="fw-bold mb-3">6-Month Trend & 3-Month Forecast</h5>
+                <div style="position: relative; height: 400px; width: 100%;">
+                    <canvas id="forecastChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Insights Sidebar -->
+        <div class="col-lg-4">
+            <h5 class="text-secondary fw-bold mb-3">🤖 AI Generated Insights</h5>
+            
+            {% for item in insights %}
+            <div class="insight-card {{ item.type }}">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-1">
+                            {% if item.type == 'danger' %}CRITICAL ALERT
+                            {% elif item.type == 'warning' %}WARNING
+                            {% else %}STATUS OK{% endif %}
+                        </h6>
+                        <small class="text-muted">{{ item.msg }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="card bg-dark text-white mt-4 p-3 border-0" style="border-radius: 15px;">
+                <div class="card-body">
+                    <h6 class="text-warning fw-bold">PRO TIP</h6>
+                    <p class="small mb-0">This model uses linear regression on your historical intake data. Accuracy improves with more data points.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ctx = document.getElementById('forecastChart').getContext('2d');
+    
+    // Data passed from Flask
+    const labels = {{ months | tojson }};
+    const kidneyData = {{ kidney | tojson }};
+    const liverData = {{ liver | tojson }};
+    const cutIndex = {{ cut_index }}; // Index where history ends and prediction starts
+
+    // Create a gradient for the "Future" part
+    // Note: Chart.js needs segment configuration for different line styles (solid vs dotted)
+    // For simplicity in this demo, we'll just plot them as continuous lines but use vertical line plugin or visual cue.
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Kidney Demand',
+                    data: kidneyData,
+                    borderColor: '#dc3545', // Red
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    segment: {
+                        borderDash: ctx => ctx.p0DataIndex >= cutIndex ? [6, 6] : undefined, // Dotted line for future
+                    }
+                },
+                {
+                    label: 'Liver Demand',
+                    data: liverData,
+                    borderColor: '#ffc107', // Yellow
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    tension: 0.4,
+                    segment: {
+                        borderDash: ctx => ctx.p0DataIndex >= cutIndex ? [6, 6] : undefined,
+                    }
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: (context) => {
+                            let label = context[0].label;
+                            if (label.includes('Pred')) return label + " (AI Projection)";
+                            return label + " (Historical)";
+                        }
+                    }
+                },
+                annotation: {
+                    annotations: {
+                        line1: {
+                            type: 'line',
+                            xMin: cutIndex,
+                            xMax: cutIndex,
+                            borderColor: 'rgb(100, 100, 100)',
+                            borderWidth: 2,
+                            label: {
+                                content: 'TODAY',
+                                enabled: true,
+                                position: 'top'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

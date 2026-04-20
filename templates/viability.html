@@ -30,29 +30,30 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for organ in organs %}
+        {% for organ in data %}
         
         <!-- Logic for border color based on time left -->
         {% set border_color = 'border-[#10b981]' %}
         {% set shadow_color = 'shadow-[0_0_15px_rgba(0,229,255,0.2)]' %}
-        {% if organ.time_left < 6 %}
+        {% if organ.h_left < 2 %}
             {% set border_color = 'border-red-500' %}
             {% set shadow_color = 'shadow-[0_0_20px_rgba(239,68,68,0.4)]' %}
-        {% elif organ.time_left < 12 %}
+        {% elif organ.h_left < 6 %}
             {% set border_color = 'border-yellow-400' %}
             {% set shadow_color = 'shadow-[0_0_15px_rgba(250,204,21,0.2)]' %}
         {% endif %}
 
         <div class="bionic-glass rounded-[2rem] p-8 border {{ border_color }} {{ shadow_color }} transition-all relative overflow-hidden text-center flex flex-col items-center justify-center h-64">
             
-            <p class="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Donor: <span class="text-white">{{ organ.donor_name }}</span></p>
-            <h3 class="font-headline font-black text-3xl text-white mb-6">{{ organ.organ_type }}</h3>
+            <p class="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Donor: <span class="text-white">{{ organ.name }}</span></p>
+            <h3 class="font-headline font-black text-3xl text-white mb-6">{{ organ.organ }}</h3>
             
             <div class="relative w-full">
                 <span class="material-symbols-outlined absolute top-1/2 left-0 -translate-y-1/2 text-4xl opacity-20">timer</span>
-                <div class="font-mono text-5xl font-black {{ 'text-red-400 animate-pulse' if organ.time_left < 6 else 'text-[#10b981]' }}">
-                    {{ organ.time_left }}<span class="text-xl text-slate-400 ml-1">hrs</span>
+                <div class="font-mono text-5xl font-black {{ 'text-red-400 animate-pulse' if organ.h_left < 2 else 'text-[#10b981]' }}">
+                    {{ organ.h_left }}<span class="text-xl text-slate-400 ml-1">h</span>
                 </div>
+                <div class="text-sm text-slate-400 mt-2">{{ organ.m_left }}m remaining</div>
             </div>
             
             <p class="text-xs uppercase tracking-widest text-slate-500 mt-6">Biological Window</p>
