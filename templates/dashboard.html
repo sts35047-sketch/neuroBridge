@@ -7,10 +7,10 @@
     
     <!-- Tailwind & Fonts -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="{{ url_for('static', filename='theme.css') }}" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script id="tailwind-config">
         tailwind.config = {
@@ -43,6 +43,15 @@
             color: #ecddf9;
         }
         
+        /* 3D Canvas */
+        #neuro-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
         /* Bionic / Holographic Effects */
         .bionic-glass {
             background: rgba(24, 15, 35, 0.4);
@@ -81,20 +90,19 @@
 </head>
 <body class="font-body text-slate-200">
 
+<!-- ===== 3D BACKGROUND CANVAS ===== -->
+<canvas id="neuro-bg"></canvas>
+
 <!-- Top Nav Shell -->
 <header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-6 mx-auto w-[92%] max-w-7xl border border-green-600/20 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
     <div class="flex items-center gap-3 group">
-    <div class="relative">
-        <img src="{{ url_for('static', filename='logo.jpeg') }}" 
-             class="h-12 w-12 rounded-xl object-cover border border-[#10b981]/40 shadow-[0_0_20px_rgba(16,185,129,0.4)] group-hover:scale-110 transition-all duration-300">
-        
-        <div class="absolute inset-0 rounded-xl bg-[#10b981]/20 blur-xl opacity-60 group-hover:opacity-100 transition"></div>
+        <div class="relative">
+            <!-- Replace with your logo: <img src="logo.jpeg" ...> -->
+            <div class="h-12 w-12 rounded-xl bg-emerald-900 border border-[#10b981]/40 shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center font-bold text-[#10b981] text-lg group-hover:scale-110 transition-all duration-300">N</div>
+            <div class="absolute inset-0 rounded-xl bg-[#10b981]/20 blur-xl opacity-60 group-hover:opacity-100 transition"></div>
+        </div>
+        <span class="text-2xl font-black text-[#10b981] tracking-tight font-headline">NeuroBridge</span>
     </div>
-
-    <span class="text-2xl font-black text-[#10b981] tracking-tight font-headline">
-        NeuroBridge
-    </span>
-</div>
     
     <nav class="hidden md:flex items-center gap-8 font-headline text-slate-100 font-medium tracking-tight">
         <a class="text-[#10b981] font-bold border-b-2 border-[#10b981] pb-1" href="/dashboard">Neural Map</a>
@@ -105,13 +113,9 @@
 
     <div class="flex items-center gap-4">
         <div class="flex gap-2">
-            
-            <!-- Notifications Toggle -->
             <button onclick="toggleModal('notificationModal')" class="relative p-2 hover:bg-green-600/10 hover:scale-[1.02] transition-all rounded-full">
                 <span class="material-symbols-outlined text-[#10b981]">notifications</span>
-                {% if notifications %}
                 <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border border-[#180f23] animate-pulse"></span>
-                {% endif %}
             </button>
             <a href="/messages" class="p-2 hover:bg-green-600/10 hover:scale-[1.02] transition-all rounded-full">
                 <span class="material-symbols-outlined text-[#10b981]">mail</span>
@@ -123,10 +127,10 @@
         <div class="flex items-center gap-3">
             <div class="text-right hidden sm:block">
                 <p class="text-[10px] uppercase tracking-widest text-slate-400">Welcome</p>
-                <p class="font-bold text-sm text-white">{{ hospital_name }}</p>
+                <p class="font-bold text-sm text-white">City Hospital</p>
             </div>
             <div class="w-10 h-10 rounded-full border border-green-600/30 overflow-hidden bg-emerald-900 flex items-center justify-center">
-                <span class="font-bold text-cyan-200">{{ hospital_name[0] }}</span>
+                <span class="font-bold text-cyan-200">C</span>
             </div>
         </div>
         <a href="/logout" class="ml-2 px-4 py-2 text-xs font-bold uppercase rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all border border-red-500/30">Logout</a>
@@ -163,7 +167,7 @@
 </aside>
 
 <!-- Main Canvas -->
-<main class="lg:ml-80 pt-32 px-4 md:px-8 pb-12 max-w-7xl mx-auto">
+<main class="lg:ml-80 pt-32 px-4 md:px-8 pb-12 max-w-7xl mx-auto" style="position:relative;z-index:1;">
     
     <!-- Hero Title Section -->
     <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
@@ -178,11 +182,11 @@
         <div class="flex gap-4">
             <div class="p-4 md:p-6 bionic-glass rounded-xl text-center border-l-4 border-[#10b981]">
                 <p class="text-[10px] uppercase tracking-widest text-slate-400 mb-1">Active Donors</p>
-                <p class="text-2xl md:text-3xl font-headline font-bold text-[#10b981]">{{ donors|length }}</p>
+                <p class="text-2xl md:text-3xl font-headline font-bold text-[#10b981]">24</p>
             </div>
             <div class="p-4 md:p-6 bionic-glass rounded-xl text-center">
                 <p class="text-[10px] uppercase tracking-widest text-slate-400 mb-1">Waitlist Nodes</p>
-                <p class="text-2xl md:text-3xl font-headline font-bold text-white">{{ recipients|length }}</p>
+                <p class="text-2xl md:text-3xl font-headline font-bold text-white">37</p>
             </div>
         </div>
     </div>
@@ -207,7 +211,7 @@
         </a>
     </div>
 
-    <!-- Analytics Section with Real Chart.js -->
+    <!-- Analytics Section with Chart.js -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
         <div class="bionic-glass rounded-xl p-6 holographic-border h-[350px] flex flex-col">
             <div class="flex justify-between items-start mb-4">
@@ -236,32 +240,49 @@
                 <a href="/export/donors" class="text-xs uppercase tracking-widest text-[#10b981] hover:text-white border border-[#10b981]/30 px-3 py-1 rounded-full transition-colors">Export CSV</a>
             </div>
             <div class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                {% for donor in donors %}
+                <!-- Sample donor cards (replace with Jinja2 loop in Flask) -->
                 <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-green-600/10 transition-all border border-white/5">
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full border border-[#10b981] bg-emerald-900/30 flex items-center justify-center font-bold text-[#10b981]">
-                            {{ donor.blood_group }}
-                        </div>
+                        <div class="w-10 h-10 rounded-full border border-[#10b981] bg-emerald-900/30 flex items-center justify-center font-bold text-[#10b981]">O+</div>
                         <div>
-                            <p class="font-headline font-bold text-md text-white">{{ donor.name }}</p>
-                            <p class="text-[10px] uppercase tracking-widest text-slate-400">{{ donor.age }}y • {{ donor.organ }} • {{ donor.city }}</p>
+                            <p class="font-headline font-bold text-md text-white">Rahul Sharma</p>
+                            <p class="text-[10px] uppercase tracking-widest text-slate-400">32y • Kidney • Mumbai</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <a href="/generate_card/donor/{{ donor.id }}" target="_blank" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
-                        
-                        <a href="/delete/donor/{{ donor.id }}" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
-                        <a href="/edit/donor/{{ donor.id }}" 
-                            class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" 
-                             title="Edit">
-                            <span class="material-symbols-outlined text-sm">edit</span>
-                        </a>
-                    
+                        <a href="#" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
+                        <a href="#" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
+                        <a href="#" class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" title="Edit"><span class="material-symbols-outlined text-sm">edit</span></a>
                     </div>
                 </div>
-                {% else %}
-                <div class="text-center p-8 border border-white/5 rounded-[2rem] bionic-glass text-slate-500 text-sm">No active donors detected.</div>
-                {% endfor %}
+                <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-green-600/10 transition-all border border-white/5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full border border-[#10b981] bg-emerald-900/30 flex items-center justify-center font-bold text-[#10b981]">B+</div>
+                        <div>
+                            <p class="font-headline font-bold text-md text-white">Priya Nair</p>
+                            <p class="text-[10px] uppercase tracking-widest text-slate-400">28y • Liver • Chennai</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="#" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
+                        <a href="#" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
+                        <a href="#" class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" title="Edit"><span class="material-symbols-outlined text-sm">edit</span></a>
+                    </div>
+                </div>
+                <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-green-600/10 transition-all border border-white/5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full border border-[#10b981] bg-emerald-900/30 flex items-center justify-center font-bold text-[#10b981]">A-</div>
+                        <div>
+                            <p class="font-headline font-bold text-md text-white">Arjun Mehta</p>
+                            <p class="text-[10px] uppercase tracking-widest text-slate-400">45y • Heart • Delhi</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="#" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
+                        <a href="#" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
+                        <a href="#" class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" title="Edit"><span class="material-symbols-outlined text-sm">edit</span></a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -272,31 +293,48 @@
                 <a href="/export/recipients" class="text-xs uppercase tracking-widest text-[#10b981] hover:text-white border border-[#10b981]/30 px-3 py-1 rounded-full transition-colors">Export CSV</a>
             </div>
             <div class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                {% for recipient in recipients %}
                 <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-green-600/10 transition-all border border-white/5">
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full border {% if recipient.urgency == 'High' %}border-red-500 text-red-400{% else %}border-yellow-500 text-yellow-400{% endif %} bg-[#180f23] flex items-center justify-center font-bold">
-                            {{ recipient.blood_group }}
-                        </div>
+                        <div class="w-10 h-10 rounded-full border border-red-500 text-red-400 bg-[#180f23] flex items-center justify-center font-bold">O+</div>
                         <div>
-                            <p class="font-headline font-bold text-md text-white">{{ recipient.name }}</p>
-                            <p class="text-[10px] uppercase tracking-widest text-slate-400">Needs {{ recipient.organ }} • {{ recipient.urgency }} Urgency</p>
+                            <p class="font-headline font-bold text-md text-white">Sneha Kapoor</p>
+                            <p class="text-[10px] uppercase tracking-widest text-slate-400">Needs Kidney • High Urgency</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <a href="/generate_card/recipient/{{ recipient.id }}" target="_blank" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
-                        
-                        <a href="/delete/recipient/{{ recipient.id }}" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
-                        <a href="/edit/recipient/{{ recipient.id }}" 
-                            class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" 
-                            title="Edit">
-                            <span class="material-symbols-outlined text-sm">edit</span>
-                        </a>
+                        <a href="#" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
+                        <a href="#" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
+                        <a href="#" class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" title="Edit"><span class="material-symbols-outlined text-sm">edit</span></a>
                     </div>
                 </div>
-                {% else %}
-                <div class="text-center p-8 border border-white/5 rounded-[2rem] bionic-glass text-slate-500 text-sm">No recipients on waitlist.</div>
-                {% endfor %}
+                <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-green-600/10 transition-all border border-white/5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full border border-yellow-500 text-yellow-400 bg-[#180f23] flex items-center justify-center font-bold">AB+</div>
+                        <div>
+                            <p class="font-headline font-bold text-md text-white">Vijay Reddy</p>
+                            <p class="text-[10px] uppercase tracking-widest text-slate-400">Needs Liver • Medium Urgency</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="#" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
+                        <a href="#" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
+                        <a href="#" class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" title="Edit"><span class="material-symbols-outlined text-sm">edit</span></a>
+                    </div>
+                </div>
+                <div class="group flex items-center justify-between p-4 md:p-5 bionic-glass rounded-[2rem] hover:bg-green-600/10 transition-all border border-white/5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full border border-red-500 text-red-400 bg-[#180f23] flex items-center justify-center font-bold">B-</div>
+                        <div>
+                            <p class="font-headline font-bold text-md text-white">Anita Joshi</p>
+                            <p class="text-[10px] uppercase tracking-widest text-slate-400">Needs Heart • High Urgency</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="#" class="p-2 rounded-full hover:bg-white/10 text-[#10b981]" title="ID Card"><span class="material-symbols-outlined text-sm">badge</span></a>
+                        <a href="#" onclick="return confirm('Delete this record?')" class="p-2 rounded-full hover:bg-red-500/20 text-red-400"><span class="material-symbols-outlined text-sm">delete</span></a>
+                        <a href="#" class="p-2 rounded-full hover:bg-blue-500/20 text-blue-400" title="Edit"><span class="material-symbols-outlined text-sm">edit</span></a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -306,18 +344,13 @@
 <div class="fixed bottom-8 right-8 z-50">
     <button onclick="toggleChatWindow()" 
         class="relative group w-16 h-16 rounded-full bg-gradient-to-br from-[#10b981] to-emerald-400 flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.6)] hover:scale-110 transition-all">
-
-        <img src="{{ url_for('static', filename='neurobot.jpeg') }}" 
-             class="h-10 w-10 rounded-full object-cover border border-white/30">
-
+        <span class="material-symbols-outlined text-[#064e3b] text-2xl">smart_toy</span>
         <span class="absolute inset-0 rounded-full border-2 border-[#10b981] animate-ping opacity-30"></span>
-
-        <span class="absolute right-20 bg-black/70 text-white text-xs px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition">
-            NeuroBot
-        </span>
+        <span class="absolute right-20 bg-black/70 text-white text-xs px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition whitespace-nowrap">NeuroBot</span>
     </button>
 </div>
-<!-- Chat Window (Tailwind conversion) -->
+
+<!-- Chat Window -->
 <div id="chatWindow" class="fixed bottom-28 right-8 w-80 h-[400px] bionic-glass holographic-border rounded-3xl z-50 flex-col overflow-hidden hidden shadow-2xl transition-all">
     <div class="bg-gradient-to-r from-[#064e3b] to-[#180f23] text-white p-4 flex justify-between items-center border-b border-white/10">
         <span class="font-headline font-bold text-sm tracking-widest uppercase">NeuroBot Core</span>
@@ -336,8 +369,8 @@
     </div>
 </div>
 
-<!-- ================= MODALS (TAILWIND STYLED) ================= -->
-<div id="modalBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden transition-opacity"></div>
+<!-- Modal Backdrop -->
+<div id="modalBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden transition-opacity" onclick="closeModals()"></div>
 
 <!-- Add Donor Modal -->
 <div id="addDonorModal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg z-[70] hidden">
@@ -350,37 +383,37 @@
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-2">
                     <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-1">Subject Name</label>
-                    <input type="text" name="name" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:ring-0" required>
+                    <input type="text" name="name" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:outline-none" required>
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-1">Age</label>
-                    <input type="number" name="age" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:ring-0" required>
+                    <input type="number" name="age" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:outline-none" required>
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-1">Blood Group</label>
-                    <select name="blood_group" class="w-full bg-[#2f263b] border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:ring-0">
+                    <select name="blood_group" class="w-full bg-[#2f263b] border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:outline-none">
                         <option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-1">Organ</label>
-                    <input type="text" name="organ" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:ring-0" required>
+                    <input type="text" name="organ" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:outline-none" required>
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-1">Comms (Phone)</label>
-                    <input type="text" name="phone" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:ring-0" required>
+                    <input type="text" name="phone" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:outline-none" required>
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-1">PIN Code</label>
-                    <input type="text" id="donorPin" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:ring-0" onkeyup="fetchCity(this.value, 'donorCity', 'donorCityFeedback')">
+                    <input type="text" id="donorPin" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:outline-none" onkeyup="fetchCity(this.value, 'donorCity', 'donorCityFeedback')">
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase tracking-widest text-[#10b981] mb-1">City Locator</label>
-                    <input type="text" id="donorCity" name="city" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:ring-0" required list="citySuggestions">
+                    <input type="text" id="donorCity" name="city" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-[#10b981] focus:outline-none" required list="citySuggestions">
                     <div id="donorCityFeedback" class="text-xs mt-1 hidden"></div>
                 </div>
             </div>
-            <button type="submit" class="w-full mt-4 py-3 rounded-full bg-[#10b981] text-[#064e3b] font-headline font-bold uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:bg-white transition-all">
+            <button type="submit" class="w-full mt-4 py-3 rounded-full bg-[#10b981] text-[#064e3b] font-headline font-bold uppercase tracking-widest text-sm hover:bg-white transition-all">
                 Commit Profile to Node
             </button>
         </form>
@@ -398,43 +431,43 @@
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-2">
                     <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">Subject Name</label>
-                    <input type="text" name="name" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" required>
+                    <input type="text" name="name" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:outline-none" required>
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">Age</label>
-                    <input type="number" name="age" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" required>
+                    <input type="number" name="age" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:outline-none" required>
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">Blood Group</label>
-                    <select name="blood_group" class="w-full bg-[#2f263b] border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0">
+                    <select name="blood_group" class="w-full bg-[#2f263b] border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:outline-none">
                         <option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">Organ Required</label>
-                    <input type="text" name="organ" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" required>
+                    <input type="text" name="organ" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:outline-none" required>
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">Urgency Matrix</label>
-                    <select name="urgency" class="w-full bg-[#2f263b] border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0">
+                    <select name="urgency" class="w-full bg-[#2f263b] border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:outline-none">
                         <option value="High">Critical (High)</option><option value="Medium">Medium</option><option value="Low">Low</option>
                     </select>
                 </div>
                 <div class="col-span-2">
                     <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">Comms (Phone)</label>
-                    <input type="text" name="phone" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" required>
+                    <input type="text" name="phone" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:outline-none" required>
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">PIN Code</label>
-                    <input type="text" id="recipientPin" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" onkeyup="fetchCity(this.value, 'recipientCity', 'recipientCityFeedback')">
+                    <input type="text" id="recipientPin" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:outline-none" onkeyup="fetchCity(this.value, 'recipientCity', 'recipientCityFeedback')">
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase tracking-widest text-blue-400 mb-1">City Locator</label>
-                    <input type="text" id="recipientCity" name="city" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:ring-0" required list="citySuggestions">
+                    <input type="text" id="recipientCity" name="city" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:border-blue-400 focus:outline-none" required list="citySuggestions">
                     <div id="recipientCityFeedback" class="text-xs mt-1 hidden"></div>
                 </div>
             </div>
-            <button type="submit" class="w-full mt-4 py-3 rounded-full bg-blue-500 text-white font-headline font-bold uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:bg-blue-400 transition-all">
+            <button type="submit" class="w-full mt-4 py-3 rounded-full bg-blue-500 text-white font-headline font-bold uppercase tracking-widest text-sm hover:bg-blue-400 transition-all">
                 Queue Recipient Waitlist
             </button>
         </form>
@@ -445,28 +478,26 @@
 <div id="notificationModal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-[70] hidden">
     <div class="bionic-glass holographic-border rounded-[2rem] overflow-hidden shadow-2xl">
         <div class="bg-white/5 p-4 border-b border-white/10 flex justify-between items-center">
-            <h3 class="font-headline font-bold text-white uppercase tracking-widest"><span class="material-symbols-outlined align-middle mr-2 text-[#10b981]">notifications</span> System Alerts</h3>
+            <h3 class="font-headline font-bold text-white uppercase tracking-widest">
+                <span class="material-symbols-outlined align-middle mr-2 text-[#10b981]">notifications</span> System Alerts
+            </h3>
             <button onclick="closeModals()" class="text-slate-400 hover:text-white"><span class="material-symbols-outlined">close</span></button>
         </div>
         <div class="p-0 max-h-[60vh] overflow-y-auto">
-            {% if notifications %}
-                <div class="flex flex-col">
-                {% for notif in notifications %}
-                    <div class="p-4 border-b border-white/5 hover:bg-white/5 transition-colors">
-                        <div class="flex justify-between items-start mb-1">
-                            <span class="text-xs font-bold text-[#10b981] uppercase tracking-widest">Admin Node</span>
-                            <span class="text-[10px] text-slate-400">{{ notif.date }}</span>
-                        </div>
-                        <p class="text-sm text-slate-200">{{ notif.message }}</p>
-                    </div>
-                {% endfor %}
+            <div class="p-4 border-b border-white/5 hover:bg-white/5 transition-colors">
+                <div class="flex justify-between items-start mb-1">
+                    <span class="text-xs font-bold text-[#10b981] uppercase tracking-widest">Admin Node</span>
+                    <span class="text-[10px] text-slate-400">Today</span>
                 </div>
-            {% else %}
-                <div class="p-10 text-center text-slate-500">
-                    <span class="material-symbols-outlined text-4xl mb-2 opacity-50">notifications_off</span>
-                    <p class="text-sm">No active alerts detected.</p>
+                <p class="text-sm text-slate-200">New donor match found for critical recipient. Review recommended.</p>
+            </div>
+            <div class="p-4 border-b border-white/5 hover:bg-white/5 transition-colors">
+                <div class="flex justify-between items-start mb-1">
+                    <span class="text-xs font-bold text-[#10b981] uppercase tracking-widest">Admin Node</span>
+                    <span class="text-[10px] text-slate-400">Yesterday</span>
                 </div>
-            {% endif %}
+                <p class="text-sm text-slate-200">Organ viability window closing for patient #A-2847. Urgent action required.</p>
+            </div>
         </div>
     </div>
 </div>
@@ -475,15 +506,14 @@
     <option value="New Delhi"><option value="Mumbai"><option value="Bangalore"><option value="Chennai"><option value="Kolkata"><option value="Hyderabad"><option value="Pune"><option value="Ahmedabad">
 </datalist>
 
-<!-- JavaScript Integration -->
+<!-- ===== JAVASCRIPT ===== -->
 <script>
-    // Data Parse safely
-    const dLabels = JSON.parse('{{ d_labels | default([]) | tojson | safe }}');
-    const dValues = JSON.parse('{{ d_values | default([]) | tojson | safe }}');
-    const rLabels = JSON.parse('{{ r_labels | default([]) | tojson | safe }}');
-    const rValues = JSON.parse('{{ r_values | default([]) | tojson | safe }}');
+    // Sample data for charts (replace with Flask Jinja2 variables in production)
+    const dLabels = ["A+", "B+", "O+", "AB+", "O-"];
+    const dValues = [6, 5, 7, 3, 3];
+    const rLabels = ["High", "Medium", "Low"];
+    const rValues = [18, 12, 7];
 
-    // Setup Chart.js with Bionic Theme
     Chart.defaults.color = '#bac9cc';
     Chart.defaults.font.family = "'Space Grotesk', sans-serif";
     
@@ -535,13 +565,11 @@
         });
     });
 
-    // Custom Modal System
+    // Modal System
     function toggleModal(id) {
         document.getElementById('modalBackdrop').classList.remove('hidden');
         document.getElementById(id).classList.remove('hidden');
-        document.getElementById(id).classList.add('animate-enter');
     }
-    
     function closeModals() {
         document.getElementById('modalBackdrop').classList.add('hidden');
         ['addDonorModal', 'addRecipientModal', 'notificationModal'].forEach(id => {
@@ -549,49 +577,39 @@
         });
     }
 
-    // Chatbot Logic
+    // Chatbot
     function toggleChatWindow() {
         const chat = document.getElementById('chatWindow');
-        if (chat.classList.contains('hidden')) {
-            chat.classList.remove('hidden');
-            chat.classList.add('flex');
-        } else {
-            chat.classList.add('hidden');
-            chat.classList.remove('flex');
-        }
+        chat.classList.contains('hidden') ? (chat.classList.remove('hidden'), chat.classList.add('flex')) : (chat.classList.add('hidden'), chat.classList.remove('flex'));
     }
-
     function sendChat() {
         const input = document.getElementById('chatInput');
-        const msg = input.value;
+        const msg = input.value.trim();
         if (!msg) return;
-
         const body = document.getElementById('chatBody');
-        body.innerHTML += `<div class="bg-[#10b981] text-[#064e3b] p-3 rounded-2xl rounded-tr-sm text-sm self-end max-w-[85%] shadow-[0_0_15px_rgba(0,229,255,0.3)]">${msg}</div>`;
+        body.innerHTML += `<div class="bg-[#10b981] text-[#064e3b] p-3 rounded-2xl rounded-tr-sm text-sm self-end max-w-[85%]">${msg}</div>`;
         input.value = "";
         body.scrollTop = body.scrollHeight;
-
         fetch('/chat', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({message: msg})
-        })
-        .then(r => r.json())
-        .then(d => {
+        }).then(r => r.json()).then(d => {
             setTimeout(() => {
-                body.innerHTML += `<div class="bg-[#10b981]/10 border border-[#10b981]/30 text-cyan-100 p-3 rounded-2xl rounded-tl-sm text-sm self-start max-w-[85%] shadow-sm">${d.response}</div>`;
+                body.innerHTML += `<div class="bg-[#10b981]/10 border border-[#10b981]/30 text-cyan-100 p-3 rounded-2xl rounded-tl-sm text-sm self-start max-w-[85%]">${d.response}</div>`;
                 body.scrollTop = body.scrollHeight;
             }, 600);
+        }).catch(() => {
+            body.innerHTML += `<div class="bg-[#10b981]/10 border border-[#10b981]/30 text-cyan-100 p-3 rounded-2xl rounded-tl-sm text-sm self-start max-w-[85%]">Connect to Flask backend to enable NeuroBot.</div>`;
+            body.scrollTop = body.scrollHeight;
         });
     }
 
-    // Fetch City Location
+    // PIN to City
     function fetchCity(pin, targetId, feedbackId) {
         const cityInput = document.getElementById(targetId);
         const feedbackDiv = document.getElementById(feedbackId);
-        
         feedbackDiv.classList.add('hidden');
-        
         if (pin.length === 6) {
             cityInput.placeholder = "Scanning GPS satellite...";
             fetch('/get_location/' + pin)
@@ -599,24 +617,223 @@
                 .then(d => {
                     if (d.status === 'success') {
                         cityInput.value = d.city + ", " + d.state;
-                        cityInput.classList.add('border-[#10b981]');
                         feedbackDiv.innerText = "✅ Satellite Link: Location Found";
                         feedbackDiv.classList.remove('hidden', 'text-red-400');
                         feedbackDiv.classList.add('text-[#10b981]');
                     } else {
                         cityInput.value = "";
                         cityInput.placeholder = "Manual entry required";
-                        cityInput.classList.add('border-red-400');
                         feedbackDiv.innerText = "❌ Mapping failed. Type manually.";
                         feedbackDiv.classList.remove('hidden', 'text-[#10b981]');
                         feedbackDiv.classList.add('text-red-400');
                     }
-                })
-                .catch(e => {
-                    cityInput.placeholder = "Network error";
-                });
+                }).catch(() => { cityInput.placeholder = "Network error"; });
         }
     }
+</script>
+
+<!-- ===== THREE.JS 3D BACKGROUND ===== -->
+<script>
+(function () {
+    const canvas = document.getElementById('neuro-bg');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 120;
+
+    /* --- Neural Nodes --- */
+    const NODE_COUNT = 130;
+    const positions = [], velocities = [], nodes = [];
+    const nodeGeo = new THREE.SphereGeometry(0.55, 8, 8);
+
+    for (let i = 0; i < NODE_COUNT; i++) {
+        const p = new THREE.Vector3(
+            (Math.random() - 0.5) * 230,
+            (Math.random() - 0.5) * 170,
+            (Math.random() - 0.5) * 110
+        );
+        const v = new THREE.Vector3(
+            (Math.random() - 0.5) * 0.09,
+            (Math.random() - 0.5) * 0.09,
+            (Math.random() - 0.5) * 0.045
+        );
+        positions.push(p);
+        velocities.push(v);
+        const mesh = new THREE.Mesh(nodeGeo, new THREE.MeshBasicMaterial({ color: 0x10b981 }));
+        mesh.position.copy(p);
+        mesh.scale.setScalar(0.4 + Math.random() * 1.3);
+        scene.add(mesh);
+        nodes.push(mesh);
+    }
+
+    /* --- Connection Lines --- */
+    const linePool = [];
+    const MAX_DIST = 40;
+
+    function rebuildLines() {
+        linePool.forEach(l => scene.remove(l));
+        linePool.length = 0;
+        for (let i = 0; i < NODE_COUNT; i++) {
+            for (let j = i + 1; j < NODE_COUNT; j++) {
+                const d = positions[i].distanceTo(positions[j]);
+                if (d < MAX_DIST) {
+                    const geo = new THREE.BufferGeometry().setFromPoints([positions[i].clone(), positions[j].clone()]);
+                    const mat = new THREE.LineBasicMaterial({
+                        color: 0x10b981,
+                        transparent: true,
+                        opacity: (1 - d / MAX_DIST) * 0.32
+                    });
+                    const line = new THREE.Line(geo, mat);
+                    scene.add(line);
+                    linePool.push(line);
+                }
+            }
+        }
+    }
+
+    /* --- Central Pulse Orb --- */
+    const pulseOrb = new THREE.Mesh(
+        new THREE.SphereGeometry(1.2, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0x6ee7b7, transparent: true, opacity: 0.5, wireframe: true })
+    );
+    scene.add(pulseOrb);
+
+    /* --- Rotating Tori --- */
+    const torus1 = new THREE.Mesh(
+        new THREE.TorusGeometry(20, 0.35, 8, 64),
+        new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.08 })
+    );
+    torus1.rotation.x = Math.PI / 3;
+    scene.add(torus1);
+
+    const torus2 = new THREE.Mesh(
+        new THREE.TorusGeometry(34, 0.22, 8, 80),
+        new THREE.MeshBasicMaterial({ color: 0x6ee7b7, transparent: true, opacity: 0.05 })
+    );
+    torus2.rotation.set(Math.PI / 6, Math.PI / 4, 0);
+    scene.add(torus2);
+
+    const torus3 = new THREE.Mesh(
+        new THREE.TorusGeometry(55, 0.15, 6, 100),
+        new THREE.MeshBasicMaterial({ color: 0xc3f5ff, transparent: true, opacity: 0.03 })
+    );
+    torus3.rotation.set(Math.PI / 2, Math.PI / 5, 0);
+    scene.add(torus3);
+
+    /* --- Wireframe Icosahedra --- */
+    const ico1 = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(16, 1),
+        new THREE.MeshBasicMaterial({ color: 0x10b981, wireframe: true, transparent: true, opacity: 0.06 })
+    );
+    ico1.position.set(-65, 32, -25);
+    scene.add(ico1);
+
+    const ico2 = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(11, 1),
+        new THREE.MeshBasicMaterial({ color: 0xc3f5ff, wireframe: true, transparent: true, opacity: 0.05 })
+    );
+    ico2.position.set(72, -35, -12);
+    scene.add(ico2);
+
+    const ico3 = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(8, 1),
+        new THREE.MeshBasicMaterial({ color: 0x6ee7b7, wireframe: true, transparent: true, opacity: 0.07 })
+    );
+    ico3.position.set(20, 60, -30);
+    scene.add(ico3);
+
+    /* --- Floating Octahedra --- */
+    const oct1 = new THREE.Mesh(
+        new THREE.OctahedronGeometry(5, 0),
+        new THREE.MeshBasicMaterial({ color: 0x10b981, wireframe: true, transparent: true, opacity: 0.12 })
+    );
+    oct1.position.set(-30, -50, 10);
+    scene.add(oct1);
+
+    const oct2 = new THREE.Mesh(
+        new THREE.OctahedronGeometry(3.5, 0),
+        new THREE.MeshBasicMaterial({ color: 0x6ee7b7, wireframe: true, transparent: true, opacity: 0.10 })
+    );
+    oct2.position.set(80, 20, -5);
+    scene.add(oct2);
+
+    /* --- Data Streams (thin vertical lines) --- */
+    for (let i = 0; i < 8; i++) {
+        const pts = [];
+        const x = (Math.random() - 0.5) * 200;
+        const z = (Math.random() - 0.5) * 60;
+        for (let y = -120; y <= 120; y += 4) pts.push(new THREE.Vector3(x, y, z));
+        const streamGeo = new THREE.BufferGeometry().setFromPoints(pts);
+        const streamMat = new THREE.LineBasicMaterial({
+            color: 0x10b981,
+            transparent: true,
+            opacity: 0.04 + Math.random() * 0.04
+        });
+        scene.add(new THREE.Line(streamGeo, streamMat));
+    }
+
+    /* --- Animation Loop --- */
+    let frame = 0, lineTimer = 0;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        frame++;
+        lineTimer++;
+
+        for (let i = 0; i < NODE_COUNT; i++) {
+            positions[i].add(velocities[i]);
+            if (Math.abs(positions[i].x) > 115) velocities[i].x *= -1;
+            if (Math.abs(positions[i].y) > 85) velocities[i].y *= -1;
+            if (Math.abs(positions[i].z) > 55) velocities[i].z *= -1;
+            nodes[i].position.copy(positions[i]);
+        }
+
+        if (lineTimer > 28) { rebuildLines(); lineTimer = 0; }
+
+        const t = frame * 0.01;
+
+        pulseOrb.scale.setScalar(1 + 0.6 * Math.sin(t * 2.2));
+        pulseOrb.material.opacity = 0.15 + 0.35 * Math.abs(Math.sin(t * 1.5));
+
+        torus1.rotation.z += 0.0025;
+        torus1.rotation.y += 0.0012;
+        torus2.rotation.x += 0.0018;
+        torus2.rotation.z -= 0.0022;
+        torus3.rotation.y += 0.0008;
+        torus3.rotation.x -= 0.0006;
+
+        ico1.rotation.x += 0.004;
+        ico1.rotation.y += 0.005;
+        ico2.rotation.x -= 0.003;
+        ico2.rotation.z += 0.004;
+        ico3.rotation.y += 0.006;
+        ico3.rotation.x -= 0.004;
+
+        oct1.rotation.x += 0.008;
+        oct1.rotation.y += 0.006;
+        oct2.rotation.z += 0.007;
+        oct2.rotation.x -= 0.005;
+
+        camera.position.x = Math.sin(t * 0.14) * 12;
+        camera.position.y = Math.cos(t * 0.09) * 6;
+        camera.lookAt(scene.position);
+
+        renderer.render(scene, camera);
+    }
+
+    rebuildLines();
+    animate();
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+})();
 </script>
 
 </body>
