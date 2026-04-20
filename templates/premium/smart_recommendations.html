@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>NeuroBridge | Smart Recommendations</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='master-theme.css') }}" rel="stylesheet"/>
+
+    <style>
+        body { background-color: #180f23; background-image: radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(195, 245, 255, 0.1) 0px, transparent 50%), radial-gradient(at 50% 50%, rgba(26, 11, 46, 1) 0px, transparent 80%); }
+        .recommendation-card { transition: all 0.3s ease; border-left: 4px solid; }
+        .recommendation-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(16, 185, 129, 0.2); }
+        .critical-accent { border-left-color: #ef4444; }
+        .warning-accent { border-left-color: #eab308; }
+        .info-accent { border-left-color: #10b981; }
+    </style>
+</head>
+<body class="pb-12">
+
+<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-6 mx-auto w-[92%] max-w-7xl border border-green-600/20 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+    <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-3xl text-[#10b981]">lightbulb</span>
+        <span class="text-2xl font-black text-[#10b981] font-headline">NeuroBridge</span>
+    </div>
+    <div class="flex items-center gap-4">
+        <a href="/kpi/performance" class="px-4 py-2 text-xs font-bold uppercase rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20">KPIs</a>
+        <a href="/dashboard" class="px-6 py-2 text-xs font-bold uppercase rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20">Back</a>
+    </div>
+</header>
+
+<main class="pt-32 px-8 max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-10">
+        <h1 class="text-5xl font-black text-white font-headline mb-3">Smart <span class="gradient-text">Recommendations</span></h1>
+        <p class="text-slate-400">AI-powered optimization suggestions for your organ network</p>
+    </div>
+
+    <!-- Recommendations List -->
+    {% if recommendations %}
+        {% for rec in recommendations %}
+        <div class="recommendation-card bionic-glass rounded-[2rem] p-8 mb-6 {{ 'critical-accent' if rec.type == 'critical' else 'warning-accent' if rec.type == 'warning' else 'info-accent' }}">
+            <div class="grid md:grid-cols-12 gap-6 items-start">
+                <!-- Icon -->
+                <div class="md:col-span-1 flex justify-center">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center {{ 'bg-red-500/20' if rec.type == 'critical' else 'bg-yellow-500/20' if rec.type == 'warning' else 'bg-green-500/20' }}">
+                        <span class="material-symbols-outlined text-3xl {{ 'text-red-500' if rec.type == 'critical' else 'text-yellow-500' if rec.type == 'warning' else 'text-green-500' }}">{{ rec.icon }}</span>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="md:col-span-7">
+                    <div class="flex items-center gap-3 mb-2">
+                        <h3 class="text-xl font-bold text-white font-headline">{{ rec.title }}</h3>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold {{ 'bg-red-500/20 text-red-400' if rec.type == 'critical' else 'bg-yellow-500/20 text-yellow-400' if rec.type == 'warning' else 'bg-green-500/20 text-green-400' }}">
+                            {{ rec.type | upper }}
+                        </span>
+                    </div>
+                    <p class="text-slate-300 mb-4">{{ rec.description }}</p>
+                    <p class="text-sm text-slate-400 italic">Priority Level: {{ rec.priority }}/3</p>
+                </div>
+
+                <!-- Action -->
+                <div class="md:col-span-4">
+                    <button class="w-full btn-primary text-center flex items-center justify-center gap-2">
+                        <span>{{ rec.action }}</span>
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Summary -->
+        <div class="bionic-glass rounded-[2rem] p-6 border border-[#10b981]/20 mt-10">
+            <p class="text-sm text-slate-300">
+                <span class="font-bold text-[#10b981]">{{ recommendations | length }} recommendations</span> generated based on current network data and AI analysis. Review and implement these optimizations to improve system efficiency and donor-recipient matching rates.
+            </p>
+        </div>
+    {% else %}
+        <div class="bionic-glass rounded-[2rem] p-12 text-center border border-white/5">
+            <span class="material-symbols-outlined text-6xl text-[#10b981]/30 block mb-4">done_all</span>
+            <p class="text-slate-300 text-lg">All systems optimized! No recommendations at this time.</p>
+        </div>
+    {% endif %}
+
+    <!-- Best Practices Section -->
+    <div class="mt-12 bionic-glass rounded-[2rem] p-8 border border-white/5">
+        <h3 class="text-xl font-bold text-white font-headline mb-6 flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#10b981]">auto_awesome</span>
+            Best Practices for Network Optimization
+        </h3>
+        
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="p-4 bg-white/5 rounded-lg border border-white/10">
+                <h4 class="font-bold text-[#10b981] mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    Maintain Blood Type Diversity
+                </h4>
+                <p class="text-sm text-slate-300">Ensure balanced distribution across blood types, especially universal donors (O+). This maximizes matching opportunities.</p>
+            </div>
+
+            <div class="p-4 bg-white/5 rounded-lg border border-white/10">
+                <h4 class="font-bold text-[#10b981] mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    Geographic Spread
+                </h4>
+                <p class="text-sm text-slate-300">Expand recruitment in underserved regions to reduce organ transport time and improve viability rates.</p>
+            </div>
+
+            <div class="p-4 bg-white/5 rounded-lg border border-white/10">
+                <h4 class="font-bold text-[#10b981] mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    Regular Audits
+                </h4>
+                <p class="text-sm text-slate-300">Review donor-recipient ratios monthly. Adjust recruitment campaigns based on demand patterns.</p>
+            </div>
+
+            <div class="p-4 bg-white/5 rounded-lg border border-white/10">
+                <h4 class="font-bold text-[#10b981] mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    HLA Matching Priority
+                </h4>
+                <p class="text-sm text-slate-300">Use AI-powered tissue typing to prioritize high-compatibility matches, improving success rates significantly.</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

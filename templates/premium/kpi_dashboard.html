@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>NeuroBridge | Performance KPIs</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='master-theme.css') }}" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@latest"></script>
+
+    <style>
+        body { background-color: #180f23; background-image: radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(195, 245, 255, 0.1) 0px, transparent 50%), radial-gradient(at 50% 50%, rgba(26, 11, 46, 1) 0px, transparent 80%); }
+        .stat-card { position: relative; overflow: hidden; }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), transparent); pointer-events: none; }
+        .progress-bar { height: 6px; background: rgba(16, 185, 129, 0.2); border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #10b981, #6ee7b7); }
+    </style>
+</head>
+<body class="pb-12">
+
+<header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-8 py-3 bg-[#180f23]/60 backdrop-blur-[24px] rounded-full mt-6 mx-auto w-[92%] max-w-7xl border border-green-600/20 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+    <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-3xl text-[#10b981]">analytics</span>
+        <span class="text-2xl font-black text-[#10b981] font-headline">NeuroBridge</span>
+    </div>
+    <div class="flex items-center gap-4">
+        <a href="/notifications/dashboard" class="px-4 py-2 text-xs font-bold uppercase rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20">Alerts</a>
+        <a href="/dashboard" class="px-6 py-2 text-xs font-bold uppercase rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20">Back</a>
+    </div>
+</header>
+
+<main class="pt-32 px-8 max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-10">
+        <h1 class="text-5xl font-black text-white font-headline mb-3">Performance <span class="gradient-text">KPIs</span></h1>
+        <p class="text-slate-400">Real-time metrics and system health status</p>
+    </div>
+
+    <!-- Main KPI Cards -->
+    <div class="grid md:grid-cols-4 gap-6 mb-8">
+        <!-- Total Donors -->
+        <div class="stat-card bionic-glass rounded-[2rem] p-6 border border-[#10b981]/20 hover-lift">
+            <div class="flex items-center justify-between mb-4">
+                <span class="material-symbols-outlined text-3xl text-[#10b981]/50">people</span>
+                <p class="text-xs text-[#10b981] font-bold uppercase">+{{ active_donors }}</p>
+            </div>
+            <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Total Donors</p>
+            <p class="text-3xl font-black text-white font-headline">{{ total_donors }}</p>
+            <div class="progress-bar mt-3">
+                <div class="progress-fill" style="width: 75%"></div>
+            </div>
+        </div>
+
+        <!-- Total Recipients -->
+        <div class="stat-card bionic-glass rounded-[2rem] p-6 border border-[#00e5ff]/20 hover-lift">
+            <div class="flex items-center justify-between mb-4">
+                <span class="material-symbols-outlined text-3xl text-[#00e5ff]/50">healing</span>
+                <p class="text-xs text-[#00e5ff] font-bold uppercase">+{{ active_recipients }}</p>
+            </div>
+            <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Total Recipients</p>
+            <p class="text-3xl font-black text-white font-headline">{{ total_recipients }}</p>
+            <div class="progress-bar mt-3">
+                <div class="progress-fill" style="width: 60%"></div>
+            </div>
+        </div>
+
+        <!-- Hospitals -->
+        <div class="stat-card bionic-glass rounded-[2rem] p-6 border border-[#eab308]/20 hover-lift">
+            <div class="flex items-center justify-between mb-4">
+                <span class="material-symbols-outlined text-3xl text-[#eab308]/50">local_hospital</span>
+                <p class="text-xs text-[#eab308] font-bold uppercase">Active</p>
+            </div>
+            <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Hospitals</p>
+            <p class="text-3xl font-black text-white font-headline">{{ total_hospitals }}</p>
+            <div class="progress-bar mt-3">
+                <div class="progress-fill" style="width: 85%"></div>
+            </div>
+        </div>
+
+        <!-- Match Success Rate -->
+        <div class="stat-card bionic-glass rounded-[2rem] p-6 border border-red-600/20 hover-lift">
+            <div class="flex items-center justify-between mb-4">
+                <span class="material-symbols-outlined text-3xl text-red-500/50">thumb_up</span>
+                <p class="text-xs text-red-500 font-bold uppercase">Peak</p>
+            </div>
+            <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Match Success Rate</p>
+            <p class="text-3xl font-black text-white font-headline">{{ match_success_rate }}%</p>
+            <div class="progress-bar mt-3">
+                <div class="progress-fill" style="width: {{ match_success_rate }}%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Metrics -->
+    <div class="grid md:grid-cols-3 gap-6 mb-8">
+        <!-- Donor-Recipient Ratio -->
+        <div class="bionic-glass rounded-[2rem] p-6 border border-white/5">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-[#10b981]">compare_arrows</span>
+                <p class="font-bold text-white">Donor-Recipient Ratio</p>
+            </div>
+            <p class="text-3xl font-black text-[#10b981] font-headline">{{ donor_to_recipient_ratio }}%</p>
+            <p class="text-sm text-slate-400 mt-2">Supply relative to demand</p>
+        </div>
+
+        <!-- Growth Rate -->
+        <div class="bionic-glass rounded-[2rem] p-6 border border-white/5">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-[#00e5ff]">trending_up</span>
+                <p class="font-bold text-white">30-Day Growth</p>
+            </div>
+            <p class="text-3xl font-black text-[#00e5ff] font-headline">{{ growth_rate }}%</p>
+            <p class="text-sm text-slate-400 mt-2">New registrations this month</p>
+        </div>
+
+        <!-- Pending Matches -->
+        <div class="bionic-glass rounded-[2rem] p-6 border border-white/5">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-[#eab308]">schedule</span>
+                <p class="font-bold text-white">Pending Matches</p>
+            </div>
+            <p class="text-3xl font-black text-[#eab308] font-headline">{{ pending_matches }}</p>
+            <p class="text-sm text-slate-400 mt-2">Awaiting authorization</p>
+        </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="grid md:grid-cols-2 gap-8 mb-8">
+        <!-- Organ Demand -->
+        <div class="bionic-glass rounded-[2rem] p-6 border border-white/5">
+            <h3 class="font-bold text-white mb-6 flex items-center gap-2">
+                <span class="material-symbols-outlined">favorite</span>
+                Organ Demand Breakdown
+            </h3>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-slate-400">Kidney</span>
+                        <span class="font-bold text-[#10b981]">{{ kidney_demand }}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (kidney_demand / (kidney_demand + liver_demand + heart_demand) * 100) | int }}%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-slate-400">Liver</span>
+                        <span class="font-bold text-[#00e5ff]">{{ liver_demand }}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (liver_demand / (kidney_demand + liver_demand + heart_demand) * 100) | int }}%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-slate-400">Heart</span>
+                        <span class="font-bold text-[#ef4444]">{{ heart_demand }}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (heart_demand / (kidney_demand + liver_demand + heart_demand) * 100) | int }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blood Type Distribution -->
+        <div class="bionic-glass rounded-[2rem] p-6 border border-white/5">
+            <h3 class="font-bold text-white mb-6 flex items-center gap-2">
+                <span class="material-symbols-outlined">bloodtype</span>
+                Blood Type Distribution
+            </h3>
+            <div class="space-y-4">
+                {% for blood_type, count in blood_distribution.items() %}
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-slate-400 font-bold">{{ blood_type }}</span>
+                        <span class="font-bold text-[#10b981]">{{ count }}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (count / (blood_distribution.values() | sum) * 100) | int }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Cities -->
+    <div class="bionic-glass rounded-[2rem] p-6 border border-white/5">
+        <h3 class="font-bold text-white mb-6 flex items-center gap-2">
+            <span class="material-symbols-outlined">location_on</span>
+            Geographic Distribution (Top Cities)
+        </h3>
+        <div class="grid md:grid-cols-5 gap-4">
+            {% for city, count in top_cities %}
+            <div class="bg-white/5 rounded-lg p-4 text-center">
+                <p class="font-bold text-white">{{ city }}</p>
+                <p class="text-2xl font-black text-[#10b981] font-headline mt-2">{{ count }}</p>
+                <p class="text-xs text-slate-400 mt-1">donors</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</main>
+
+</body>
+</html>
